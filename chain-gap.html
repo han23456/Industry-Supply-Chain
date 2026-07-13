@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>强链补链分析 - 产业链/供应链图谱系统</title>
+  <link rel="stylesheet" href="css/common.css?v=3">
+  <link rel="stylesheet" href="css/chain-gap.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/data.js"></script>
+</head>
+<body>
+  <header class="gov-header">
+    <div class="gov-header-left">
+      <div class="gov-logo">🏭</div>
+      <div class="gov-title">产业链/供应链图谱系统</div>
+      <div class="gov-subtitle">产业治理智能中枢</div>
+    </div>
+    <div class="gov-header-right">
+      <div id="globalSearchContainer"></div>
+      <span>📅 2026年7月8日</span>
+      <div class="gov-user">
+        <div class="gov-avatar">政</div>
+        <span>区发改局 管理员</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">功能导航</div>
+      <nav class="sidebar-menu">
+        <div class="sidebar-item" onclick="window.location.href='index.html'">
+          <span class="sidebar-icon">▦</span>
+          <span>产业全景看板</span>
+        </div>
+        <div class="sidebar-item" onclick="window.location.href='enterprise-network.html'">
+          <span class="sidebar-icon">🕸</span>
+          <span>企业关系网络</span>
+        </div>
+        <div class="sidebar-item" onclick="window.location.href='risk-warning.html'">
+          <span class="sidebar-icon">⚠️</span>
+          <span>风险预警</span>
+        </div>
+        <div class="sidebar-item active">
+          <span class="sidebar-icon">🔧</span>
+          <span>强链补链</span>
+        </div>
+        <div class="sidebar-item" onclick="window.location.href='supply-demand.html'">
+          <span class="sidebar-icon">📊</span>
+          <span>供需对接</span>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="page-content">
+      <section class="top-bar">
+        <div class="breadcrumb" id="breadcrumbContainer"></div>
+        <div class="top-actions">
+          <button class="btn btn-default" onclick="window.location.href='index.html'">← 返回看板</button>
+          <button class="btn btn-primary" onclick="generateFullReport()">生成补链方案报告</button>
+        </div>
+      </section>
+
+      <section class="card filter-card">
+        <div class="filter-row">
+          <div class="filter-item">
+            <label>选择产业链</label>
+            <select id="chainSelect" onchange="onChainChange()">
+              <option value="chain-robot">机器人</option>
+              <option value="chain-002">新能源汽车</option>
+              <option value="chain-003">生物医药</option>
+              <option value="chain-004">人工智能</option>
+              <option value="chain-005">半导体</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="runChainGapAnalysis()">开始分析</button>
+          <button class="btn btn-default" onclick="resetGapFilters()">重置</button>
+        </div>
+      </section>
+
+      <section class="gap-main">
+        <div class="gap-left">
+          <div class="card score-card">
+            <div class="score-header">
+              <div>
+                <div class="score-label">产业链完整度评分</div>
+                <div class="score-value" id="completenessScore">0%</div>
+                <div class="score-trend" id="scoreTrend">环比 +2.1%</div>
+              </div>
+              <div class="score-ring" id="scoreRing"></div>
+            </div>
+            <div class="score-tags" id="scoreTags"></div>
+          </div>
+          <div class="card radar-card">
+            <div class="card-title" style="--title-bar-color:#722ED1">环节覆盖雷达图</div>
+            <div id="radarChart" style="height:300px"></div>
+          </div>
+        </div>
+
+        <div class="gap-right">
+          <div class="card gap-list-card">
+            <div class="card-header">
+              <div class="card-title" style="--title-bar-color:#F5222D">缺失环节优先级列表</div>
+              <div class="gap-legend">
+                <span><i class="dot" style="background:#F5222D"></i>严重缺失</span>
+                <span><i class="dot" style="background:#FA8C16"></i>轻度缺失</span>
+                <span><i class="dot" style="background:#52C41A"></i>基本覆盖</span>
+              </div>
+            </div>
+            <div class="gap-list" id="gapList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card plan-card" id="planCard" style="display:none">
+        <div class="card-header">
+          <div class="card-title" style="--title-bar-color:#1890FF">补链方案生成区</div>
+        </div>
+        <div class="plan-body" id="planBody"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeGapDrawer()"></div>
+  <aside class="drawer" id="gapDrawer">
+    <div class="drawer-header">
+      <span class="drawer-title" id="gapDrawerTitle">目标企业推荐</span>
+      <button class="drawer-close" onclick="closeGapDrawer()">✕</button>
+    </div>
+    <div class="drawer-body" id="gapDrawerBody"></div>
+    <div class="drawer-footer" id="gapDrawerFooter"></div>
+  </aside>
+
+  <script src="js/chain-gap.js"></script>
+</body>
+</html>
