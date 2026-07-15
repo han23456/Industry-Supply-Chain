@@ -27,7 +27,21 @@ const CONFIG = {
     new_energy: '新能源',
     biotech: '生物医药',
     information: '信息技术',
-    modern_service: '现代服务'
+    modern_service: '现代服务',
+    finance: '金融',
+    logistics: '物流贸易',
+    professional: '专业服务',
+    tech_service: '科技服务',
+    culture_tourism: '文体旅商',
+    marine: '海洋经济',
+    low_altitude: '低空经济',
+    data_industry: '数据要素'
+  },
+  matrix: {
+    all: { label: '全部产业', class: 'tag-default' },
+    modern_service: { label: '现代服务业', class: 'tag-primary', title: '一、六大现代服务业', sectionClass: 'service' },
+    strategic_emerging: { label: '战略性新兴产业', class: 'tag-purple', title: '二、四大战略性新兴产业', sectionClass: 'emerging' },
+    forward_looking: { label: '重点前瞻产业', class: 'tag-orange', title: '三、两大重点前瞻产业', sectionClass: 'forward' }
   },
   nodeStatus: {
     strong: { label: '优势', icon: '✓', color: '#52C41A', class: 'tag-success' },
@@ -138,7 +152,9 @@ function parseFilters() {
   return {
     strategic: parseArray('strategic'),
     lifecycle: parseArray('lifecycle'),
-    enabling: parseArray('enabling')
+    enabling: parseArray('enabling'),
+    matrix: params.matrix || 'all',
+    sortBy: params.sortBy || undefined
   };
 }
 
@@ -147,6 +163,8 @@ function buildFilterUrl(filters) {
   if (filters.strategic && !filters.strategic.includes('all')) params.strategic = filters.strategic;
   if (filters.lifecycle && !filters.lifecycle.includes('all')) params.lifecycle = filters.lifecycle;
   if (filters.enabling && !filters.enabling.includes('all')) params.enabling = filters.enabling;
+  if (filters.matrix && filters.matrix !== 'all') params.matrix = filters.matrix;
+  if (filters.sortBy) params.sortBy = filters.sortBy;
   return params;
 }
 
@@ -399,11 +417,11 @@ function performSearch(query, type) {
 
   if (type === 'all' || type === 'chain') {
     const chains = [
-      { id: 'chain-robot', name: '机器人产业链', type: 'chain', desc: '战略性新兴产业', url: 'chain-graph.html?chainId=chain-robot' },
-      { id: 'chain-002', name: '新能源汽车产业链', type: 'chain', desc: '新能源', url: 'chain-graph.html?chainId=chain-002' },
-      { id: 'chain-003', name: '生物医药产业链', type: 'chain', desc: '生物医药', url: 'chain-graph.html?chainId=chain-003' },
-      { id: 'chain-004', name: '人工智能产业链', type: 'chain', desc: '信息技术', url: 'chain-graph.html?chainId=chain-004' },
-      { id: 'chain-005', name: '半导体产业链', type: 'chain', desc: '信息技术', url: 'chain-graph.html?chainId=chain-005' }
+      { id: 'chain-robot', name: '人工智能与具身智能机器人产业链', type: 'chain', desc: '战略性新兴产业', url: 'chain-graph.html?chainId=chain-robot' },
+      { id: 'chain-002', name: '海洋产业链', type: 'chain', desc: '海洋经济', url: 'chain-graph.html?chainId=chain-002' },
+      { id: 'chain-003', name: '细胞与基因产业链', type: 'chain', desc: '生物医药', url: 'chain-graph.html?chainId=chain-003' },
+      { id: 'chain-004', name: '智能终端产业链', type: 'chain', desc: '信息技术', url: 'chain-graph.html?chainId=chain-004' },
+      { id: 'chain-005', name: '低空经济产业链', type: 'chain', desc: '低空经济', url: 'chain-graph.html?chainId=chain-005' }
     ];
     chains.forEach(c => {
       if (c.name.toLowerCase().includes(lowerQuery) || c.desc.toLowerCase().includes(lowerQuery)) {
@@ -416,8 +434,8 @@ function performSearch(query, type) {
     const nodes = [
       { id: 'node-001', name: '精密减速机', type: 'node', desc: '机器人核心部件', url: 'chain-graph.html?chainId=chain-robot' },
       { id: 'node-002', name: '伺服电机', type: 'node', desc: '机器人核心部件', url: 'chain-graph.html?chainId=chain-robot' },
-      { id: 'node-003', name: '动力电池', type: 'node', desc: '新能源汽车核心部件', url: 'chain-graph.html?chainId=chain-002' },
-      { id: 'node-004', name: '智能座舱', type: 'node', desc: '新能源汽车核心部件', url: 'chain-graph.html?chainId=chain-002' }
+      { id: 'node-003', name: '海洋动力装备', type: 'node', desc: '海洋产业核心部件', url: 'chain-graph.html?chainId=chain-002' },
+      { id: 'node-004', name: '船舶智能座舱', type: 'node', desc: '海洋产业核心部件', url: 'chain-graph.html?chainId=chain-002' }
     ];
     nodes.forEach(n => {
       if (n.name.toLowerCase().includes(lowerQuery) || n.desc.toLowerCase().includes(lowerQuery)) {

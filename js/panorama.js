@@ -36,6 +36,14 @@ function renderFilters() {
   renderFilterGroup('filterStrategic', CONFIG.strategic, currentFilters.strategic, 'strategic');
   renderFilterGroup('filterLifecycle', CONFIG.lifecycle, currentFilters.lifecycle, 'lifecycle');
   renderFilterGroup('filterEnabling', CONFIG.enabling, currentFilters.enabling, 'enabling');
+  const matrixSelect = document.getElementById('matrixFilterSelect');
+  if (matrixSelect) matrixSelect.value = currentFilters.matrix || 'all';
+}
+
+function onMatrixFilterChange(value) {
+  currentFilters.sortBy = undefined;
+  currentFilters.matrix = value;
+  updateUrlAndReload();
 }
 
 function renderFilterGroup(containerId, options, selectedValues, filterKey) {
@@ -74,11 +82,13 @@ function getOptionCount(filterKey, optionKey) {
     const matchStrategic = testFilters.strategic.includes('all') || testFilters.strategic.includes(item.strategic_orientation);
     const matchLifecycle = testFilters.lifecycle.includes('all') || testFilters.lifecycle.includes(item.life_cycle);
     const matchEnabling = testFilters.enabling.includes('all') || item.enabling_tags.some(t => testFilters.enabling.includes(t));
-    return matchStrategic && matchLifecycle && matchEnabling;
+    const matchMatrix = !testFilters.matrix || testFilters.matrix === 'all' || item.matrix_group === testFilters.matrix;
+    return matchStrategic && matchLifecycle && matchEnabling && matchMatrix;
   }).length;
 }
 
 function toggleFilter(filterKey, optionKey) {
+  currentFilters.sortBy = undefined;
   let values = currentFilters[filterKey];
   if (values.includes('all')) {
     values = [optionKey];
@@ -93,12 +103,13 @@ function toggleFilter(filterKey, optionKey) {
 }
 
 function selectAllFilter(filterKey) {
+  currentFilters.sortBy = undefined;
   currentFilters[filterKey] = ['all'];
   updateUrlAndReload();
 }
 
 function resetFilters() {
-  currentFilters = { strategic: ['all'], lifecycle: ['all'], enabling: ['all'] };
+  currentFilters = { strategic: ['all'], lifecycle: ['all'], enabling: ['all'], matrix: 'all' };
   updateUrlAndReload();
 }
 
@@ -109,7 +120,7 @@ function updateUrlAndReload() {
 }
 
 function loadData() {
-  MockAPI.filterIndustries(currentFilters).then(industries => {
+  MockAPI.filterIndustries(currentFilters, currentFilters.sortBy).then(industries => {
     renderMetrics(currentFilters);
     renderCards(industries);
     document.getElementById('resultCount').textContent = industries.length;
@@ -141,6 +152,8 @@ async function renderMetrics(filters) {
 
   document.getElementById('metricPenetrationValue').textContent = metrics.penetration + '%';
   document.getElementById('metricPenetrationTrend').innerHTML = renderTrend(metrics.penetrationTrend);
+  const penRing = document.getElementById('metricPenetrationRing');
+  if (penRing) penRing.innerHTML = renderProgressRing(metrics.penetration, 56, 6, '#13C2C2');
 }
 
 function renderCards(industries) {
@@ -154,79 +167,99 @@ function renderCards(industries) {
   }
   empty.style.display = 'none';
 
-  grid.innerHTML = industries.map((item, index) => {
-    const isUrgent = item.key_gaps.some(g => g.count === 0);
-    const categoryLabel = CONFIG.category[item.category] || item.category;
-
-    let bgColor = '#FFFFFF', borderColor = '#EBEEF5';
-    if (item.strategic_orientation === 'chain_master' && item.life_cycle === 'advantage_traditional') {
-      bgColor = '#EEF4FF'; borderColor = '#165DFF';
-    } else if (item.strategic_orientation === 'chain_master' && item.life_cycle === 'emerging') {
-      bgColor = '#EEF4FF'; borderColor = '#165DFF';
-    } else if (item.strategic_orientation === 'core_pillar' && item.life_cycle === 'advantage_traditional') {
-      bgColor = '#E6FFFB'; borderColor = '#36CFC9';
-    } else if (item.strategic_orientation === 'cultivating' && item.life_cycle === 'emerging') {
-      bgColor = '#FFFBE6'; borderColor = '#FAAD14';
-    } else if (item.strategic_orientation === 'cultivating' && item.life_cycle === 'future') {
-      bgColor = '#F9F0FF'; borderColor = '#722ED1';
-    }
-
+  // 按「6+4+2」产业矩阵分三个板块渲染，板块内保持产业矩阵既定顺序
+  const groupOrder = ['modern_service', 'strategic_emerging', 'forward_looking'];
+  grid.innerHTML = groupOrder.map(groupKey => {
+    const groupItems = industries
+      .filter(item => item.matrix_group === groupKey)
+      .sort((a, b) => MOCK_INDUSTRY_CHAINS.findIndex(c => c.id === a.id) - MOCK_INDUSTRY_CHAINS.findIndex(c => c.id === b.id));
+    if (!groupItems.length) return '';
+    const groupCfg = CONFIG.matrix[groupKey];
     return `
-      <div class="industry-card fade-in ${isUrgent ? 'urgent' : ''}"
-           style="background:${bgColor};border-color:${borderColor};animation-delay:${index * 0.05}s"
-           onclick="goToChainGraph('${item.id}')">
-        <div class="card-top">
-          <div class="card-name">${item.name}</div>
-          <span class="tag tag-default card-category">${categoryLabel}</span>
-        </div>
-        <div class="card-tags-row">
-          ${renderStrategicTag(item.strategic_orientation)}
-          ${renderLifecycleTag(item.life_cycle)}
-        </div>
-        <div class="card-enabling">
-          <span>使能技术：</span>
-          <div style="display:flex;gap:4px">${renderEnablingTags(item.enabling_tags)}</div>
-        </div>
-        <div class="card-core">
-          <div class="card-completeness">
-            ${renderProgressRing(item.completeness_score, 48, 5)}
-            <div class="card-completeness-info">
-              <span class="card-completeness-label">完整度</span>
-              <span class="card-completeness-value" style="color:${item.completeness_score >= 80 ? '#36CFC9' : item.completeness_score >= 60 ? '#165DFF' : '#F5222D'}">${item.completeness_score}%</span>
-            </div>
-          </div>
-          <div class="card-enterprise">
-            <div>关联企业</div>
-            <strong>${formatNumber(item.enterprise_count)}</strong> 家
-          </div>
-        </div>
-        <div class="card-metrics">
-          <div class="card-metric-block">
-            <div class="card-metric-title">📊 存量指标</div>
-            <div class="card-metric-item"><span class="label">税收</span><span class="value">${item.tax_contribution}亿</span></div>
-            <div class="card-metric-item"><span class="label">就业</span><span class="value">${(item.employment_count / 10000).toFixed(1)}万人</span></div>
-            <div class="card-metric-item"><span class="label">营收</span><span class="value">${item.revenue_total}亿</span></div>
-          </div>
-          <div class="card-metric-block">
-            <div class="card-metric-title">🚀 增量指标</div>
-            <div class="card-metric-item"><span class="label">在建</span><span class="value">${item.projects_under_construction}项</span></div>
-            <div class="card-metric-item"><span class="label">招商</span><span class="value">${item.investment_completed}家</span></div>
-            <div class="card-metric-item"><span class="label">增速</span><span class="value growth">+${item.growth_rate}%</span></div>
-          </div>
-        </div>
-        <div class="card-gaps">
-          <div class="card-gaps-title">🔴 关键缺口（${item.gap_count}个）</div>
-          <div class="gap-tags">
-            ${item.key_gaps.slice(0, 2).map(g => `<span class="gap-tag">${g.name}（${g.count}家）</span>`).join('')}
-          </div>
-        </div>
-        <div class="card-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-primary btn-sm" onclick="goToChainGraph('${item.id}')">查看产业链图谱</button>
-          <button class="btn btn-default btn-sm" onclick="showIndustryDetail('${item.id}')">查看详情 →</button>
+      <div class="matrix-section ${groupCfg.sectionClass}">
+        <div class="matrix-section-title">${groupCfg.title}</div>
+        <div class="matrix-cards-row ${groupCfg.sectionClass}">
+          ${groupItems.map((item, index) => renderIndustryCard(item, index)).join('')}
         </div>
       </div>
     `;
   }).join('');
+}
+
+function renderIndustryCard(item, index) {
+  const isUrgent = item.key_gaps.some(g => g.count === 0);
+  const categoryLabel = CONFIG.category[item.category] || item.category;
+  const matrixCfg = CONFIG.matrix[item.matrix_group] || CONFIG.matrix.all;
+
+  let bgColor = '#FFFFFF', borderColor = '#EBEEF5';
+  if (item.strategic_orientation === 'chain_master' && item.life_cycle === 'advantage_traditional') {
+    bgColor = '#EEF4FF'; borderColor = '#165DFF';
+  } else if (item.strategic_orientation === 'chain_master' && item.life_cycle === 'emerging') {
+    bgColor = '#EEF4FF'; borderColor = '#165DFF';
+  } else if (item.strategic_orientation === 'core_pillar' && item.life_cycle === 'advantage_traditional') {
+    bgColor = '#E6FFFB'; borderColor = '#36CFC9';
+  } else if (item.strategic_orientation === 'cultivating' && item.life_cycle === 'emerging') {
+    bgColor = '#FFFBE6'; borderColor = '#FAAD14';
+  } else if (item.strategic_orientation === 'cultivating' && item.life_cycle === 'future') {
+    bgColor = '#F9F0FF'; borderColor = '#722ED1';
+  }
+
+  return `
+    <div class="industry-card fade-in ${isUrgent ? 'urgent' : ''}"
+         style="background:${bgColor};border-color:${borderColor};animation-delay:${index * 0.05}s"
+         onclick="goToChainGraph('${item.id}')">
+      <div class="card-top">
+        <div class="card-name">${item.name}</div>
+        <span class="tag tag-default card-category">${categoryLabel}</span>
+      </div>
+      <div class="card-tags-row">
+        <span class="tag ${matrixCfg.class}">${matrixCfg.label}</span>
+        ${renderStrategicTag(item.strategic_orientation)}
+        ${renderLifecycleTag(item.life_cycle)}
+      </div>
+      <div class="card-enabling">
+        <span>使能技术：</span>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">${renderEnablingTags(item.enabling_tags)}</div>
+      </div>
+      <div class="card-core">
+        <div class="card-completeness">
+          ${renderProgressRing(item.completeness_score, 48, 5)}
+          <div class="card-completeness-info">
+            <span class="card-completeness-label">完整度</span>
+            <span class="card-completeness-value" style="color:${item.completeness_score >= 80 ? '#36CFC9' : item.completeness_score >= 60 ? '#165DFF' : '#F5222D'}">${item.completeness_score}%</span>
+          </div>
+        </div>
+        <div class="card-enterprise">
+          <div>关联企业</div>
+          <strong>${formatNumber(item.enterprise_count)}</strong> 家
+        </div>
+      </div>
+      <div class="card-metrics">
+        <div class="card-metric-block">
+          <div class="card-metric-title">📊 存量指标</div>
+          <div class="card-metric-item"><span class="label">税收</span><span class="value">${item.tax_contribution}亿</span></div>
+          <div class="card-metric-item"><span class="label">就业</span><span class="value">${(item.employment_count / 10000).toFixed(1)}万人</span></div>
+          <div class="card-metric-item"><span class="label">营收</span><span class="value">${item.revenue_total}亿</span></div>
+        </div>
+        <div class="card-metric-block">
+          <div class="card-metric-title">🚀 增量指标</div>
+          <div class="card-metric-item"><span class="label">在建</span><span class="value">${item.projects_under_construction}项</span></div>
+          <div class="card-metric-item"><span class="label">招商</span><span class="value">${item.investment_completed}家</span></div>
+          <div class="card-metric-item"><span class="label">增速</span><span class="value growth">+${item.growth_rate}%</span></div>
+        </div>
+      </div>
+      <div class="card-gaps">
+        <div class="card-gaps-title">🔴 关键缺口（${item.gap_count}个）</div>
+        <div class="gap-tags">
+          ${item.key_gaps.slice(0, 2).map(g => `<span class="gap-tag">${g.name}（${g.count}家）</span>`).join('')}
+        </div>
+      </div>
+      <div class="card-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-primary btn-sm" onclick="goToChainGraph('${item.id}')">查看产业图谱</button>
+        <button class="btn btn-default btn-sm" onclick="showIndustryDetail('${item.id}')">查看详情</button>
+      </div>
+    </div>
+  `;
 }
 
 function goToChainGraph(chainId) {
@@ -273,7 +306,7 @@ function showIndustryDetail(chainId) {
 }
 
 function handleUrgentClick() {
-  currentFilters = { strategic: ['all'], lifecycle: ['all'], enabling: currentFilters.enabling };
+  currentFilters = { strategic: ['all'], lifecycle: ['all'], enabling: ['all'], matrix: currentFilters.matrix || 'all', sortBy: 'urgent' };
   updateUrlAndReload();
   showToast('已按完整度升序排列，缺失产业置顶', 'info');
 }

@@ -3,174 +3,274 @@
  * 数据模型适配《产业链供应链系统_产业图谱完整PRD_V2.md》
  */
 
+// 前海「6+4+2」产业矩阵：六大现代服务业 + 四大战略性新兴产业 + 两大重点前瞻产业
 const MOCK_INDUSTRY_CHAINS = [
+  // ==================== 一、六大现代服务业 ====================
   {
-    id: 'chain-robot',
-    name: '机器人',
-    category: 'manufacturing',
+    id: 'chain-007',
+    name: '信息服务',
+    category: 'information',
+    matrix_group: 'modern_service',
     strategic_orientation: 'chain_master',
     life_cycle: 'emerging',
-    enabling_tags: ['ai', 'iot', 'industrial_internet'],
-    completeness_score: 62,
-    enterprise_count: 528,
-    tax_contribution: 32.5,
-    employment_count: 12000,
-    revenue_total: 156.8,
-    projects_under_construction: 3,
-    investment_completed: 2,
-    growth_rate: 12.3,
+    enabling_tags: ['ai', 'industrial_internet'],
+    completeness_score: 78,
+    enterprise_count: 412,
+    tax_contribution: 26.8,
+    employment_count: 9800,
+    revenue_total: 128.6,
+    projects_under_construction: 4,
+    investment_completed: 3,
+    growth_rate: 14.6,
     key_gaps: [
-      { name: '精密减速机', count: 0 },
-      { name: '高端运动控制', count: 1 }
-    ],
-    gap_count: 4
-  },
-  {
-    id: 'chain-002',
-    name: '新能源汽车',
-    category: 'new_energy',
-    strategic_orientation: 'chain_master',
-    life_cycle: 'emerging',
-    enabling_tags: ['ai', 'green_energy', 'industrial_internet'],
-    completeness_score: 71,
-    enterprise_count: 346,
-    tax_contribution: 28.6,
-    employment_count: 8900,
-    revenue_total: 134.2,
-    projects_under_construction: 5,
-    investment_completed: 4,
-    growth_rate: 23.5,
-    key_gaps: [
-      { name: '车规级芯片', count: 2 },
-      { name: '固态电池', count: 1 }
+      { name: '云计算基础设施', count: 2 },
+      { name: '数据安全服务', count: 1 }
     ],
     gap_count: 3
   },
   {
-    id: 'chain-003',
-    name: '生物医药',
-    category: 'biotech',
+    id: 'chain-008',
+    name: '金融服务',
+    category: 'finance',
+    matrix_group: 'modern_service',
+    strategic_orientation: 'chain_master',
+    life_cycle: 'advantage_traditional',
+    enabling_tags: ['ai', 'green_energy'],
+    completeness_score: 85,
+    enterprise_count: 356,
+    tax_contribution: 42.3,
+    employment_count: 7600,
+    revenue_total: 186.4,
+    projects_under_construction: 2,
+    investment_completed: 2,
+    growth_rate: 8.9,
+    key_gaps: [
+      { name: '跨境支付结算', count: 3 },
+      { name: '绿色金融产品', count: 2 }
+    ],
+    gap_count: 2
+  },
+  {
+    id: 'chain-009',
+    name: '贸易物流',
+    category: 'logistics',
+    matrix_group: 'modern_service',
+    strategic_orientation: 'core_pillar',
+    life_cycle: 'advantage_traditional',
+    enabling_tags: ['iot', 'industrial_internet'],
+    completeness_score: 82,
+    enterprise_count: 528,
+    tax_contribution: 31.6,
+    employment_count: 12500,
+    revenue_total: 215.8,
+    projects_under_construction: 3,
+    investment_completed: 4,
+    growth_rate: 11.2,
+    key_gaps: [
+      { name: '海外仓网络', count: 1 },
+      { name: '冷链物流装备', count: 2 }
+    ],
+    gap_count: 3
+  },
+  {
+    id: 'chain-010',
+    name: '专业服务',
+    category: 'professional',
+    matrix_group: 'modern_service',
     strategic_orientation: 'core_pillar',
     life_cycle: 'emerging',
     enabling_tags: ['ai'],
-    completeness_score: 68,
-    enterprise_count: 215,
-    tax_contribution: 18.3,
-    employment_count: 5600,
-    revenue_total: 76.5,
-    projects_under_construction: 4,
+    completeness_score: 74,
+    enterprise_count: 268,
+    tax_contribution: 15.2,
+    employment_count: 5400,
+    revenue_total: 68.4,
+    projects_under_construction: 2,
     investment_completed: 1,
-    growth_rate: 15.2,
+    growth_rate: 16.8,
     key_gaps: [
-      { name: '创新药研发', count: 4 },
-      { name: '高端医疗器械', count: 6 }
+      { name: '涉外法律服务', count: 0 },
+      { name: '国际仲裁机构', count: 1 }
+    ],
+    gap_count: 3
+  },
+  {
+    id: 'chain-011',
+    name: '科技服务',
+    category: 'tech_service',
+    matrix_group: 'modern_service',
+    strategic_orientation: 'core_pillar',
+    life_cycle: 'emerging',
+    enabling_tags: ['ai', 'iot'],
+    completeness_score: 71,
+    enterprise_count: 234,
+    tax_contribution: 12.8,
+    employment_count: 4600,
+    revenue_total: 56.2,
+    projects_under_construction: 3,
+    investment_completed: 2,
+    growth_rate: 18.5,
+    key_gaps: [
+      { name: '检验检测认证', count: 2 },
+      { name: '技术转移服务', count: 1 }
+    ],
+    gap_count: 2
+  },
+  {
+    id: 'chain-012',
+    name: '文体旅商',
+    category: 'culture_tourism',
+    matrix_group: 'modern_service',
+    strategic_orientation: 'cultivating',
+    life_cycle: 'advantage_traditional',
+    enabling_tags: ['ai', 'iot'],
+    completeness_score: 66,
+    enterprise_count: 186,
+    tax_contribution: 9.6,
+    employment_count: 8900,
+    revenue_total: 42.7,
+    projects_under_construction: 2,
+    investment_completed: 1,
+    growth_rate: 12.4,
+    key_gaps: [
+      { name: '高端演艺场馆', count: 0 },
+      { name: '邮轮旅游服务', count: 1 }
+    ],
+    gap_count: 4
+  },
+  // ==================== 二、四大战略性新兴产业 ====================
+  {
+    id: 'chain-robot',
+    name: '人工智能与具身智能机器人',
+    category: 'information',
+    matrix_group: 'strategic_emerging',
+    strategic_orientation: 'chain_master',
+    life_cycle: 'emerging',
+    enabling_tags: ['ai', 'iot', 'industrial_internet'],
+    completeness_score: 58,
+    enterprise_count: 386,
+    tax_contribution: 22.4,
+    employment_count: 8200,
+    revenue_total: 96.5,
+    projects_under_construction: 6,
+    investment_completed: 3,
+    growth_rate: 32.6,
+    key_gaps: [
+      { name: '精密减速机', count: 0 },
+      { name: '具身智能大模型', count: 1 }
+    ],
+    gap_count: 5
+  },
+  {
+    id: 'chain-002',
+    name: '海洋产业',
+    category: 'marine',
+    matrix_group: 'strategic_emerging',
+    strategic_orientation: 'core_pillar',
+    life_cycle: 'emerging',
+    enabling_tags: ['iot', 'green_energy'],
+    completeness_score: 52,
+    enterprise_count: 142,
+    tax_contribution: 8.6,
+    employment_count: 3600,
+    revenue_total: 38.9,
+    projects_under_construction: 4,
+    investment_completed: 2,
+    growth_rate: 24.3,
+    key_gaps: [
+      { name: '深海探测装备', count: 0 },
+      { name: '海洋传感器', count: 1 }
     ],
     gap_count: 4
   },
   {
     id: 'chain-004',
-    name: '人工智能',
+    name: '智能终端',
     category: 'information',
-    strategic_orientation: 'core_pillar',
-    life_cycle: 'future',
-    enabling_tags: ['ai', 'iot', 'industrial_internet'],
-    completeness_score: 54,
-    enterprise_count: 178,
-    tax_contribution: 9.8,
-    employment_count: 4200,
-    revenue_total: 45.6,
-    projects_under_construction: 6,
-    investment_completed: 3,
-    growth_rate: 31.8,
-    key_gaps: [
-      { name: 'AI芯片', count: 2 },
-      { name: '大模型训练', count: 5 }
-    ],
-    gap_count: 5
-  },
-  {
-    id: 'chain-005',
-    name: '半导体',
-    category: 'information',
+    matrix_group: 'strategic_emerging',
     strategic_orientation: 'chain_master',
     life_cycle: 'emerging',
-    enabling_tags: ['ai', 'industrial_internet'],
-    completeness_score: 48,
-    enterprise_count: 267,
-    tax_contribution: 22.4,
+    enabling_tags: ['ai', 'iot'],
+    completeness_score: 69,
+    enterprise_count: 312,
+    tax_contribution: 18.9,
     employment_count: 6800,
-    revenue_total: 98.3,
-    projects_under_construction: 7,
-    investment_completed: 2,
-    growth_rate: 18.6,
+    revenue_total: 88.2,
+    projects_under_construction: 5,
+    investment_completed: 3,
+    growth_rate: 21.7,
     key_gaps: [
-      { name: '光刻机', count: 0 },
-      { name: 'EDA工具', count: 1 }
-    ],
-    gap_count: 6
-  },
-  {
-    id: 'chain-006',
-    name: '绿色低碳',
-    category: 'new_energy',
-    strategic_orientation: 'cultivating',
-    life_cycle: 'future',
-    enabling_tags: ['green_energy', 'iot'],
-    completeness_score: 42,
-    enterprise_count: 132,
-    tax_contribution: 6.5,
-    employment_count: 3100,
-    revenue_total: 28.9,
-    projects_under_construction: 2,
-    investment_completed: 1,
-    growth_rate: 28.4,
-    key_gaps: [
-      { name: '氢能装备', count: 1 },
-      { name: '碳捕集技术', count: 0 }
+      { name: '高端显示面板', count: 2 },
+      { name: '射频前端芯片', count: 1 }
     ],
     gap_count: 4
   },
   {
-    id: 'chain-007',
-    name: '工业互联网',
-    category: 'information',
+    id: 'chain-005',
+    name: '低空经济',
+    category: 'low_altitude',
+    matrix_group: 'strategic_emerging',
     strategic_orientation: 'cultivating',
-    life_cycle: 'emerging',
-    enabling_tags: ['industrial_internet', 'ai', 'iot'],
-    completeness_score: 76,
-    enterprise_count: 289,
-    tax_contribution: 14.2,
-    employment_count: 5200,
-    revenue_total: 62.1,
-    projects_under_construction: 3,
+    life_cycle: 'future',
+    enabling_tags: ['ai', 'iot', 'industrial_internet'],
+    completeness_score: 46,
+    enterprise_count: 98,
+    tax_contribution: 5.2,
+    employment_count: 2400,
+    revenue_total: 22.6,
+    projects_under_construction: 5,
     investment_completed: 2,
-    growth_rate: 19.7,
+    growth_rate: 38.9,
     key_gaps: [
-      { name: '工业软件', count: 7 },
-      { name: '边缘计算', count: 4 }
+      { name: 'eVTOL整机', count: 0 },
+      { name: '低空空域管理', count: 0 }
     ],
-    gap_count: 2
+    gap_count: 6
+  },
+  // ==================== 三、两大重点前瞻产业 ====================
+  {
+    id: 'chain-003',
+    name: '细胞与基因',
+    category: 'biotech',
+    matrix_group: 'forward_looking',
+    strategic_orientation: 'cultivating',
+    life_cycle: 'future',
+    enabling_tags: ['ai'],
+    completeness_score: 44,
+    enterprise_count: 86,
+    tax_contribution: 4.8,
+    employment_count: 2100,
+    revenue_total: 18.5,
+    projects_under_construction: 3,
+    investment_completed: 1,
+    growth_rate: 28.6,
+    key_gaps: [
+      { name: '基因测序设备', count: 0 },
+      { name: '细胞治疗CDMO', count: 1 }
+    ],
+    gap_count: 5
   },
   {
-    id: 'chain-008',
-    name: '先进材料',
-    category: 'manufacturing',
-    strategic_orientation: 'core_pillar',
-    life_cycle: 'advantage_traditional',
-    enabling_tags: ['green_energy'],
-    completeness_score: 79,
-    enterprise_count: 198,
-    tax_contribution: 16.8,
-    employment_count: 4700,
-    revenue_total: 58.4,
-    projects_under_construction: 2,
-    investment_completed: 1,
-    growth_rate: 9.5,
+    id: 'chain-006',
+    name: '数据产业',
+    category: 'data_industry',
+    matrix_group: 'forward_looking',
+    strategic_orientation: 'cultivating',
+    life_cycle: 'future',
+    enabling_tags: ['ai', 'industrial_internet'],
+    completeness_score: 51,
+    enterprise_count: 124,
+    tax_contribution: 6.2,
+    employment_count: 2800,
+    revenue_total: 26.8,
+    projects_under_construction: 4,
+    investment_completed: 2,
+    growth_rate: 35.2,
     key_gaps: [
-      { name: '碳纤维', count: 3 },
-      { name: '半导体材料', count: 5 }
+      { name: '数据交易所', count: 1 },
+      { name: '隐私计算', count: 0 }
     ],
-    gap_count: 2
+    gap_count: 4
   }
 ];
 
@@ -192,7 +292,7 @@ const MOCK_RISKS = [
 
 const MOCK_HEATMAP = {
   services: ['金融服务', '贸易物流', '科技服务', '人力资源', '检验检测'],
-  industries: ['机器人', '新能源汽车', '生物医药', '人工智能', '半导体'],
+  industries: ['具身智能机器人', '海洋产业', '细胞与基因', '智能终端', '低空经济'],
   data: [
     [86, 72, 45, 38, 92],
     [65, 88, 56, 42, 78],
@@ -476,25 +576,35 @@ const MOCK_ENTERPRISES = {
 
 // 模拟API
 const MockAPI = {
-  filterIndustries(filters) {
+  filterIndustries(filters, sortBy) {
     return new Promise(resolve => {
       setTimeout(() => {
         let result = MOCK_INDUSTRY_CHAINS.filter(item => {
           const matchStrategic = filters.strategic.includes('all') || filters.strategic.includes(item.strategic_orientation);
           const matchLifecycle = filters.lifecycle.includes('all') || filters.lifecycle.includes(item.life_cycle);
           const matchEnabling = filters.enabling.includes('all') || item.enabling_tags.some(t => filters.enabling.includes(t));
-          return matchStrategic && matchLifecycle && matchEnabling;
+          const matchMatrix = !filters.matrix || filters.matrix === 'all' || item.matrix_group === filters.matrix;
+          return matchStrategic && matchLifecycle && matchEnabling && matchMatrix;
         });
 
         const strategicOrder = { chain_master: 1, core_pillar: 2, cultivating: 3 };
-        result.sort((a, b) => {
-          const aUrgent = a.key_gaps.some(g => g.count === 0) ? 0 : 1;
-          const bUrgent = b.key_gaps.some(g => g.count === 0) ? 0 : 1;
-          if (aUrgent !== bUrgent) return aUrgent - bUrgent;
-          if (a.completeness_score !== b.completeness_score) return a.completeness_score - b.completeness_score;
-          if (b.revenue_total !== a.revenue_total) return b.revenue_total - a.revenue_total;
-          return (strategicOrder[a.strategic_orientation] || 9) - (strategicOrder[b.strategic_orientation] || 9);
-        });
+        if (sortBy === 'urgent') {
+          result.sort((a, b) => {
+            const aUrgent = a.key_gaps.some(g => g.count === 0) ? 0 : 1;
+            const bUrgent = b.key_gaps.some(g => g.count === 0) ? 0 : 1;
+            if (aUrgent !== bUrgent) return aUrgent - bUrgent;
+            return a.completeness_score - b.completeness_score;
+          });
+        } else {
+          result.sort((a, b) => {
+            const aUrgent = a.key_gaps.some(g => g.count === 0) ? 0 : 1;
+            const bUrgent = b.key_gaps.some(g => g.count === 0) ? 0 : 1;
+            if (aUrgent !== bUrgent) return aUrgent - bUrgent;
+            if (a.completeness_score !== b.completeness_score) return a.completeness_score - b.completeness_score;
+            if (b.revenue_total !== a.revenue_total) return b.revenue_total - a.revenue_total;
+            return (strategicOrder[a.strategic_orientation] || 9) - (strategicOrder[b.strategic_orientation] || 9);
+          });
+        }
 
         resolve(result);
       }, 150);
@@ -505,7 +615,8 @@ const MockAPI = {
     return new Promise(resolve => {
       setTimeout(async () => {
         const industries = await this.filterIndustries(filters);
-        const urgentCount = industries.filter(item => item.key_gaps.some(g => g.count === 0)).length;
+        // 急需补链数：动态汇总全部产业缺口
+        const urgentCount = industries.reduce((s, item) => s + (item.gap_count || 0), 0);
         const avgCompleteness = industries.length ? (industries.reduce((s, i) => s + i.completeness_score, 0) / industries.length).toFixed(1) : 0;
         const totalEnterprises = industries.reduce((s, i) => s + i.enterprise_count, 0);
         const enablingEnterprises = industries.reduce((s, i) => s + Math.round(i.enterprise_count * (i.enabling_tags.length * 0.25)), 0);

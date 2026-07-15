@@ -514,3 +514,156 @@
   .heatmap-cell { width: 120px; }
   .heatmap-axis-x-item { width: 120px; }
 }
+
+/* ==================== 6+4+2 产业矩阵板块 ==================== */
+
+/* 卡片区域容器改为透明，由三大板块各自带底色 */
+#matrixView .cards-section {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+#matrixView .cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.matrix-section {
+  border-radius: var(--radius-lg);
+  padding: 16px 20px 20px;
+  margin-bottom: 20px;
+}
+.matrix-section:last-child { margin-bottom: 0; }
+.matrix-section.service { background: #E6F0FF; }
+.matrix-section.emerging { background: #F3E8FF; }
+.matrix-section.forward { background: #FFF2E0; }
+
+.matrix-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  display: inline-block;
+  cursor: default;
+  transition: var(--transition);
+}
+.matrix-section-title:hover { color: var(--primary); }
+
+/* 悬浮板块标题时，该板块内全部产业卡片外边框轻微高亮 */
+.matrix-section-title:hover ~ .matrix-cards-row .industry-card {
+  border-color: #165DFF !important;
+  box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.18);
+}
+
+.matrix-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* 板块二：2×2 居中排布；板块三：一行2张居中，卡片宽度与板块一一致 */
+.matrix-cards-row.emerging,
+.matrix-cards-row.forward {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: calc((100% - 32px) / 3 * 2 + 16px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.matrix-cards-row .industry-card { min-width: 0; }
+
+/* 战略产业总数小字备注 */
+.metric-note {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* 数字化渗透率环形图 */
+.metrics-bar .metric-card:nth-child(4) { position: relative; }
+.metrics-bar .metric-card:nth-child(4) #metricPenetrationRing {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.metrics-bar .metric-card:nth-child(4) .metric-content { padding-right: 64px; }
+
+/* 产业矩阵分类筛选下拉框 */
+.matrix-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.matrix-filter-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* 窄卡片下使能技术标签不换行截断 */
+.matrix-cards-row .card-enabling > span:first-child {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.gov-select {
+  padding: 6px 28px 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.gov-select:hover { border-color: var(--primary); }
+.gov-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-lighter);
+}
+
+@media (max-width: 1440px) {
+  .matrix-cards-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .matrix-cards-row.emerging,
+  .matrix-cards-row.forward { max-width: none; }
+}
+
+/* ==================== 产业卡片样式与老系统统一 ==================== */
+
+/* 存量/增量指标：卡片内左右两栏纯文字，取消分开的小卡片底色 */
+.matrix-cards-row .card-metric-block {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+
+/* 所有产业卡片宽高统一：卡片改为纵向 flex，固定各可变区域高度 */
+.matrix-cards-row .industry-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 产业名称区：预留高度，长短名称卡片一致 */
+.matrix-cards-row .card-top {
+  min-height: 44px;
+}
+
+/* 使能技术区：预留高度 */
+.matrix-cards-row .card-enabling {
+  min-height: 58px;
+}
+
+/* 关键缺口标签区：预留高度 */
+.matrix-cards-row .gap-tags {
+  min-height: 46px;
+}
+
+/* 底部双按钮沉底对齐、始终完整显示 */
+.matrix-cards-row .card-actions {
+  margin-top: auto;
+  opacity: 1;
+}
