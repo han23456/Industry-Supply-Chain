@@ -615,8 +615,8 @@ const MockAPI = {
     return new Promise(resolve => {
       setTimeout(async () => {
         const industries = await this.filterIndustries(filters);
-        // 急需补链数：动态汇总全部产业缺口
-        const urgentCount = industries.reduce((s, item) => s + (item.gap_count || 0), 0);
+        // 急需补链数：统计有缺失环节(count=0)的产业数量
+        const urgentCount = industries.filter(item => item.key_gaps && item.key_gaps.some(g => g.count === 0)).length;
         const avgCompleteness = industries.length ? (industries.reduce((s, i) => s + i.completeness_score, 0) / industries.length).toFixed(1) : 0;
         const totalEnterprises = industries.reduce((s, i) => s + i.enterprise_count, 0);
         const enablingEnterprises = industries.reduce((s, i) => s + Math.round(i.enterprise_count * (i.enabling_tags.length * 0.25)), 0);
