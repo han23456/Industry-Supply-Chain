@@ -615,20 +615,24 @@ const MockAPI = {
     return new Promise(resolve => {
       setTimeout(async () => {
         const industries = await this.filterIndustries(filters);
-        // 急需补链数：统计有缺失环节(count=0)的产业数量
+        // 急需补链数：统计有严重缺失环节(count=0)的产业数量
         const urgentCount = industries.filter(item => item.key_gaps && item.key_gaps.some(g => g.count === 0)).length;
-        const avgCompleteness = industries.length ? (industries.reduce((s, i) => s + i.completeness_score, 0) / industries.length).toFixed(1) : 0;
-        const totalEnterprises = industries.reduce((s, i) => s + i.enterprise_count, 0);
-        const enablingEnterprises = industries.reduce((s, i) => s + Math.round(i.enterprise_count * (i.enabling_tags.length * 0.25)), 0);
-        const penetration = totalEnterprises ? ((enablingEnterprises / totalEnterprises) * 100).toFixed(1) : 0;
+        // 重点补链企业数（P1级别）：统计所有严重缺失环节(count=0)对应的推荐补链企业数
+        const p1Count = industries.reduce((sum, item) => {
+          if (!item.key_gaps) return sum;
+          return sum + item.key_gaps.filter(g => g.count === 0).length * 3;
+        }, 0);
+        const weightedData = industries.map(c => ({ score: c.completeness_score, weight: Math.round(c.revenue_total / 10) }));
+        const totalWeight = weightedData.reduce((s, i) => s + i.weight, 0);
+        const avgCompleteness = totalWeight ? (weightedData.reduce((s, i) => s + i.score * i.weight, 0) / totalWeight).toFixed(1) : 0;
 
         resolve({
           total: industries.length,
           urgent: urgentCount,
           avgCompleteness: parseFloat(avgCompleteness),
           avgCompletenessTrend: 2.3,
-          penetration: parseFloat(penetration),
-          penetrationTrend: -1.2
+          penetration: p1Count,
+          penetrationTrend: 5
         });
       }, 100);
     });

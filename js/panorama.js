@@ -150,10 +150,10 @@ async function renderMetrics(filters) {
   document.getElementById('metricCompletenessTrend').innerHTML = renderTrend(metrics.avgCompletenessTrend);
   document.getElementById('metricCompletenessRing').innerHTML = renderProgressRing(compValue, 56, 6);
 
-  document.getElementById('metricPenetrationValue').textContent = metrics.penetration + '%';
+  document.getElementById('metricPenetrationValue').textContent = metrics.penetration + '家';
   document.getElementById('metricPenetrationTrend').innerHTML = renderTrend(metrics.penetrationTrend);
   const penRing = document.getElementById('metricPenetrationRing');
-  if (penRing) penRing.innerHTML = renderProgressRing(metrics.penetration, 56, 6, '#13C2C2');
+  if (penRing) penRing.innerHTML = '';
 }
 
 function renderCards(industries) {
@@ -167,12 +167,19 @@ function renderCards(industries) {
   }
   empty.style.display = 'none';
 
-  // 按「6+4+2」产业矩阵分三个板块渲染，板块内保持产业矩阵既定顺序
+  const strategicOrder = { chain_master: 1, core_pillar: 2, cultivating: 3 };
   const groupOrder = ['modern_service', 'strategic_emerging', 'forward_looking'];
   grid.innerHTML = groupOrder.map(groupKey => {
     const groupItems = industries
       .filter(item => item.matrix_group === groupKey)
-      .sort((a, b) => MOCK_INDUSTRY_CHAINS.findIndex(c => c.id === a.id) - MOCK_INDUSTRY_CHAINS.findIndex(c => c.id === b.id));
+      .sort((a, b) => {
+        const aUrgent = a.key_gaps && a.key_gaps.some(g => g.count === 0) ? 0 : 1;
+        const bUrgent = b.key_gaps && b.key_gaps.some(g => g.count === 0) ? 0 : 1;
+        if (aUrgent !== bUrgent) return aUrgent - bUrgent;
+        if (a.completeness_score !== b.completeness_score) return a.completeness_score - b.completeness_score;
+        if (b.revenue_total !== a.revenue_total) return b.revenue_total - a.revenue_total;
+        return (strategicOrder[a.strategic_orientation] || 9) - (strategicOrder[b.strategic_orientation] || 9);
+      });
     if (!groupItems.length) return '';
     const groupCfg = CONFIG.matrix[groupKey];
     return `
@@ -312,7 +319,7 @@ function handleUrgentClick() {
 }
 
 function showCompletenessModal() {
-  const data = MOCK_INDUSTRY_CHAINS.slice(0, 6).map(c => ({
+  const data = MOCK_INDUSTRY_CHAINS.map(c => ({
     name: c.name,
     score: c.completeness_score,
     weight: Math.round(c.revenue_total / 10)
