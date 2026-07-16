@@ -782,8 +782,10 @@ const MockAPI = {
     return new Promise(resolve => {
       setTimeout(() => {
         const list = MOCK_ENTERPRISES[nodeId] || [
-          { id: uuid(), name: '示例企业A', scale: '中型', annual_revenue: 5.6, relation_type: '主营', enabling_tags: [] },
-          { id: uuid(), name: '示例企业B', scale: '小型', annual_revenue: 1.2, relation_type: '兼营', enabling_tags: [] }
+          { id: uuid(), name: '示例企业A', scale: '中型', annual_revenue: 5.6, relation_type: '主营', enabling_tags: [], tags: ['高新企业', '民营'], address: '高新区科技大道88号', registered_capital: '5000万', founded_date: '2018-06-15', upstream_count: 12, downstream_count: 28, score: 85, invest_score: 82, tech_score: 90 },
+          { id: uuid(), name: '示例企业B', scale: '小型', annual_revenue: 1.2, relation_type: '兼营', enabling_tags: [], tags: ['小微企业'], address: '经开区创业路16号', registered_capital: '500万', founded_date: '2020-03-20', upstream_count: 5, downstream_count: 12, score: 62, invest_score: 58, tech_score: 70 },
+          { id: uuid(), name: '示例企业C', scale: '大型', annual_revenue: 12.8, relation_type: '主营', enabling_tags: [], tags: ['国企', '高新企业'], address: '科技城创新中心1号楼', registered_capital: '2亿', founded_date: '2010-11-08', upstream_count: 35, downstream_count: 68, score: 92, invest_score: 95, tech_score: 88 },
+          { id: uuid(), name: '示例企业D', scale: '中型', annual_revenue: 3.5, relation_type: '配套', enabling_tags: [], tags: ['民营'], address: '工业园区工业路25号', registered_capital: '2000万', founded_date: '2015-08-12', upstream_count: 8, downstream_count: 18, score: 70, invest_score: 65, tech_score: 75 }
         ];
         resolve(list);
       }, 120);

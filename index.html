@@ -55,11 +55,13 @@
     </aside>
 
     <main class="page-content">
+       <!-- 
       <section class="view-tabs" id="panoramaTabs">
         <div class="tab active" data-view="matrix" onclick="switchPanoramaView('matrix')">产业矩阵</div>
         <div class="tab" data-view="support" onclick="switchPanoramaView('support')">产业支撑力</div>
         <div class="tab" data-view="lifecycle" onclick="switchPanoramaView('lifecycle')">生命周期流转</div>
       </section>
+      -->
 
       <section class="view-panel active" id="matrixView">
         <section class="card filter-card">
@@ -104,13 +106,6 @@
               <div class="metric-note">6+4+2产业体系</div>
             </div>
           </div>
-          <div class="metric-card" id="metricUrgent" onclick="handleUrgentClick()">
-            <div class="metric-icon" style="background:#FFF1F0;color:#F5222D">⚠️</div>
-            <div class="metric-content">
-              <div class="metric-label">急需补链数</div>
-              <div class="metric-value" style="color:#F5222D" id="metricUrgentValue">0</div>
-            </div>
-          </div>
           <div class="metric-card" id="metricCompleteness" onclick="showCompletenessModal()">
             <div class="metric-icon" style="background:#F6FFED;color:#52C41A">📊</div>
             <div class="metric-content">
@@ -120,12 +115,19 @@
             </div>
             <div id="metricCompletenessRing"></div>
           </div>
+          <div class="metric-card" id="metricUrgent" onclick="handleUrgentClick()">
+            <div class="metric-icon" style="background:#FFF1F0;color:#F5222D">⚠️</div>
+            <div class="metric-content">
+              <div class="metric-label">急需补链数</div>
+              <div class="metric-value" style="color:#F5222D" id="metricUrgentValue">0</div>
+            </div>
+          </div>
           <div class="metric-card" id="metricPenetration">
             <div class="metric-icon" style="background:#E6FFFB;color:#13C2C2">💻</div>
             <div class="metric-content">
-              <div class="metric-label">数字化渗透率</div>
-              <div class="metric-value" style="color:#13C2C2" id="metricPenetrationValue">0%</div>
-              <div class="metric-trend down" id="metricPenetrationTrend">↓ 1.2%</div>
+              <div class="metric-label">重点补链企业数</div>
+              <div class="metric-value" style="color:#13C2C2" id="metricPenetrationValue">0</div>
+              <div class="metric-trend down" id="metricPenetrationTrend">↓ 2</div>
             </div>
             <div id="metricPenetrationRing"></div>
           </div>

@@ -70,7 +70,7 @@
             <span class="sep">/</span>
             <a href="index.html" id="backToPanorama">产业全景</a>
             <span class="sep">/</span>
-            <span class="current" id="chainName">产业链图谱</span>
+            <span class="current" id="chainName">产业链</span>
           </div>
           <div class="chain-tags" id="chainTags"></div>
         </div>
@@ -83,74 +83,194 @@
         </div>
         <div class="top-right">
           <button class="btn btn-default" onclick="goBackToPanorama()">← 返回看板</button>
-          <button class="btn btn-default" onclick="showToast('编辑产业链（需权限）', 'warning')">编辑产业链</button>
           <button class="btn btn-default" onclick="exportReport()">导出报告</button>
           <button class="btn btn-primary" onclick="toggleFullscreen()">全屏展示</button>
         </div>
       </section>
 
-      <section class="view-tabs">
-        <div class="tab" data-view="structure" onclick="switchView('structure')">
-          <span class="tab-icon">🌳</span>结构视图
+      <section class="main-tabs">
+        <div class="main-tab active" data-tab="structure" onclick="switchMainTab('structure')">
+          <span class="main-tab-icon">🌳</span>产业链图谱
         </div>
-        <div class="tab active" data-view="relation" onclick="switchView('relation')">
-          <span class="tab-icon">🕸</span>关系视图
+        <div class="main-tab" data-tab="overview" onclick="switchMainTab('overview')">
+          <span class="main-tab-icon">�</span>产业概览
         </div>
-        <div class="tab" data-view="gap" onclick="switchView('gap')">
-          <span class="tab-icon">⚠️</span>缺口视图
+        <div class="main-tab" data-tab="news" onclick="switchMainTab('news')">
+          <span class="main-tab-icon">📰</span>新闻产业
         </div>
-        <div class="tab" data-view="scenario" onclick="switchView('scenario')">
-          <span class="tab-icon">🎯</span>场景视图
-        </div>
-      </section>
-
-      <section class="graph-main">
-        <aside class="node-tree card" id="nodeTree">
-          <div class="tree-filter">
-            <label class="tree-filter-item"><input type="checkbox" id="filterLocalOnly" onchange="applyTreeFilter()"> 只看本区有</label>
-            <label class="tree-filter-item"><input type="checkbox" id="filterMissingOnly" onchange="applyTreeFilter()"> 只看缺失</label>
-          </div>
-          <div class="tree-body" id="treeBody"></div>
-        </aside>
-
-        <div class="graph-canvas card" id="graphCanvasCard">
-          <div id="mainChart"></div>
-          <div class="view-panel" id="gapPanel" style="display:none"></div>
-          <div class="view-panel" id="scenarioPanel" style="display:none"></div>
-          <div class="graph-loading" id="graphLoading" style="display:none">
-            <div class="loading-spinner"></div>
-            <p>正在加载图谱数据...</p>
-          </div>
+        <div class="main-tab" data-tab="gap-filling" onclick="switchMainTab('gap-filling')">
+          <span class="main-tab-icon">🔧</span>强链补链
         </div>
       </section>
 
-      <section class="bottom-status-bar" id="bottomStatusBar">
-        <div class="legend-group" id="legendGroup">
-          <span class="legend-title">节点类型：</span>
-          <span class="legend-item" data-type="parts"><i class="dot" style="background:#1890FF"></i>零部件</span>
-          <span class="legend-item" data-type="body"><i class="dot" style="background:#52C41A"></i>本体</span>
-          <span class="legend-item" data-type="integration"><i class="dot" style="background:#722ED1"></i>集成</span>
-          <span class="legend-item" data-type="terminal"><i class="dot" style="background:#FA8C16"></i>终端</span>
-          <span class="legend-item" data-type="external"><i class="dot" style="background:#8C8C8C;border:2px dashed #595959"></i>外地</span>
+      <section class="tab-content" id="tabContent">
+        <div class="tab-pane active" id="tab-structure">
+          <section class="graph-main">
+            <aside class="node-tree card" id="nodeTree">
+              <div class="tree-filter">
+                <label class="tree-filter-item"><input type="checkbox" id="filterLocalOnly" onchange="applyTreeFilter()"> 只看本区有</label>
+                <label class="tree-filter-item"><input type="checkbox" id="filterMissingOnly" onchange="applyTreeFilter()"> 只看缺失</label>
+              </div>
+              <div class="tree-body" id="treeBody"></div>
+            </aside>
+
+            <div class="graph-canvas card" id="graphCanvasCard">
+              <div id="mainChart"></div>
+              <div class="graph-loading" id="graphLoading" style="display:none">
+                <div class="loading-spinner"></div>
+                <p>正在加载图谱数据...</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="bottom-status-bar" id="bottomStatusBar">
+            <div class="legend-group" id="legendGroup">
+              <span class="legend-title">节点类型：</span>
+              <span class="legend-item" data-type="parts"><i class="dot" style="background:#1890FF"></i>零部件</span>
+              <span class="legend-item" data-type="body"><i class="dot" style="background:#52C41A"></i>本体</span>
+              <span class="legend-item" data-type="integration"><i class="dot" style="background:#722ED1"></i>集成</span>
+              <span class="legend-item" data-type="terminal"><i class="dot" style="background:#FA8C16"></i>终端</span>
+              <span class="legend-item" data-type="external"><i class="dot" style="background:#8C8C8C;border:2px dashed #595959"></i>外地</span>
+            </div>
+            <div class="legend-group" id="edgeLegendGroup">
+              <span class="legend-title">连线类型：</span>
+              <span class="legend-item"><i class="line solid" style="background:#1890FF"></i>交易</span>
+              <span class="legend-item"><i class="line dashed" style="background:#722ED1"></i>股权</span>
+              <span class="legend-item"><i class="line dashed" style="background:#D9D9D9"></i>推断</span>
+              <span class="legend-item"><i class="line dotted" style="background:#13C2C2"></i>使能</span>
+            </div>
+            <div class="layout-controls">
+              <button class="btn btn-sm btn-primary" id="btnLayoutHierarchy" onclick="switchLayout('hierarchy')">层次布局</button>
+              <button class="btn btn-sm btn-default" id="btnLayoutForce" onclick="switchLayout('force')">力导向布局</button>
+            </div>
+            <div class="zoom-controls">
+              <button class="btn btn-default btn-sm" onclick="zoomOut()">-</button>
+              <button class="btn btn-default btn-sm" onclick="zoomReset()">重置</button>
+              <button class="btn btn-default btn-sm" onclick="zoomIn()">+</button>
+              <span class="zoom-value" id="zoomValue">1.0x</span>
+            </div>
+            <div class="node-count" id="nodeCount">节点 0 / 0</div>
+          </section>
         </div>
-        <div class="legend-group" id="edgeLegendGroup">
-          <span class="legend-title">连线类型：</span>
-          <span class="legend-item"><i class="line solid" style="background:#1890FF"></i>交易</span>
-          <span class="legend-item"><i class="line dashed" style="background:#722ED1"></i>股权</span>
-          <span class="legend-item"><i class="line dashed" style="background:#D9D9D9"></i>推断</span>
-          <span class="legend-item"><i class="line dotted" style="background:#13C2C2"></i>使能</span>
+
+        <div class="tab-pane" id="tab-overview">
+          <div class="overview-banner card">
+            <div class="banner-content">
+              <h2 id="overviewTitle">产业链简介</h2>
+              <p id="overviewDesc" class="banner-desc">暂无产业简介数据</p>
+            </div>
+            <div class="banner-stats">
+              <div class="banner-stat">
+                <span class="stat-value" id="statTotal">0</span>
+                <span class="stat-label">产业链总数</span>
+              </div>
+              <div class="banner-stat">
+                <span class="stat-value" id="statEnterprises">0</span>
+                <span class="stat-label">关联企业</span>
+              </div>
+              <div class="banner-stat">
+                <span class="stat-value" id="statCompleteness">0%</span>
+                <span class="stat-label">完整度</span>
+              </div>
+              <div class="banner-stat">
+                <span class="stat-value" id="statRevenue">0</span>
+                <span class="stat-label">总营收(亿)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="overview-grid">
+            <div class="card overview-metrics">
+              <div class="card-header">
+                <div class="card-title">核心指标</div>
+              </div>
+              <div class="metrics-grid">
+                <div class="metric-item">
+                  <div class="metric-icon-wrap bg-blue">📈</div>
+                  <div class="metric-info">
+                    <div class="metric-name">产业规模</div>
+                    <div class="metric-num" id="metricScale">0</div>
+                    <div class="metric-unit">亿</div>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-icon-wrap bg-green">🏢</div>
+                  <div class="metric-info">
+                    <div class="metric-name">企业数量</div>
+                    <div class="metric-num" id="metricCount">0</div>
+                    <div class="metric-unit">家</div>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-icon-wrap bg-orange">💰</div>
+                  <div class="metric-info">
+                    <div class="metric-name">税收贡献</div>
+                    <div class="metric-num" id="metricTax">0</div>
+                    <div class="metric-unit">亿</div>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-icon-wrap bg-purple">👥</div>
+                  <div class="metric-info">
+                    <div class="metric-name">就业人数</div>
+                    <div class="metric-num" id="metricEmployees">0</div>
+                    <div class="metric-unit">人</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card overview-chart">
+              <div class="card-header">
+                <div class="card-title">区域分布</div>
+              </div>
+              <div id="regionChart" style="height: 300px;"></div>
+            </div>
+          </div>
         </div>
-        <div class="layout-controls">
-          <button class="btn btn-sm btn-primary" id="btnLayoutHierarchy" onclick="switchLayout('hierarchy')">层次布局</button>
-          <button class="btn btn-sm btn-default" id="btnLayoutForce" onclick="switchLayout('force')">力导向布局</button>
+
+        <div class="tab-pane" id="tab-news">
+          <div class="news-filter">
+            <button class="news-tab active" data-news-type="all" onclick="filterNews('all')">全部</button>
+            <button class="news-tab" data-news-type="policy" onclick="filterNews('policy')">政策新闻</button>
+            <button class="news-tab" data-news-type="industry" onclick="filterNews('industry')">产业动态</button>
+            <button class="news-tab" data-news-type="enterprise" onclick="filterNews('enterprise')">企业资讯</button>
+            <button class="news-tab" data-news-type="report" onclick="filterNews('report')">行业报告</button>
+          </div>
+          <div class="news-list card" id="newsList">
+            <div class="news-skeleton">
+              <div class="skeleton-item"></div>
+              <div class="skeleton-item"></div>
+              <div class="skeleton-item"></div>
+            </div>
+          </div>
         </div>
-        <div class="zoom-controls">
-          <button class="btn btn-default btn-sm" onclick="zoomOut()">-</button>
-          <button class="btn btn-default btn-sm" onclick="zoomReset()">重置</button>
-          <button class="btn btn-default btn-sm" onclick="zoomIn()">+</button>
-          <span class="zoom-value" id="zoomValue">1.0x</span>
+
+        <div class="tab-pane" id="tab-gap-filling">
+          <div class="gap-filling-grid">
+            <div class="card gap-warning">
+              <div class="card-header">
+                <div class="card-title">断链缺口预警</div>
+                <span class="tag tag-danger" id="gapWarningCount">0 项预警</span>
+              </div>
+              <div id="gapWarningList" class="warning-list">
+                <div class="skeleton-item"></div>
+                <div class="skeleton-item"></div>
+              </div>
+            </div>
+
+            <div class="card supply-match">
+              <div class="card-header">
+                <div class="card-title">供需招商匹配</div>
+                <button class="btn btn-primary btn-sm" onclick="showToast('打开招商系统', 'info')">去招商</button>
+              </div>
+              <div id="supplyMatchList" class="match-list">
+                <div class="skeleton-item"></div>
+                <div class="skeleton-item"></div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="node-count" id="nodeCount">节点 0 / 0</div>
       </section>
     </main>
   </div>

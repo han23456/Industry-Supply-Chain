@@ -438,7 +438,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .drawer-overlay.open { opacity: 1; visibility: visible; }
 .drawer {
-  position: fixed; top: 0; right: 0; width: 420px; height: 100%;
+  position: fixed; top: 0; right: 0; width: 850px; height: 100%;
   background: #fff; box-shadow: var(--shadow-lg); z-index: 1101;
   transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex; flex-direction: column;
@@ -456,7 +456,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .drawer-close:hover { background: var(--border-light); color: var(--text); }
 .drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
-.drawer-footer { padding: 12px 20px; border-top: 1px solid var(--border-light); display: flex; gap: 8px; justify-content: flex-end; }
+.drawer-footer { padding: 16px 20px; border-top: 1px solid var(--border-light); display: flex; gap: 16px; justify-content: flex-end; }
 
 .data-table {
   width: 100%; border-collapse: collapse; font-size: 13px;

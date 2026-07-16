@@ -8,48 +8,44 @@
 
   const stageData = {
     future: [
-      { name: '量子计算', count: 3 },
-      { name: '脑机接口', count: 2 },
-      { name: '深海探测', count: 2 },
-      { name: '人工智能', count: 178 },
-      { name: '绿色低碳', count: 132 }
+      { name: '低空经济', count: 98 },
+      { name: '细胞与基因', count: 86 },
+      { name: '数据产业', count: 124 }
     ],
     emerging: [
-      { name: '机器人', count: 528 },
-      { name: '新能源汽车', count: 346 },
-      { name: '生物医药', count: 215 },
-      { name: '半导体', count: 267 },
-      { name: '工业互联网', count: 289 }
+      { name: '人工智能与具身智能机器人', count: 386 },
+      { name: '海洋产业', count: 142 },
+      { name: '智能终端', count: 312 }
     ],
     advantage: [
-      { name: '先进材料', count: 198 },
-      { name: '金融科技', count: 415 },
-      { name: '现代物流', count: 386 },
-      { name: '新材料', count: 224 },
-      { name: '高端装备', count: 168 }
+      { name: '信息服务', count: 412 },
+      { name: '金融服务', count: 356 },
+      { name: '贸易物流', count: 528 },
+      { name: '专业服务', count: 268 },
+      { name: '科技服务', count: 234 },
+      { name: '文体旅商', count: 186 }
     ]
   };
 
   const flowData = [
-    { from: '未来', to: '新兴', industry: '量子计算', count: 5, revenue: 8.2, driver: '政策驱动', period: 18, status: 'healthy', bottleneck: '—' },
-    { from: '未来', to: '新兴', industry: '人工智能', count: 86, revenue: 42.5, driver: '市场驱动', period: 12, status: 'healthy', bottleneck: '—' },
-    { from: '未来', to: '新兴', industry: '数字孪生', count: 3, revenue: 2.1, driver: '市场驱动', period: 12, status: 'healthy', bottleneck: '—' },
-    { from: '新兴', to: '优势', industry: '新能源汽车', count: 8, revenue: 156, driver: '市场驱动', period: 24, status: 'healthy', bottleneck: '—' },
-    { from: '新兴', to: '优势', industry: '集成电路', count: 5, revenue: 42, driver: '技术驱动', period: 36, status: 'slow', bottleneck: '企业规模偏小' },
-    { from: '未来', to: '—', industry: '脑机接口', count: 0, revenue: 0, driver: '—', period: 0, status: 'stuck', bottleneck: '缺乏临床验证平台' },
-    { from: '未来', to: '—', industry: '深海探测', count: 0, revenue: 0, driver: '—', period: 0, status: 'stuck', bottleneck: '缺乏深海试验场' }
+    { from: '未来', to: '新兴', industry: '数据产业', count: 45, revenue: 26.8, driver: '政策驱动', period: 18, status: 'healthy', bottleneck: '—' },
+    { from: '未来', to: '新兴', industry: '低空经济', count: 25, revenue: 12.5, driver: '市场驱动', period: 12, status: 'slow', bottleneck: '空域管理政策待完善' },
+    { from: '未来', to: '新兴', industry: '细胞与基因', count: 18, revenue: 8.2, driver: '技术驱动', period: 24, status: 'slow', bottleneck: '基因测序设备依赖进口' },
+    { from: '新兴', to: '优势', industry: '人工智能与具身智能机器人', count: 32, revenue: 96.5, driver: '市场驱动', period: 24, status: 'healthy', bottleneck: '—' },
+    { from: '新兴', to: '优势', industry: '智能终端', count: 28, revenue: 88.2, driver: '市场驱动', period: 24, status: 'healthy', bottleneck: '—' },
+    { from: '新兴', to: '优势', industry: '海洋产业', count: 15, revenue: 38.9, driver: '政策驱动', period: 24, status: 'healthy', bottleneck: '—' }
   ];
 
   const stuckData = [
     {
-      name: '脑机接口', stage: '未来产业', count: 2, duration: 4, expected: '2025Q2进入新兴', actual: '未流转',
-      reasons: ['缺乏临床验证平台（本区无三甲医院神经外科）', '人才流失严重（核心团队离职率40%）', '监管政策不明确（医疗器械审批周期长）'],
-      actions: ['与XX医院合作建立脑机接口临床验证中心', '设立专项人才基金，核心人才给予50万安家补贴', '协调药监局开设绿色通道']
+      name: '低空经济', stage: '未来产业', count: 98, duration: 2, expected: '2026Q1进入新兴', actual: '缓慢流转',
+      reasons: ['空域管理政策待完善（低空空域开放试点有限）', 'eVTOL整机制造企业缺失', '飞行培训体系不健全'],
+      actions: ['申请低空经济示范区试点', '引进eVTOL整机制造龙头企业', '建设飞行培训基地']
     },
     {
-      name: '深海探测', stage: '未来产业', count: 2, duration: 3, expected: '2025Q3进入新兴', actual: '未流转',
-      reasons: ['缺乏深海试验场（本区无近海深水测试条件）', '设备采购成本过高（单套声呐设备超500万）', '应用场景少，订单不稳定'],
-      actions: ['与海洋大学共建深海装备试验基地', '设立首台套补贴，降低企业采购成本', '对接海洋渔业、海上风电等应用场景']
+      name: '细胞与基因', stage: '未来产业', count: 86, duration: 3, expected: '2026Q2进入新兴', actual: '缓慢流转',
+      reasons: ['基因测序设备依赖进口', '细胞治疗CDMO产能不足', '监管政策审批周期长'],
+      actions: ['引进基因测序设备龙头企业', '建设细胞与基因中试平台', '协调药监局开设绿色通道']
     }
   ];
 
@@ -114,22 +110,28 @@
     const chartDom = document.getElementById('lifecycleSankey');
     if (!chartDom) return;
     sankeyChart = echarts.init(chartDom);
+    
     const nodes = [
       ...stageData.future.map(i => ({ name: i.name, itemStyle: { color: '#722ED1' }, value: i.count })),
       ...stageData.emerging.map(i => ({ name: i.name, itemStyle: { color: '#165DFF' }, value: i.count })),
       ...stageData.advantage.map(i => ({ name: i.name, itemStyle: { color: '#36CFC9' }, value: i.count }))
     ];
+    
     const links = [
-      { source: '人工智能', target: '机器人', value: 45, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
-      { source: '人工智能', target: '新能源汽车', value: 32, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
-      { source: '人工智能', target: '工业互联网', value: 28, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
-      { source: '绿色低碳', target: '新能源汽车', value: 18, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
-      { source: '绿色低碳', target: '先进材料', value: 12, status: '缓慢流转', lineStyle: { color: '#FAAD14', opacity: 0.4, type: 'dashed' } },
-      { source: '机器人', target: '高端装备', value: 22, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
-      { source: '新能源汽车', target: '金融科技', value: 15, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
-      { source: '半导体', target: '先进材料', value: 8, status: '缓慢流转', lineStyle: { color: '#FAAD14', opacity: 0.4, type: 'dashed' } },
-      { source: '工业互联网', target: '现代物流', value: 20, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } }
+      { source: '数据产业', target: '人工智能与具身智能机器人', value: 45, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
+      { source: '数据产业', target: '智能终端', value: 30, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
+      { source: '低空经济', target: '智能终端', value: 25, status: '缓慢流转', lineStyle: { color: '#FAAD14', opacity: 0.4, type: 'dashed' } },
+      { source: '细胞与基因', target: '海洋产业', value: 18, status: '缓慢流转', lineStyle: { color: '#FAAD14', opacity: 0.4, type: 'dashed' } },
+      { source: '人工智能与具身智能机器人', target: '科技服务', value: 32, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
+      { source: '人工智能与具身智能机器人', target: '金融服务', value: 28, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
+      { source: '人工智能与具身智能机器人', target: '专业服务', value: 20, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
+      { source: '智能终端', target: '信息服务', value: 35, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
+      { source: '智能终端', target: '贸易物流', value: 22, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
+      { source: '智能终端', target: '文体旅商', value: 15, status: '缓慢流转', lineStyle: { color: '#FAAD14', opacity: 0.4, type: 'dashed' } },
+      { source: '海洋产业', target: '贸易物流', value: 25, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } },
+      { source: '海洋产业', target: '文体旅商', value: 12, status: '健康流转', lineStyle: { color: '#36CFC9', opacity: 0.6 } }
     ];
+    
     sankeyChart.setOption({
       tooltip: {
         trigger: 'item',
@@ -141,14 +143,17 @@
       },
       series: [{
         type: 'sankey',
-        layout: 'none',
         emphasis: { focus: 'adjacency' },
         data: nodes,
         links: links,
         lineStyle: { curveness: 0.5 },
-        label: { fontSize: 12, color: '#1F2329' },
-        nodeWidth: 20,
-        nodeGap: 16
+        label: { fontSize: 11, color: '#1F2329' },
+        nodeWidth: 24,
+        nodeGap: 12,
+        left: 80,
+        right: 80,
+        top: 20,
+        bottom: 20
       }]
     });
     sankeyChart.on('click', params => {
@@ -228,7 +233,7 @@
         <tbody>
           <tr><td>X智算</td><td>2023Q1</td><td>5.2亿</td><td class="status-healthy">↑320%</td></tr>
           <tr><td>Y大模型</td><td>2023Q2</td><td>3.8亿</td><td class="status-healthy">↑280%</td></tr>
-          <tr><td>Z机器人</td><td>2024Q1</td><td>1.2亿</td><td class="status-healthy">↑150%</td></tr>
+          <tr><td>Z智能终端</td><td>2024Q1</td><td>1.2亿</td><td class="status-healthy">↑150%</td></tr>
         </tbody>
       </table>
       <hr class="section-divider">
