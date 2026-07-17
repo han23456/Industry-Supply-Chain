@@ -396,21 +396,50 @@ function doGlobalSearch() {
   renderSearchResults(results);
 }
 
+let cachedEnterprises = [];
+
+async function loadEnterprisesForSearch() {
+  if (cachedEnterprises.length > 0) return;
+  try {
+    cachedEnterprises = await MockAPI.getAllEnterprises();
+  } catch (e) {
+    console.error('Failed to load enterprises for search:', e);
+    cachedEnterprises = Object.values(MOCK_ENTERPRISE_DETAILS);
+  }
+}
+
+loadEnterprisesForSearch();
+
 function performSearch(query, type) {
   const lowerQuery = query.toLowerCase();
   const results = [];
 
+  const fallbackEnterprises = Object.values(MOCK_ENTERPRISE_DETAILS);
+  const searchEnterprises = cachedEnterprises.length > 0 ? cachedEnterprises : fallbackEnterprises;
+
   if (type === 'all' || type === 'enterprise') {
-    const enterprises = [
-      { id: 'ent-001', name: '深圳市大疆创新科技有限公司', type: 'enterprise', desc: '无人机制造 · 行业龙头', url: 'enterprise-profile.html?enterpriseId=ent-001' },
-      { id: 'ent-002', name: '比亚迪股份有限公司', type: 'enterprise', desc: '新能源汽车 · 核心支柱', url: 'enterprise-profile.html?enterpriseId=ent-002' },
-      { id: 'ent-003', name: '华为技术有限公司', type: 'enterprise', desc: '通信设备 · 链主企业', url: 'enterprise-profile.html?enterpriseId=ent-003' },
-      { id: 'ent-004', name: '中兴通讯股份有限公司', type: 'enterprise', desc: '通信设备 · 核心支柱', url: 'enterprise-profile.html?enterpriseId=ent-004' },
-      { id: 'ent-005', name: '深圳迈瑞生物医疗电子股份有限公司', type: 'enterprise', desc: '医疗器械 · 新兴产业', url: 'enterprise-profile.html?enterpriseId=ent-005' }
-    ];
-    enterprises.forEach(e => {
-      if (e.name.toLowerCase().includes(lowerQuery) || e.desc.toLowerCase().includes(lowerQuery)) {
-        results.push(e);
+    const roleLabels = {
+      parts_supplier: '零部件企业',
+      manufacturer: '制造商',
+      integrator: '集成商',
+      terminal: '终端企业',
+      service: '服务商',
+      enabling: '使能技术企业'
+    };
+    
+    searchEnterprises.forEach(e => {
+      const roleLabel = roleLabels[e.industry_role] || e.industry_role;
+      const desc = e.desc || `${roleLabel} · ${e.is_local ? '本区企业' : '外地企业'}`;
+      const name = e.name;
+      const id = e.id;
+      if (name.toLowerCase().includes(lowerQuery) || desc.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          id: id,
+          name: name,
+          type: 'enterprise',
+          desc: desc,
+          url: `enterprise-profile.html?enterpriseId=${encodeURIComponent(id)}`
+        });
       }
     });
   }

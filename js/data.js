@@ -785,13 +785,43 @@ const MockAPI = {
   getNodeEnterprises(nodeId) {
     return new Promise(resolve => {
       setTimeout(() => {
-        const list = MOCK_ENTERPRISES[nodeId] || [
-          { id: uuid(), name: '示例企业A', scale: '中型', annual_revenue: 5.6, relation_type: '主营', enabling_tags: [], tags: ['高新企业', '民营'], address: '高新区科技大道88号', registered_capital: '5000万', founded_date: '2018-06-15', upstream_count: 12, downstream_count: 28, score: 85, invest_score: 82, tech_score: 90 },
-          { id: uuid(), name: '示例企业B', scale: '小型', annual_revenue: 1.2, relation_type: '兼营', enabling_tags: [], tags: ['小微企业'], address: '经开区创业路16号', registered_capital: '500万', founded_date: '2020-03-20', upstream_count: 5, downstream_count: 12, score: 62, invest_score: 58, tech_score: 70 },
-          { id: uuid(), name: '示例企业C', scale: '大型', annual_revenue: 12.8, relation_type: '主营', enabling_tags: [], tags: ['国企', '高新企业'], address: '科技城创新中心1号楼', registered_capital: '2亿', founded_date: '2010-11-08', upstream_count: 35, downstream_count: 68, score: 92, invest_score: 95, tech_score: 88 },
-          { id: uuid(), name: '示例企业D', scale: '中型', annual_revenue: 3.5, relation_type: '配套', enabling_tags: [], tags: ['民营'], address: '工业园区工业路25号', registered_capital: '2000万', founded_date: '2015-08-12', upstream_count: 8, downstream_count: 18, score: 70, invest_score: 65, tech_score: 75 }
-        ];
-        resolve(list);
+        let list = MOCK_ENTERPRISES[nodeId];
+        if (!list || list.length === 0) {
+          // 无数据时返回企业池中的真实企业，保证点击可跳转画像页
+          const sampleCount = Math.min(4, ALL_ENTERPRISES.length);
+          list = ALL_ENTERPRISES.slice(0, sampleCount).map((e, idx) => ({
+            id: e.id,
+            name: e.name,
+            scale: e.enterprise_scale === 'large' ? '大型' : e.enterprise_scale === 'medium' ? '中型' : e.enterprise_scale === 'small' ? '小型' : '微型',
+            annual_revenue: e.annual_revenue,
+            relation_type: idx === 0 ? '主营' : '配套',
+            enabling_tags: [],
+            tags: e.tags || [],
+            address: e.register_address || '暂无地址',
+            registered_capital: e.registered_capital ? `${e.registered_capital}万` : '-',
+            founded_date: e.establishment_date || '-',
+            upstream_count: Math.floor(Math.random() * 30) + 2,
+            downstream_count: Math.floor(Math.random() * 50) + 5,
+            score: Math.floor(Math.random() * 30) + 70,
+            invest_score: Math.floor(Math.random() * 30) + 60,
+            tech_score: Math.floor(Math.random() * 30) + 70
+          }));
+        }
+        
+        // 确保每个非占位企业都有可解析的真实 ID
+        const result = list.map(item => {
+          if (item.placeholder) return item;
+          const real = ensureMockEnterpriseInPool(item);
+          if (!real) return null;
+          return {
+            ...item,
+            id: real.id,
+            name: real.name,
+            tags: real.tags || item.tags || []
+          };
+        }).filter(Boolean);
+        
+        resolve(result);
       }, 120);
     });
   },
@@ -1029,6 +1059,168 @@ const MOCK_ENTERPRISE_DETAILS = {
       relation_type: '主营'
     },
     description: '为本地机器人企业提供AI算力与视觉算法服务，持有汽车厂A部分股权。'
+  },
+  'ent-001': {
+    id: 'ent-001',
+    name: '深圳市大疆创新科技有限公司',
+    credit_code: '91440300MA5DG0XX0X',
+    register_address: '深圳市南山区科技园南区',
+    industry_code: 'C3990',
+    enterprise_scale: 'large',
+    registered_capital: 100000,
+    establishment_date: '2006-11-06',
+    legal_person: '汪滔',
+    employee_count: 12000,
+    annual_revenue: 380.0,
+    high_tech_flag: true,
+    status: 'active',
+    tags: ['龙头企业', '上市/挂牌', '高新技术企业', '国家级专精特新小巨人'],
+    data_sources: ['工商', '税务', '招投标', '专利'],
+    industry_role: 'terminal',
+    risk_level: 'normal',
+    is_local: true,
+    chain_position: {
+      chain_name: '人工智能与具身智能机器人',
+      node_name: '应用终端 / 消费级无人机',
+      role: 'core',
+      relation_type: '主营'
+    },
+    description: '全球领先的无人飞行器控制系统及无人机解决方案研发和生产商，产品远销全球100多个国家和地区。'
+  },
+  'ent-002': {
+    id: 'ent-002',
+    name: '比亚迪股份有限公司',
+    credit_code: '91440300MA5DG1XX1X',
+    register_address: '深圳市坪山区比亚迪路',
+    industry_code: 'C3611',
+    enterprise_scale: 'large',
+    registered_capital: 291114,
+    establishment_date: '1995-02-10',
+    legal_person: '王传福',
+    employee_count: 570000,
+    annual_revenue: 7700.0,
+    high_tech_flag: true,
+    status: 'active',
+    tags: ['龙头企业', '上市/挂牌', '高新技术企业'],
+    data_sources: ['工商', '税务', '招投标'],
+    industry_role: 'terminal',
+    risk_level: 'normal',
+    is_local: true,
+    chain_position: {
+      chain_name: '人工智能与具身智能机器人',
+      node_name: '应用终端 / 新能源汽车',
+      role: 'core',
+      relation_type: '主营'
+    },
+    description: '全球领先的新能源汽车制造商和电池生产商，业务涵盖新能源汽车、电池、光伏、轨道交通等领域。'
+  },
+  'ent-003': {
+    id: 'ent-003',
+    name: '华为技术有限公司',
+    credit_code: '91440300MA5DG2XX2X',
+    register_address: '深圳市龙岗区坂田华为基地',
+    industry_code: 'I6312',
+    enterprise_scale: 'large',
+    registered_capital: 405000,
+    establishment_date: '1987-09-15',
+    legal_person: '赵明路',
+    employee_count: 207000,
+    annual_revenue: 7100.0,
+    high_tech_flag: true,
+    status: 'active',
+    tags: ['龙头企业', '高新技术企业'],
+    data_sources: ['工商', '税务', '专利'],
+    industry_role: 'enabling',
+    risk_level: 'normal',
+    is_local: true,
+    chain_position: {
+      chain_name: '人工智能与具身智能机器人',
+      node_name: '使能技术 / +AI',
+      role: 'core',
+      relation_type: '主营'
+    },
+    description: '全球领先的ICT基础设施和智能终端提供商，在5G、人工智能、云计算等领域处于世界领先地位。'
+  },
+  'ent-004': {
+    id: 'ent-004',
+    name: '中兴通讯股份有限公司',
+    credit_code: '91440300MA5DG3XX3X',
+    register_address: '深圳市南山区科技园',
+    industry_code: 'I6312',
+    enterprise_scale: 'large',
+    registered_capital: 419269,
+    establishment_date: '1985-02-13',
+    legal_person: '李自学',
+    employee_count: 85000,
+    annual_revenue: 1240.0,
+    high_tech_flag: true,
+    status: 'active',
+    tags: ['龙头企业', '上市/挂牌', '高新技术企业'],
+    data_sources: ['工商', '税务', '招投标'],
+    industry_role: 'enabling',
+    risk_level: 'normal',
+    is_local: true,
+    chain_position: {
+      chain_name: '人工智能与具身智能机器人',
+      node_name: '使能技术 / +AI',
+      role: 'core',
+      relation_type: '主营'
+    },
+    description: '全球领先的综合通信解决方案提供商，在5G、物联网、云计算等领域具有强大的技术实力。'
+  },
+  'ent-005': {
+    id: 'ent-005',
+    name: '深圳迈瑞生物医疗电子股份有限公司',
+    credit_code: '91440300MA5DG4XX4X',
+    register_address: '深圳市南山区科技园',
+    industry_code: 'C3581',
+    enterprise_scale: 'large',
+    registered_capital: 121767,
+    establishment_date: '1991-07-22',
+    legal_person: '李西廷',
+    employee_count: 21000,
+    annual_revenue: 380.0,
+    high_tech_flag: true,
+    status: 'active',
+    tags: ['龙头企业', '上市/挂牌', '高新技术企业'],
+    data_sources: ['工商', '税务', '招投标'],
+    industry_role: 'terminal',
+    risk_level: 'normal',
+    is_local: true,
+    chain_position: {
+      chain_name: '人工智能与具身智能机器人',
+      node_name: '应用终端 / 医疗设备',
+      role: 'core',
+      relation_type: '主营'
+    },
+    description: '中国领先的医疗设备制造商，产品涵盖生命信息与支持、体外诊断、医学影像三大领域。'
+  },
+  'e-i': {
+    id: 'e-i',
+    name: '成都工业自动化有限公司',
+    credit_code: '91510100MA1FL8XX8X',
+    register_address: '成都市高新区天府大道',
+    industry_code: 'C3491',
+    enterprise_scale: 'medium',
+    registered_capital: 5000,
+    establishment_date: '2016-08-15',
+    legal_person: '刘洋',
+    employee_count: 280,
+    annual_revenue: 3.5,
+    high_tech_flag: true,
+    status: 'active',
+    tags: ['高新技术企业'],
+    data_sources: ['工商', '税务'],
+    industry_role: 'integrator',
+    risk_level: 'normal',
+    is_local: false,
+    chain_position: {
+      chain_name: '机器人',
+      node_name: '集成系统 / 自动化控制',
+      role: 'supporting',
+      relation_type: '主营'
+    },
+    description: '西南地区工业自动化解决方案提供商，服务本地制造业客户。'
   }
 };
 
@@ -1066,6 +1258,41 @@ const MOCK_ENTERPRISE_PRODUCTS = {
   'e-h': [
     { product_name: 'AI视觉检测服务', product_category: 'AI服务', product_type: '服务', source: '发票', confidence: 0.93 },
     { product_name: '机器人云脑平台', product_category: '工业软件', product_type: '服务', source: '专利', confidence: 0.78 }
+  ],
+  'ent-001': [
+    { product_name: '大疆无人机系列', product_category: '消费级无人机', product_type: '产品', source: '发票', confidence: 0.98 },
+    { product_name: '农业植保无人机', product_category: '行业应用', product_type: '产品', source: '发票', confidence: 0.95 },
+    { product_name: '无人机飞控系统', product_category: '核心部件', product_type: '产品', source: '专利', confidence: 0.92 },
+    { product_name: '无人机培训服务', product_category: '教育培训', product_type: '服务', source: '招投标', confidence: 0.85 }
+  ],
+  'ent-002': [
+    { product_name: '比亚迪新能源汽车', product_category: '乘用车', product_type: '产品', source: '发票', confidence: 0.98 },
+    { product_name: '动力电池', product_category: '新能源电池', product_type: '产品', source: '发票', confidence: 0.96 },
+    { product_name: '储能系统', product_category: '储能设备', product_type: '产品', source: '发票', confidence: 0.90 },
+    { product_name: '轨道交通装备', product_category: '轨道交通', product_type: '产品', source: '招投标', confidence: 0.88 }
+  ],
+  'ent-003': [
+    { product_name: '5G通信设备', product_category: '通信基础设施', product_type: '产品', source: '发票', confidence: 0.98 },
+    { product_name: '华为手机', product_category: '智能终端', product_type: '产品', source: '发票', confidence: 0.95 },
+    { product_name: '云计算服务', product_category: '云服务', product_type: '服务', source: '发票', confidence: 0.92 },
+    { product_name: 'AI芯片', product_category: '半导体', product_type: '产品', source: '专利', confidence: 0.88 }
+  ],
+  'ent-004': [
+    { product_name: '5G基站设备', product_category: '通信基础设施', product_type: '产品', source: '发票', confidence: 0.96 },
+    { product_name: '光通信设备', product_category: '光纤通信', product_type: '产品', source: '发票', confidence: 0.94 },
+    { product_name: '物联网解决方案', product_category: '物联网', product_type: '服务', source: '招投标', confidence: 0.90 },
+    { product_name: '云计算平台', product_category: '云服务', product_type: '服务', source: '发票', confidence: 0.85 }
+  ],
+  'ent-005': [
+    { product_name: '生命信息监护仪', product_category: '生命信息与支持', product_type: '产品', source: '发票', confidence: 0.98 },
+    { product_name: '体外诊断试剂', product_category: '体外诊断', product_type: '产品', source: '发票', confidence: 0.95 },
+    { product_name: '医学影像设备', product_category: '医学影像', product_type: '产品', source: '发票', confidence: 0.92 },
+    { product_name: '医疗IT解决方案', product_category: '医疗软件', product_type: '服务', source: '招投标', confidence: 0.88 }
+  ],
+  'e-i': [
+    { product_name: '自动化生产线', product_category: '智能制造', product_type: '产品', source: '发票', confidence: 0.90 },
+    { product_name: '工业控制系统', product_category: '控制系统', product_type: '产品', source: '发票', confidence: 0.87 },
+    { product_name: '设备运维服务', product_category: '运维服务', product_type: '服务', source: '招投标', confidence: 0.82 }
   ]
 };
 
@@ -1093,22 +1320,417 @@ const MOCK_ENTERPRISE_DEMANDS = {
   ],
   'e-g': [
     { demand_name: 'AI视觉算法授权', demand_category: 'AI服务', source: '招投标', confidence: 0.75 }
+  ],
+  'ent-001': [
+    { demand_name: '无人机飞控芯片', demand_category: '核心芯片', source: '招投标', confidence: 0.92 },
+    { demand_name: '高性能电池', demand_category: '新能源电池', source: '发票', confidence: 0.88 },
+    { demand_name: '碳纤维材料', demand_category: '复合材料', source: '发票', confidence: 0.85 },
+    { demand_name: 'AI视觉算法', demand_category: 'AI服务', source: '招投标', confidence: 0.80 }
+  ],
+  'ent-002': [
+    { demand_name: '动力电池材料', demand_category: '电池材料', source: '发票', confidence: 0.95 },
+    { demand_name: '汽车芯片', demand_category: '半导体', source: '招投标', confidence: 0.90 },
+    { demand_name: '汽车零部件', demand_category: '汽车配件', source: '发票', confidence: 0.88 },
+    { demand_name: '智能驾驶算法', demand_category: 'AI服务', source: '招投标', confidence: 0.82 }
+  ],
+  'ent-003': [
+    { demand_name: '半导体芯片', demand_category: '半导体', source: '发票', confidence: 0.98 },
+    { demand_name: '光通信模块', demand_category: '光通信', source: '发票', confidence: 0.92 },
+    { demand_name: '服务器设备', demand_category: 'IT设备', source: '招投标', confidence: 0.88 },
+    { demand_name: 'AI算力服务', demand_category: 'AI服务', source: '发票', confidence: 0.85 }
+  ],
+  'ent-004': [
+    { demand_name: '光通信芯片', demand_category: '半导体', source: '发票', confidence: 0.95 },
+    { demand_name: '服务器设备', demand_category: 'IT设备', source: '招投标', confidence: 0.90 },
+    { demand_name: '5G核心芯片', demand_category: '半导体', source: '招投标', confidence: 0.88 },
+    { demand_name: '云计算服务', demand_category: '云服务', source: '发票', confidence: 0.82 }
+  ],
+  'ent-005': [
+    { demand_name: '医疗芯片', demand_category: '半导体', source: '发票', confidence: 0.92 },
+    { demand_name: '光学镜头', demand_category: '光学器件', source: '发票', confidence: 0.88 },
+    { demand_name: '医疗软件', demand_category: '医疗IT', source: '招投标', confidence: 0.85 },
+    { demand_name: '精密加工服务', demand_category: '加工服务', source: '发票', confidence: 0.80 }
+  ],
+  'e-i': [
+    { demand_name: '工业控制器', demand_category: '控制系统', source: '发票', confidence: 0.88 },
+    { demand_name: '传感器', demand_category: '传感器', source: '招投标', confidence: 0.82 },
+    { demand_name: '自动化软件', demand_category: '工业软件', source: '招投标', confidence: 0.78 }
   ]
 };
 
-// 企业关系明细（企业关系网络模块使用）
-const MOCK_ENTERPRISE_RELATIONS = [
-  { id: 'r-1', from_enterprise_id: 'e-a', to_enterprise_id: 'e-b', relation_type: 'transaction', relation_strength: 0.92, transaction_amount: 8000, transaction_frequency: 120, last_transaction_date: '2026-06-28', is_local: true, source: '税务发票' },
-  { id: 'r-2', from_enterprise_id: 'e-b', to_enterprise_id: 'e-c', relation_type: 'transaction', relation_strength: 0.85, transaction_amount: 5000, transaction_frequency: 80, last_transaction_date: '2026-06-25', is_local: true, source: '税务发票' },
-  { id: 'r-3', from_enterprise_id: 'e-c', to_enterprise_id: 'e-d', relation_type: 'transaction', relation_strength: 0.78, transaction_amount: 3000, transaction_frequency: 60, last_transaction_date: '2026-06-20', is_local: true, source: '税务发票' },
-  { id: 'r-4', from_enterprise_id: 'e-c', to_enterprise_id: 'e-e', relation_type: 'supply_demand', relation_strength: 0.65, transaction_amount: 0, transaction_frequency: 0, last_transaction_date: '2026-06-15', is_local: false, source: '供需推断' },
-  { id: 'r-5', from_enterprise_id: 'e-d', to_enterprise_id: 'e-f', relation_type: 'transaction', relation_strength: 0.72, transaction_amount: 1200, transaction_frequency: 40, last_transaction_date: '2026-06-22', is_local: true, source: '税务发票' },
-  { id: 'r-6', from_enterprise_id: 'e-f', to_enterprise_id: 'e-g', relation_type: 'transaction', relation_strength: 0.68, transaction_amount: 800, transaction_frequency: 30, last_transaction_date: '2026-06-18', is_local: true, source: '税务发票' },
-  { id: 'r-7', from_enterprise_id: 'e-h', to_enterprise_id: 'e-b', relation_type: 'cooperation', relation_strength: 0.80, transaction_amount: 0, transaction_frequency: 0, last_transaction_date: '2026-06-10', is_local: true, source: '合作协议' },
-  { id: 'r-8', from_enterprise_id: 'e-h', to_enterprise_id: 'e-a', relation_type: 'equity', relation_strength: 0.55, transaction_amount: 15, transaction_frequency: 0, last_transaction_date: '2025-12-31', is_local: true, source: '工商股权' },
-  { id: 'r-9', from_enterprise_id: 'e-h', to_enterprise_id: 'e-c', relation_type: 'cooperation', relation_strength: 0.60, transaction_amount: 0, transaction_frequency: 0, last_transaction_date: '2026-05-20', is_local: true, source: '合作协议' },
-  { id: 'r-10', from_enterprise_id: 'e-a', to_enterprise_id: 'e-g', relation_type: 'transaction', relation_strength: 0.50, transaction_amount: 600, transaction_frequency: 20, last_transaction_date: '2026-06-05', is_local: true, source: '税务发票' }
-];
+// 企业关系明细（企业关系网络模块使用）- 动态生成220家企业数据
+function generateEnterpriseNetworkData() {
+  const enterprises = [];
+  const relations = [];
+  
+  const roleNames = {
+    parts_supplier: '零部件企业',
+    manufacturer: '制造商',
+    integrator: '集成商',
+    terminal: '终端企业',
+    service: '服务商',
+    enabling: '使能技术企业'
+  };
+  
+  const roleCounts = {
+    terminal: 25,
+    integrator: 35,
+    manufacturer: 40,
+    parts_supplier: 60,
+    service: 35,
+    enabling: 25
+  };
+  
+  const industryPrefixes = {
+    terminal: ['深圳市智能', '深圳市高端', '深圳市精密', '深圳市智能装备', '深圳市新能源', '深圳市工业', '深圳市自动化', '深圳市机器人'],
+    integrator: ['深圳市系统', '深圳市工程', '深圳市自动化', '深圳市集成', '深圳市智能制造', '深圳市工业'],
+    manufacturer: ['深圳市精密', '深圳市机械', '深圳市电子', '深圳市科技', '深圳市自动化', '深圳市零部件'],
+    parts_supplier: ['深圳市精密', '深圳市五金', '深圳市电子', '深圳市塑胶', '深圳市模具', '深圳市金属'],
+    service: ['深圳市技术', '深圳市咨询', '深圳市软件', '深圳市科技服务', '深圳市检测', '深圳市物流'],
+    enabling: ['深圳市人工智能', '深圳市大数据', '深圳市云计算', '深圳市物联网', '深圳市半导体', '深圳市AI']
+  };
+  
+  const industrySuffixes = ['有限公司', '科技有限公司', '实业有限公司', '技术有限公司', '智能科技有限公司'];
+  
+  let idCounter = 1;
+  const enterpriseMap = {};
+  
+  Object.keys(roleCounts).forEach(role => {
+    for (let i = 0; i < roleCounts[role]; i++) {
+      const isLocal = Math.random() > 0.25;
+      const isLeading = role === 'terminal' && i < 3;
+      const scale = isLeading ? 'large' : (Math.random() > 0.6 ? 'medium' : (Math.random() > 0.5 ? 'small' : 'micro'));
+      const annualRevenue = isLeading ? 50 + Math.random() * 100 : (scale === 'medium' ? 5 + Math.random() * 20 : (scale === 'small' ? 0.5 + Math.random() * 5 : 0.1 + Math.random() * 0.5));
+      const employeeCount = isLeading ? 2000 + Math.floor(Math.random() * 5000) : (scale === 'medium' ? 200 + Math.floor(Math.random() * 800) : (scale === 'small' ? 20 + Math.floor(Math.random() * 180) : 5 + Math.floor(Math.random() * 20)));
+      
+      const prefixes = industryPrefixes[role];
+      const name = prefixes[Math.floor(Math.random() * prefixes.length)] + 
+                   ['智能', '精密', '自动化', '科技', '工业', '机械', '电子'][Math.floor(Math.random() * 7)] + 
+                   ['设备', '制造', '系统', '技术', '工程', '服务'][Math.floor(Math.random() * 6)] +
+                   industrySuffixes[Math.floor(Math.random() * industrySuffixes.length)];
+      
+      const id = `ent-net-${idCounter.toString().padStart(3, '0')}`;
+      idCounter++;
+      
+      const enterprise = {
+        id,
+        name,
+        industry_role: role,
+        industry_role_label: roleNames[role],
+        is_local: isLocal,
+        is_leading: isLeading,
+        enterprise_scale: scale,
+        annual_revenue: parseFloat(annualRevenue.toFixed(2)),
+        employee_count: employeeCount,
+        credit_code: `91440300${Math.floor(Math.random() * 1000000000000).toString().padStart(12, '0')}`,
+        legal_person: ['张三', '李四', '王五', '赵六', '孙七', '周八', '吴九', '郑十'][Math.floor(Math.random() * 8)] + '先生',
+        register_address: isLocal ? `深圳市南山区/${['科技园', '前海', '蛇口', '南山中心', '西丽'][Math.floor(Math.random() * 5)]}/${Math.floor(Math.random() * 100) + 1}号` : `东莞市/${['松山湖', '长安', '虎门', '厚街'][Math.floor(Math.random() * 4)]}工业区`,
+        establishment_date: `${2010 + Math.floor(Math.random() * 12)}-${(Math.floor(Math.random() * 12) + 1).toString().padStart(2, '0')}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        registered_capital: Math.floor(Math.random() * 10000) + 100,
+        status: 'active',
+        risk_level: Math.random() > 0.95 ? 'warning' : (Math.random() > 0.99 ? 'danger' : 'normal'),
+        tags: [roleNames[role], isLocal ? '本区企业' : '外地企业', scale === 'large' ? '龙头企业' : scale === 'medium' ? '骨干企业' : '小微企业'],
+        chain_position: {
+          chain_name: ['机器人产业链', '海洋装备产业链', '新能源汽车产业链'][Math.floor(Math.random() * 3)],
+          node_name: role === 'terminal' ? '终端制造' : role === 'integrator' ? '系统集成' : role === 'manufacturer' ? '核心部件制造' : role === 'parts_supplier' ? '零部件配套' : role === 'service' ? '生产性服务' : '使能技术',
+          role: isLeading ? 'core' : 'supporting'
+        }
+      };
+      
+      enterprises.push(enterprise);
+      enterpriseMap[id] = enterprise;
+    }
+  });
+  
+  const terminals = enterprises.filter(e => e.industry_role === 'terminal');
+  const integrators = enterprises.filter(e => e.industry_role === 'integrator');
+  const manufacturers = enterprises.filter(e => e.industry_role === 'manufacturer');
+  const suppliers = enterprises.filter(e => e.industry_role === 'parts_supplier');
+  const services = enterprises.filter(e => e.industry_role === 'service');
+  const enablings = enterprises.filter(e => e.industry_role === 'enabling');
+  
+  const leadingTerminals = terminals.filter(e => e.is_leading);
+  
+  let relationId = 1;
+  
+  leadingTerminals.forEach(terminal => {
+    integrators.slice(0, 8).forEach(integrator => {
+      const strength = 0.65 + Math.random() * 0.35;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: terminal.id,
+        to_enterprise_id: integrator.id,
+        relation_type: 'transaction',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: Math.floor(500 + strength * 5000),
+        transaction_frequency: Math.floor(10 + strength * 100),
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: terminal.is_local && integrator.is_local,
+        source: '税务发票'
+      });
+    });
+    
+    manufacturers.slice(0, 10).forEach(manufacturer => {
+      const strength = 0.5 + Math.random() * 0.5;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: terminal.id,
+        to_enterprise_id: manufacturer.id,
+        relation_type: 'supply_demand',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: 0,
+        transaction_frequency: 0,
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: terminal.is_local && manufacturer.is_local,
+        source: '供需推断'
+      });
+    });
+    
+    suppliers.filter(s => !s.is_local).slice(0, 5).forEach(supplier => {
+      const strength = 0.7 + Math.random() * 0.3;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: terminal.id,
+        to_enterprise_id: supplier.id,
+        relation_type: 'supply_demand',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: Math.floor(1000 + strength * 10000),
+        transaction_frequency: Math.floor(5 + strength * 50),
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: false,
+        source: '税务发票'
+      });
+    });
+    
+    enablings.slice(0, 3).forEach(enabling => {
+      const strength = 0.55 + Math.random() * 0.45;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: terminal.id,
+        to_enterprise_id: enabling.id,
+        relation_type: 'cooperation',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: 0,
+        transaction_frequency: 0,
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: terminal.is_local && enabling.is_local,
+        source: '合作协议'
+      });
+    });
+  });
+  
+  integrators.forEach(integrator => {
+    manufacturers.slice(Math.floor(Math.random() * manufacturers.length), Math.floor(Math.random() * 5) + 3).forEach(manufacturer => {
+      const strength = 0.5 + Math.random() * 0.5;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: integrator.id,
+        to_enterprise_id: manufacturer.id,
+        relation_type: 'transaction',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: Math.floor(100 + strength * 2000),
+        transaction_frequency: Math.floor(5 + strength * 50),
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: integrator.is_local && manufacturer.is_local,
+        source: '税务发票'
+      });
+    });
+    
+    suppliers.slice(Math.floor(Math.random() * suppliers.length), Math.floor(Math.random() * 5) + 2).forEach(supplier => {
+      const strength = 0.4 + Math.random() * 0.4;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: integrator.id,
+        to_enterprise_id: supplier.id,
+        relation_type: 'supply_demand',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: 0,
+        transaction_frequency: 0,
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: integrator.is_local && supplier.is_local,
+        source: '供需推断'
+      });
+    });
+    
+    services.slice(Math.floor(Math.random() * services.length), Math.floor(Math.random() * 3) + 1).forEach(service => {
+      const strength = 0.35 + Math.random() * 0.35;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: integrator.id,
+        to_enterprise_id: service.id,
+        relation_type: 'transaction',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: Math.floor(50 + strength * 500),
+        transaction_frequency: Math.floor(3 + strength * 20),
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: integrator.is_local && service.is_local,
+        source: '税务发票'
+      });
+    });
+  });
+  
+  manufacturers.forEach(manufacturer => {
+    suppliers.slice(Math.floor(Math.random() * suppliers.length), Math.floor(Math.random() * 8) + 3).forEach(supplier => {
+      const strength = 0.45 + Math.random() * 0.45;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: manufacturer.id,
+        to_enterprise_id: supplier.id,
+        relation_type: 'supply_demand',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: Math.floor(200 + strength * 2000),
+        transaction_frequency: Math.floor(8 + strength * 60),
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: manufacturer.is_local && supplier.is_local,
+        source: '税务发票'
+      });
+    });
+    
+    enablings.slice(Math.floor(Math.random() * enablings.length), Math.floor(Math.random() * 3) + 1).forEach(enabling => {
+      const strength = 0.4 + Math.random() * 0.4;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: manufacturer.id,
+        to_enterprise_id: enabling.id,
+        relation_type: 'cooperation',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: 0,
+        transaction_frequency: 0,
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: manufacturer.is_local && enabling.is_local,
+        source: '合作协议'
+      });
+    });
+  });
+  
+  suppliers.filter(s => !s.is_local).forEach(supplier => {
+    manufacturers.slice(Math.floor(Math.random() * manufacturers.length), Math.floor(Math.random() * 3) + 1).forEach(manufacturer => {
+      if (!relations.some(r => r.from_enterprise_id === manufacturer.id && r.to_enterprise_id === supplier.id)) {
+        const strength = 0.5 + Math.random() * 0.4;
+        relations.push({
+          id: `r-${relationId++}`,
+          from_enterprise_id: manufacturer.id,
+          to_enterprise_id: supplier.id,
+          relation_type: 'supply_demand',
+          relation_strength: parseFloat(strength.toFixed(2)),
+          transaction_amount: Math.floor(500 + strength * 5000),
+          transaction_frequency: Math.floor(5 + strength * 30),
+          last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+          is_local: false,
+          source: '税务发票'
+        });
+      }
+    });
+  });
+  
+  const nonLocalSuppliers = suppliers.filter(s => !s.is_local);
+  const localManufacturers = manufacturers.filter(m => m.is_local);
+  
+  nonLocalSuppliers.slice(0, 10).forEach((supplier, i) => {
+    const parentName = ['上海精密集团', '江苏机械控股', '浙江制造集团', '广州科技集团', '北京自动化集团'][Math.floor(i / 2)];
+    const localSubsidiaries = localManufacturers.slice(i * 3, i * 3 + 3);
+    
+    localSubsidiaries.forEach(subsidiary => {
+      const strength = Math.random() > 0.5 ? 0.75 + Math.random() * 0.25 : 0.3 + Math.random() * 0.4;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: supplier.id,
+        to_enterprise_id: subsidiary.id,
+        relation_type: 'equity',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: strength > 0.7 ? Math.floor(500 + Math.random() * 2000) : Math.floor(50 + Math.random() * 200),
+        transaction_frequency: 0,
+        last_transaction_date: `${2020 + Math.floor(Math.random() * 6)}-${(Math.floor(Math.random() * 12) + 1).toString().padStart(2, '0')}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: false,
+        source: '工商股权'
+      });
+    });
+  });
+  
+  enablings.forEach(enabling => {
+    manufacturers.slice(Math.floor(Math.random() * manufacturers.length), Math.floor(Math.random() * 4) + 2).forEach(manufacturer => {
+      if (!relations.some(r => r.from_enterprise_id === enabling.id && r.to_enterprise_id === manufacturer.id)) {
+        const strength = 0.5 + Math.random() * 0.4;
+        relations.push({
+          id: `r-${relationId++}`,
+          from_enterprise_id: enabling.id,
+          to_enterprise_id: manufacturer.id,
+          relation_type: 'cooperation',
+          relation_strength: parseFloat(strength.toFixed(2)),
+          transaction_amount: 0,
+          transaction_frequency: 0,
+          last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+          is_local: enabling.is_local && manufacturer.is_local,
+          source: '合作协议'
+        });
+      }
+    });
+    
+    services.slice(Math.floor(Math.random() * services.length), Math.floor(Math.random() * 3) + 1).forEach(service => {
+      const strength = 0.45 + Math.random() * 0.35;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: enabling.id,
+        to_enterprise_id: service.id,
+        relation_type: 'transaction',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: Math.floor(100 + strength * 800),
+        transaction_frequency: Math.floor(4 + strength * 25),
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: enabling.is_local && service.is_local,
+        source: '税务发票'
+      });
+    });
+  });
+  
+  services.forEach(service => {
+    terminals.slice(Math.floor(Math.random() * terminals.length), Math.floor(Math.random() * 4) + 2).forEach(terminal => {
+      const strength = 0.3 + Math.random() * 0.4;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: service.id,
+        to_enterprise_id: terminal.id,
+        relation_type: 'transaction',
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: Math.floor(30 + strength * 300),
+        transaction_frequency: Math.floor(2 + strength * 15),
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: service.is_local && terminal.is_local,
+        source: '税务发票'
+      });
+    });
+  });
+  
+  for (let i = 0; i < 50; i++) {
+    const randomFrom = enterprises[Math.floor(Math.random() * enterprises.length)];
+    const randomTo = enterprises[Math.floor(Math.random() * enterprises.length)];
+    if (randomFrom.id !== randomTo.id && !relations.some(r => r.from_enterprise_id === randomFrom.id && r.to_enterprise_id === randomTo.id)) {
+      const types = ['equity', 'transaction', 'cooperation', 'supply_demand'];
+      const type = types[Math.floor(Math.random() * types.length)];
+      const strength = 0.25 + Math.random() * 0.55;
+      relations.push({
+        id: `r-${relationId++}`,
+        from_enterprise_id: randomFrom.id,
+        to_enterprise_id: randomTo.id,
+        relation_type: type,
+        relation_strength: parseFloat(strength.toFixed(2)),
+        transaction_amount: type === 'equity' ? (strength > 0.7 ? Math.floor(100 + Math.random() * 1000) : Math.floor(10 + Math.random() * 100)) : (type === 'transaction' || type === 'supply_demand') ? Math.floor(50 + strength * 500) : 0,
+        transaction_frequency: type === 'transaction' ? Math.floor(2 + strength * 20) : 0,
+        last_transaction_date: `2026-0${Math.floor(Math.random() * 6) + 1}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
+        is_local: randomFrom.is_local && randomTo.is_local,
+        source: type === 'equity' ? '工商股权' : type === 'cooperation' ? '合作协议' : (type === 'supply_demand' ? '供需推断' : '税务发票')
+      });
+    }
+  }
+  
+  return { enterprises, relations };
+}
+
+const NETWORK_DATA = generateEnterpriseNetworkData();
+const MOCK_ENTERPRISE_RELATIONS = NETWORK_DATA.relations;
+
+// 合并企业数据：原有的详细企业数据 + 新生成的网络数据
+const ALL_ENTERPRISES = [...Object.values(MOCK_ENTERPRISE_DETAILS), ...NETWORK_DATA.enterprises];
 
 // 供需匹配结果
 const MOCK_SUPPLY_DEMAND_MATCHES = [
@@ -1167,26 +1789,208 @@ const MOCK_RECOMMENDED_ENTERPRISES = {
   ]
 };
 
+// 将强链补链推荐企业补充进企业库，使“画像/查看画像”跳转能正常解析
+const RECOMMENDED_NODE_ROLES = {
+  'cr-l4-5': { role: 'parts_supplier', node_name: '精密减速机' },
+  'cr-l4-3': { role: 'enabling', node_name: '视觉控制器' },
+  'cr-l3-11': { role: 'service', node_name: '喷涂服务' },
+  'cr-l3-4': { role: 'parts_supplier', node_name: '传感器' }
+};
+
+const ROLE_LABELS_MAP = {
+  parts_supplier: '零部件供应商',
+  manufacturer: '制造商',
+  integrator: '集成商',
+  terminal: '终端应用',
+  service: '服务商',
+  enabling: '使能技术企业'
+};
+
+function resolveScaleAndCapital(revenue) {
+  if (revenue >= 50) return { scale: 'large', capital: 8000 + Math.floor(revenue * 50), employees: 2000 + Math.floor(revenue * 30) };
+  if (revenue >= 5) return { scale: 'medium', capital: 1000 + Math.floor(revenue * 100), employees: 200 + Math.floor(revenue * 80) };
+  if (revenue >= 1) return { scale: 'small', capital: 100 + Math.floor(revenue * 200), employees: 20 + Math.floor(revenue * 80) };
+  return { scale: 'micro', capital: 10 + Math.floor(revenue * 50), employees: 5 + Math.floor(revenue * 20) };
+}
+
+function enrichRecommendedEnterprises() {
+  const result = [];
+  Object.entries(MOCK_RECOMMENDED_ENTERPRISES).forEach(([nodeId, list]) => {
+    const nodeMeta = RECOMMENDED_NODE_ROLES[nodeId] || { role: 'parts_supplier', node_name: '核心零部件' };
+    list.forEach((rec, idx) => {
+      const { scale, capital, employees } = resolveScaleAndCapital(rec.annual_revenue);
+      const isLocal = rec.region && rec.region.includes('深圳市');
+      const suffix = ['有限公司', '科技有限公司', '股份有限公司'][idx % 3];
+      const fullName = rec.enterprise_name.endsWith('公司') ? rec.enterprise_name : rec.enterprise_name + suffix;
+      result.push({
+        id: rec.id,
+        name: fullName,
+        industry_role: nodeMeta.role,
+        industry_role_label: ROLE_LABELS_MAP[nodeMeta.role],
+        is_local: isLocal,
+        is_leading: rec.annual_revenue >= 50,
+        enterprise_scale: scale,
+        annual_revenue: rec.annual_revenue,
+        employee_count: employees,
+        registered_capital: capital,
+        credit_code: `91440300${(Math.floor(Math.random() * 1000000000000)).toString().padStart(12, '0')}`,
+        legal_person: ['张', '李', '王', '赵', '刘'][idx % 5] + '先生',
+        register_address: rec.region || '未知',
+        establishment_date: `${2000 + (idx % 20)}-${((idx % 12) + 1).toString().padStart(2, '0')}-15`,
+        status: 'active',
+        risk_level: 'normal',
+        tags: [ROLE_LABELS_MAP[nodeMeta.role], isLocal ? '本区企业' : '外地企业', scale === 'large' ? '龙头企业' : scale === 'medium' ? '骨干企业' : '小微企业'],
+        chain_position: {
+          chain_name: '人工智能与具身智能机器人',
+          node_name: nodeMeta.node_name,
+          role: 'supporting'
+        }
+      });
+    });
+  });
+  return result;
+}
+
+const ALL_RECOMMENDED_ENTERPRISES = enrichRecommendedEnterprises();
+ALL_ENTERPRISES.push(...ALL_RECOMMENDED_ENTERPRISES);
+
+// 把环节企业列表中的 mock/示例企业补充进企业池，确保点击名称能跳转到真实画像页
+function ensureMockEnterpriseInPool(mockItem) {
+  if (!mockItem || mockItem.placeholder) return null;
+  
+  // 优先按 ID 匹配真实企业
+  let existing = ALL_ENTERPRISES.find(e => e.id === mockItem.id);
+  if (existing) return existing;
+  
+  // 按名称匹配（支持包含关系）
+  if (mockItem.name) {
+    existing = ALL_ENTERPRISES.find(e => {
+      if (!e.name) return false;
+      return e.name === mockItem.name || e.name.includes(mockItem.name) || mockItem.name.includes(e.name);
+    });
+    if (existing) return existing;
+  }
+  
+  // 未匹配到，则基于 mock 数据生成一个企业对象加入企业池
+  const id = mockItem.id && !mockItem.id.startsWith('uuid-') ? mockItem.id : ('mock-' + Math.random().toString(36).substr(2, 9));
+  const revenue = typeof mockItem.annual_revenue === 'number' ? mockItem.annual_revenue : 1;
+  const { scale, capital, employees } = resolveScaleAndCapital(revenue);
+  const enterprise = {
+    id,
+    name: mockItem.name || '未知企业',
+    industry_role: 'parts_supplier',
+    industry_role_label: '零部件供应商',
+    is_local: false,
+    is_leading: false,
+    enterprise_scale: scale,
+    annual_revenue: revenue,
+    employee_count: employees,
+    registered_capital: capital,
+    credit_code: `91440300${Math.floor(Math.random() * 1000000000000).toString().padStart(12, '0')}`,
+    legal_person: '张先生',
+    register_address: mockItem.address || '未知',
+    establishment_date: mockItem.founded_date || '2018-06-15',
+    status: 'active',
+    risk_level: 'normal',
+    tags: Array.isArray(mockItem.tags) ? mockItem.tags : [],
+    chain_position: { chain_name: '人工智能与具身智能机器人', node_name: '核心零部件', role: 'supporting' }
+  };
+  ALL_ENTERPRISES.push(enterprise);
+  return enterprise;
+}
+
 // 扩展 MockAPI
 Object.assign(MockAPI, {
   getEnterpriseDetail(enterpriseId) {
     return new Promise(resolve => {
       setTimeout(() => {
         const detail = MOCK_ENTERPRISE_DETAILS[enterpriseId];
-        resolve(detail || null);
+        if (detail) {
+          resolve(detail);
+        } else {
+          const enterprise = ALL_ENTERPRISES.find(e => e.id === enterpriseId);
+          resolve(enterprise || null);
+        }
       }, 100);
     });
   },
 
   getEnterpriseProducts(enterpriseId) {
     return new Promise(resolve => {
-      setTimeout(() => resolve(MOCK_ENTERPRISE_PRODUCTS[enterpriseId] || []), 80);
+      setTimeout(() => {
+        const existing = MOCK_ENTERPRISE_PRODUCTS[enterpriseId];
+        if (existing && existing.length > 0) {
+          resolve(existing);
+        } else {
+          const enterprise = ALL_ENTERPRISES.find(e => e.id === enterpriseId);
+          if (enterprise) {
+            const productNames = {
+              parts_supplier: ['精密齿轮', '轴承组件', '传动系统', '金属冲压件', '注塑模具'],
+              manufacturer: ['工业机器人本体', '自动化生产线', '智能装备', '精密设备', '机械臂'],
+              integrator: ['机器人集成方案', '自动化改造服务', '系统集成服务', '产线优化方案', '智能仓储系统'],
+              terminal: ['智能终端产品', '消费电子设备', '新能源汽车零部件', '高端装备整机', '工业控制系统'],
+              service: ['技术咨询服务', '检测认证服务', '物流配送服务', '软件开发服务', '运维服务'],
+              enabling: ['AI算法服务', '大数据平台', '云计算服务', '物联网平台', '半导体器件']
+            };
+            const names = productNames[enterprise.industry_role] || productNames.service;
+            const products = [];
+            const count = Math.floor(Math.random() * 3) + 2;
+            for (let i = 0; i < count; i++) {
+              const name = names[Math.floor(Math.random() * names.length)] + (count > 1 ? ` ${i + 1}` : '');
+              products.push({
+                id: `prod-${enterpriseId}-${i}`,
+                enterprise_id: enterpriseId,
+                product_name: name,
+                product_category: enterprise.industry_role_label || '产品',
+                product_type: '主营产品',
+                confidence: 0.7 + Math.random() * 0.3
+              });
+            }
+            resolve(products);
+          } else {
+            resolve([]);
+          }
+        }
+      }, 80);
     });
   },
 
   getEnterpriseDemands(enterpriseId) {
     return new Promise(resolve => {
-      setTimeout(() => resolve(MOCK_ENTERPRISE_DEMANDS[enterpriseId] || []), 80);
+      setTimeout(() => {
+        const existing = MOCK_ENTERPRISE_DEMANDS[enterpriseId];
+        if (existing && existing.length > 0) {
+          resolve(existing);
+        } else {
+          const enterprise = ALL_ENTERPRISES.find(e => e.id === enterpriseId);
+          if (enterprise) {
+            const demandNames = {
+              parts_supplier: ['原材料采购', '加工设备', '检测仪器', '物流服务', '技术培训'],
+              manufacturer: ['核心零部件', '精密轴承', '控制系统', '传感器', '软件开发'],
+              integrator: ['工业机器人', '自动化设备', '伺服电机', 'PLC控制器', '视觉系统'],
+              terminal: ['核心芯片', '精密减速器', '高端元器件', '智能软件', '供应链服务'],
+              service: ['办公设备', 'IT服务', '人力资源', '财务咨询', '法律事务'],
+              enabling: ['服务器硬件', '网络设备', '软件许可', '云服务', '数据存储']
+            };
+            const names = demandNames[enterprise.industry_role] || demandNames.service;
+            const demands = [];
+            const count = Math.floor(Math.random() * 2) + 2;
+            for (let i = 0; i < count; i++) {
+              demands.push({
+                id: `demand-${enterpriseId}-${i}`,
+                enterprise_id: enterpriseId,
+                demand_name: names[Math.floor(Math.random() * names.length)],
+                demand_category: '采购需求',
+                demand_scale: '年度采购',
+                confidence: 0.6 + Math.random() * 0.4
+              });
+            }
+            resolve(demands);
+          } else {
+            resolve([]);
+          }
+        }
+      }, 80);
     });
   },
 
@@ -1203,7 +2007,7 @@ Object.assign(MockAPI, {
 
   getAllEnterprises() {
     return new Promise(resolve => {
-      setTimeout(() => resolve(Object.values(MOCK_ENTERPRISE_DETAILS)), 100);
+      setTimeout(() => resolve(ALL_ENTERPRISES), 100);
     });
   },
 
@@ -1264,6 +2068,225 @@ Object.assign(MockAPI, {
     });
   }
 });
+
+const CHAIN_INDUSTRY_DATA = {
+  'chain-robot': {
+    name: '人工智能与具身智能机器人',
+    domains: [
+      { value: 85, name: '核心零部件制造', color: '#3B82F6' },
+      { value: 68, name: '机器人本体制造', color: '#10B981' },
+      { value: 45, name: '系统集成服务', color: '#F59E0B' },
+      { value: 32, name: 'AI算法服务', color: '#8B5CF6' },
+      { value: 28, name: '智能传感器', color: '#EC4899' },
+      { value: 22, name: '机器人应用终端', color: '#06B6D4' },
+      { value: 18, name: '机器人运维服务', color: '#F97316' },
+      { value: 12, name: '教育培训', color: '#EF4444' }
+    ],
+    links: ['精密减速机', '视觉控制器', '伺服电机', '工业机器人本体', '协作机器人'],
+    linkData: [65, 42, 38, 55, 32],
+    enterprises: [
+      { name: '汇川技术股份有限公司', legalRep: '朱兴明', region: '广东省深圳市南山区', founded: '2003-04-10', capital: '12亿', tags: ['工业机器人', '伺服系统', '国家级专精特新小巨人', '高新技术企业'] },
+      { name: '埃斯顿自动化股份有限公司', legalRep: '吴波', region: '江苏省南京市江宁区', founded: '1993-02-25', capital: '8亿', tags: ['工业机器人本体', '运动控制', '高新技术企业'] },
+      { name: '固高科技（深圳）有限公司', legalRep: '李泽湘', region: '广东省深圳市南山区', founded: '1999-09-06', capital: '5000万', tags: ['运动控制器', '智能制造', '专精特新企业'] },
+      { name: '绿的谐波传动科技股份有限公司', legalRep: '左昱昱', region: '江苏省苏州市吴中区', founded: '2011-01-13', capital: '3亿', tags: ['谐波减速器', '核心零部件', '专精特新企业'] },
+      { name: '深圳市优必选科技股份有限公司', legalRep: '周剑', region: '广东省深圳市南山区', founded: '2012-03-31', capital: '6亿', tags: ['服务机器人', '人形机器人', '高新技术企业'] },
+      { name: '浙江中控技术股份有限公司', legalRep: '崔山', region: '浙江省杭州市滨江区', founded: '1999-12-03', capital: '5亿', tags: ['工业自动化', '智能制造', '高新技术企业'] },
+      { name: '深圳市大族激光科技产业集团股份有限公司', legalRep: '高云峰', region: '广东省深圳市南山区', founded: '1996-12-03', capital: '15亿', tags: ['激光加工设备', '机器人系统', '高新技术企业'] },
+      { name: '上海新时达电气股份有限公司', legalRep: '纪德法', region: '上海市嘉定区', founded: '1995-03-10', capital: '6亿', tags: ['工业机器人', '电梯控制', '高新技术企业'] },
+      { name: '广东拓斯达科技股份有限公司', legalRep: '吴丰礼', region: '广东省东莞市大岭山镇', founded: '2007-06-01', capital: '4亿', tags: ['工业机器人', '自动化设备', '高新技术企业'] },
+      { name: '苏州汇川技术有限公司', legalRep: '朱兴明', region: '江苏省苏州市吴中区', founded: '2010-09-01', capital: '2亿', tags: ['伺服系统', '工业自动化', '高新技术企业'] }
+    ],
+    ageData: [0, 5, 18, 95, 165, 140, 2],
+    capitalData: [35, 180, 130, 55, 38, 25],
+    trendData: [320, 350, 380, 420, 480],
+    growthData: [0.15, 0.09, 0.08, 0.11, 0.14],
+    newData: [8, 12, 15, 20, 25, 18],
+    newGrowthData: [0.3, 0.5, 0.25, 0.33, 0.25, 0.12],
+    riskHigh: 28,
+    riskMedium: 95,
+    riskLow: 257
+  },
+  'chain-002': {
+    name: '海洋产业',
+    domains: [
+      { value: 105, name: '涉海设备制造', color: '#3B82F6' },
+      { value: 15, name: '涉海材料制造', color: '#10B981' },
+      { value: 24, name: '海洋产业', color: '#F59E0B' },
+      { value: 3, name: '海洋科研教育', color: '#8B5CF6' },
+      { value: 3, name: '海洋科研教育', color: '#EC4899' },
+      { value: 19, name: '海洋公共管理服务', color: '#06B6D4' },
+      { value: 28, name: '涉海产品再加工', color: '#F97316' },
+      { value: 28, name: '海洋产品批发与零售', color: '#EF4444' }
+    ],
+    links: ['海水淡化与综合利用装备制造', '海洋交通运输设备制造', '海洋矿产资源勘探开发', '海盐设备制造', '海洋工程通用设备制造'],
+    linkData: [70, 41, 30, 30, 30],
+    enterprises: [
+      { name: '深圳华大海洋科技股份有限公司', legalRep: '徐军民', region: '广东省深圳市龙岗区葵涌街道', founded: '2012-09-07', capital: '1000万', tags: ['海洋功能性食品制造', '海洋药物制造', '海洋生物制品制造', '专精特新企业'] },
+      { name: '深圳市朗诚科技股份有限公司', legalRep: '朱伟胜', region: '广东省深圳市福田区园岭街道', founded: '2003-02-27', capital: '3000万', tags: ['海洋信息装备制造及修理', '海洋航标器材与其他相关装置制造', '国家级专精特新小巨人', '专精特新企业', '高新技术企业'] },
+      { name: '深圳市慧科恒科技有限公司', legalRep: '李少英', region: '广东省深圳市南山区蛇口街道', founded: '2012-02-28', capital: '800万', tags: ['海洋生物制品制造', '海洋鱼糜制品及水产品干腌制加工', '产业标签(1个)'] },
+      { name: '广东粤强渔业有限公司', legalRep: '梁玉英', region: '广东省深圳市南山区', founded: '1994-08-19', capital: '300万', tags: ['海水捕捞产品'] },
+      { name: '深圳市德润水下工程有限公司', legalRep: '宋春海', region: '广东省深圳市南山区粤海街道', founded: '2011-03-11', capital: '500万', tags: ['海洋油气资源勘探开发装备制造及修理', '海洋运输辅助活动', '专精特新企业', '高新技术企业'] },
+      { name: '深圳市润控食品有限公司', legalRep: '郑晓文', region: '广东省深圳市罗湖区东晓街道', founded: '2018-01-16', capital: '200万', tags: ['海洋水产品冷冻加工', '海洋鱼糜制品及水产品干腌制加工'] },
+      { name: '深圳市国坤餐厨食品集团有限公司', legalRep: '陈素芬', region: '广东省深圳市龙岗区吉华街道', founded: '2021-06-17', capital: '5000万', tags: ['海洋鱼糜制品及水产品干腌制加工', '海洋水产品冷冻加工', '近1个月新增对外投资'] },
+      { name: '深圳市天勤投资发展有限公司', legalRep: '侯绍勇', region: '广东省深圳市罗湖区东晓街道', founded: '2009-08-28', capital: '1000万', tags: ['海洋水产品冷冻加工', '海洋鱼糜制品及水产品干腌制加工'] },
+      { name: '深圳市恒丰源食品有限公司', legalRep: '刘延箱', region: '广东省深圳市坪山区龙田街道', founded: '2018-01-18', capital: '1000万', tags: ['海洋鱼糜制品及水产品干腌制加工', '海洋水产品冷冻加工'] },
+      { name: '深圳市深港远洋实业有限公司', legalRep: '徐小昌', region: '广东省深圳市福田区福田街道', founded: '1998-01-19', capital: '5000万', tags: ['海水捕捞产品', '海洋鱼糜制品及水产品干腌制加工'] }
+    ],
+    ageData: [0, 3, 11, 80, 152, 152, 2],
+    capitalData: [24, 154, 113, 47, 32, 53],
+    trendData: [420, 380, 350, 360, 420],
+    growthData: [0.8, 0.6, 0.3, 0.25, 0.2],
+    newData: [3, 5, 2, 1, 1, 0],
+    newGrowthData: [0.6, 0.5, 0.3, 0.4, 0.8, 0],
+    riskHigh: 47,
+    riskMedium: 168,
+    riskLow: 171
+  },
+  'chain-003': {
+    name: '细胞与基因',
+    domains: [
+      { value: 45, name: '基因测序服务', color: '#3B82F6' },
+      { value: 38, name: '细胞治疗', color: '#10B981' },
+      { value: 32, name: '基因编辑', color: '#F59E0B' },
+      { value: 25, name: '生物制药', color: '#8B5CF6' },
+      { value: 22, name: '诊断试剂', color: '#EC4899' },
+      { value: 18, name: '医疗器械', color: '#06B6D4' },
+      { value: 15, name: 'CRO服务', color: '#F97316' },
+      { value: 10, name: 'CDMO服务', color: '#EF4444' }
+    ],
+    links: ['基因测序设备', '细胞治疗CDMO', '基因编辑技术', 'mRNA药物', '诊断试剂'],
+    linkData: [25, 30, 22, 18, 35],
+    enterprises: [
+      { name: '华大基因股份有限公司', legalRep: '汪建', region: '广东省深圳市盐田区', founded: '1999-09-09', capital: '10亿', tags: ['基因测序', '生物技术', '高新技术企业'] },
+      { name: '深圳迈瑞生物医疗电子股份有限公司', legalRep: '李西廷', region: '广东省深圳市南山区', founded: '1991-07-22', capital: '15亿', tags: ['医疗器械', '体外诊断', '高新技术企业'] },
+      { name: '深圳市北科生物科技有限公司', legalRep: '胡祥', region: '广东省深圳市南山区', founded: '2005-07-12', capital: '5000万', tags: ['细胞治疗', '干细胞', '高新技术企业'] },
+      { name: '深圳康泰生物制品股份有限公司', legalRep: '杜伟民', region: '广东省深圳市南山区', founded: '1992-09-08', capital: '8亿', tags: ['疫苗', '生物制药', '高新技术企业'] },
+      { name: '深圳市卫光生物制品股份有限公司', legalRep: '王锦才', region: '广东省深圳市光明区', founded: '1988-01-21', capital: '4亿', tags: ['血液制品', '生物制药', '高新技术企业'] },
+      { name: '深圳赛诺菲巴斯德生物制品有限公司', legalRep: '邓旭', region: '广东省深圳市南山区', founded: '2006-01-18', capital: '5亿', tags: ['疫苗', '生物制药'] },
+      { name: '深圳市翰宇药业股份有限公司', legalRep: '曾少贵', region: '广东省深圳市坪山区', founded: '2003-04-02', capital: '6亿', tags: ['多肽药物', '生物制药', '高新技术企业'] },
+      { name: '深圳信立泰药业股份有限公司', legalRep: '叶澄海', region: '广东省深圳市宝安区', founded: '1998-11-03', capital: '8亿', tags: ['心血管药物', '生物制药', '高新技术企业'] },
+      { name: '深圳市海普瑞药业集团股份有限公司', legalRep: '李锂', region: '广东省深圳市南山区', founded: '1998-04-21', capital: '12亿', tags: ['肝素钠', '生物制药', '高新技术企业'] },
+      { name: '深圳微芯生物科技股份有限公司', legalRep: '鲁先平', region: '广东省深圳市南山区', founded: '2001-03-21', capital: '4亿', tags: ['小分子药物', '创新药', '高新技术企业'] }
+    ],
+    ageData: [2, 8, 25, 55, 78, 65, 3],
+    capitalData: [15, 85, 75, 35, 28, 30],
+    trendData: [150, 180, 220, 280, 350],
+    growthData: [0.2, 0.25, 0.18, 0.22, 0.25],
+    newData: [5, 8, 12, 18, 22, 20],
+    newGrowthData: [0.4, 0.33, 0.3, 0.35, 0.18, 0.1],
+    riskHigh: 15,
+    riskMedium: 45,
+    riskLow: 88
+  },
+  'chain-004': {
+    name: '智能终端',
+    domains: [
+      { value: 95, name: '智能手机制造', color: '#3B82F6' },
+      { value: 68, name: '平板电脑', color: '#10B981' },
+      { value: 55, name: '智能穿戴', color: '#F59E0B' },
+      { value: 42, name: '智能家居', color: '#8B5CF6' },
+      { value: 35, name: '智能汽车', color: '#EC4899' },
+      { value: 28, name: 'IoT设备', color: '#06B6D4' },
+      { value: 22, name: '芯片设计', color: '#F97316' },
+      { value: 18, name: '显示面板', color: '#EF4444' }
+    ],
+    links: ['高端显示面板', '射频前端芯片', '5G通信模块', '触控屏', '电池管理系统'],
+    linkData: [55, 48, 42, 52, 38],
+    enterprises: [
+      { name: '华为技术有限公司', legalRep: '赵明路', region: '广东省深圳市龙岗区', founded: '1987-09-15', capital: '3亿', tags: ['智能手机', '通信设备', '高新技术企业'] },
+      { name: '比亚迪股份有限公司', legalRep: '王传福', region: '广东省深圳市坪山区', founded: '1995-02-10', capital: '20亿', tags: ['新能源汽车', '电池', '高新技术企业'] },
+      { name: '中兴通讯股份有限公司', legalRep: '李自学', region: '广东省深圳市南山区', founded: '1985-02-01', capital: '15亿', tags: ['通信设备', '智能终端', '高新技术企业'] },
+      { name: 'OPPO广东移动通信有限公司', legalRep: '陈明永', region: '广东省东莞市长安镇', founded: '2004-02-10', capital: '6亿', tags: ['智能手机', '智能穿戴', '高新技术企业'] },
+      { name: 'vivo广东移动通信有限公司', legalRep: '沈炜', region: '广东省东莞市长安镇', founded: '2009-02-12', capital: '5亿', tags: ['智能手机', '智能穿戴', '高新技术企业'] },
+      { name: '深圳市立讯精密工业股份有限公司', legalRep: '王来春', region: '广东省深圳市宝安区', founded: '2004-05-24', capital: '8亿', tags: ['连接器', '精密制造', '高新技术企业'] },
+      { name: '深圳市汇顶科技股份有限公司', legalRep: '张帆', region: '广东省深圳市南山区', founded: '2002-05-31', capital: '4亿', tags: ['触控芯片', '指纹识别', '高新技术企业'] },
+      { name: '深圳市兆易创新科技股份有限公司', legalRep: '朱一明', region: '广东省深圳市南山区', founded: '2005-04-06', capital: '3亿', tags: ['存储芯片', 'MCU', '高新技术企业'] },
+      { name: '深圳传音控股股份有限公司', legalRep: '竺兆江', region: '广东省深圳市南山区', founded: '2013-08-21', capital: '8亿', tags: ['智能手机', '海外市场', '高新技术企业'] },
+      { name: '深圳市深天马微电子股份有限公司', legalRep: '彭旭辉', region: '广东省深圳市南山区', founded: '1983-11-08', capital: '10亿', tags: ['显示面板', 'OLED', '高新技术企业'] }
+    ],
+    ageData: [3, 12, 35, 105, 135, 120, 5],
+    capitalData: [28, 165, 125, 52, 42, 38],
+    trendData: [450, 520, 580, 650, 720],
+    growthData: [0.18, 0.15, 0.12, 0.12, 0.11],
+    newData: [10, 15, 18, 22, 25, 28],
+    newGrowthData: [0.3, 0.25, 0.18, 0.2, 0.15, 0.1],
+    riskHigh: 35,
+    riskMedium: 120,
+    riskLow: 380
+  },
+  'chain-005': {
+    name: '低空经济',
+    domains: [
+      { value: 35, name: 'eVTOL整机', color: '#3B82F6' },
+      { value: 32, name: '无人机制造', color: '#10B981' },
+      { value: 28, name: '低空飞行服务', color: '#F59E0B' },
+      { value: 25, name: '空域管理', color: '#8B5CF6' },
+      { value: 22, name: '通航机场', color: '#EC4899' },
+      { value: 18, name: '飞行培训', color: '#06B6D4' },
+      { value: 15, name: '物流配送', color: '#F97316' },
+      { value: 12, name: '应急救援', color: '#EF4444' }
+    ],
+    links: ['eVTOL整机', '低空空域管理', '无人机系统', '通航机场', '飞行服务'],
+    linkData: [18, 25, 32, 22, 28],
+    enterprises: [
+      { name: '亿航智能设备（广州）有限公司', legalRep: '胡华智', region: '广东省广州市天河区', founded: '2014-08-01', capital: '3亿', tags: ['eVTOL', '无人机', '高新技术企业'] },
+      { name: '大疆创新科技有限公司', legalRep: '汪滔', region: '广东省深圳市南山区', founded: '2006-01-01', capital: '5亿', tags: ['无人机', '航拍', '高新技术企业'] },
+      { name: '深圳顺丰泰森控股（集团）有限公司', legalRep: '王卫', region: '广东省深圳市福田区', founded: '1993-03-26', capital: '10亿', tags: ['物流', '无人机配送', '高新技术企业'] },
+      { name: '深圳航天工业技术研究院有限公司', legalRep: '胡梅晓', region: '广东省深圳市南山区', founded: '2007-01-18', capital: '8亿', tags: ['航天技术', '无人机', '高新技术企业'] },
+      { name: '深圳市科比特航空科技有限公司', legalRep: '卢致辉', region: '广东省深圳市宝安区', founded: '2015-08-12', capital: '5000万', tags: ['工业无人机', '测绘', '高新技术企业'] },
+      { name: '深圳道通智能航空技术股份有限公司', legalRep: '李红京', region: '广东省深圳市宝安区', founded: '2014-05-08', capital: '3亿', tags: ['无人机', '智能硬件', '高新技术企业'] },
+      { name: '深圳市飞马机器人科技有限公司', legalRep: '黄勇', region: '广东省深圳市南山区', founded: '2015-06-18', capital: '3000万', tags: ['无人机', '测绘', '专精特新企业'] },
+      { name: '深圳天鹰兄弟无人机创新科技有限公司', legalRep: '李才圣', region: '广东省深圳市坪山区', founded: '2015-03-26', capital: '2000万', tags: ['农业无人机', '植保', '高新技术企业'] },
+      { name: '深圳市睿铂科技有限公司', legalRep: '杨波', region: '广东省深圳市南山区', founded: '2015-09-10', capital: '1000万', tags: ['无人机载荷', '测绘', '专精特新企业'] },
+      { name: '深圳智航无人机有限公司', legalRep: '金良', region: '广东省深圳市宝安区', founded: '2014-05-20', capital: '2000万', tags: ['无人机', '安防', '高新技术企业'] }
+    ],
+    ageData: [5, 15, 28, 35, 25, 15, 2],
+    capitalData: [20, 65, 55, 28, 22, 18],
+    trendData: [80, 100, 130, 165, 210],
+    growthData: [0.25, 0.25, 0.22, 0.27, 0.27],
+    newData: [5, 8, 12, 18, 25, 30],
+    newGrowthData: [0.4, 0.35, 0.33, 0.38, 0.35, 0.2],
+    riskHigh: 8,
+    riskMedium: 28,
+    riskLow: 62
+  },
+  'chain-007': {
+    name: '信息服务',
+    domains: [
+      { value: 75, name: '云计算服务', color: '#3B82F6' },
+      { value: 62, name: '大数据', color: '#10B981' },
+      { value: 55, name: '软件服务', color: '#F59E0B' },
+      { value: 48, name: 'IT咨询', color: '#8B5CF6' },
+      { value: 42, name: '数据安全', color: '#EC4899' },
+      { value: 35, name: '系统集成', color: '#06B6D4' },
+      { value: 30, name: '运维服务', color: '#F97316' },
+      { value: 25, name: '培训服务', color: '#EF4444' }
+    ],
+    links: ['云计算基础设施', '数据安全服务', '软件开发', 'IT咨询', '系统集成'],
+    linkData: [68, 52, 75, 45, 58],
+    enterprises: [
+      { name: '腾讯科技（深圳）有限公司', legalRep: '马化腾', region: '广东省深圳市南山区', founded: '1998-11-11', capital: '6亿', tags: ['互联网', '云计算', '高新技术企业'] },
+      { name: '阿里巴巴（中国）有限公司', legalRep: '张勇', region: '浙江省杭州市西湖区', founded: '1999-09-09', capital: '8亿', tags: ['电子商务', '云计算', '高新技术企业'] },
+      { name: '百度在线网络技术（北京）有限公司', legalRep: '梁志祥', region: '北京市海淀区', founded: '2000-01-01', capital: '5亿', tags: ['搜索引擎', '人工智能', '高新技术企业'] },
+      { name: '京东集团股份有限公司', legalRep: '刘强东', region: '北京市大兴区', founded: '2004-01-01', capital: '10亿', tags: ['电子商务', '物流', '高新技术企业'] },
+      { name: '美团', legalRep: '王兴', region: '北京市朝阳区', founded: '2010-03-04', capital: '8亿', tags: ['生活服务', '外卖', '高新技术企业'] },
+      { name: '字节跳动有限公司', legalRep: '张一鸣', region: '北京市海淀区', founded: '2012-03-09', capital: '10亿', tags: ['短视频', '人工智能', '高新技术企业'] },
+      { name: '网易（杭州）网络有限公司', legalRep: '丁磊', region: '浙江省杭州市滨江区', founded: '1997-06-24', capital: '5亿', tags: ['互联网', '游戏', '高新技术企业'] },
+      { name: '深圳市金蝶软件有限公司', legalRep: '徐少春', region: '广东省深圳市南山区', founded: '1993-08-08', capital: '5亿', tags: ['ERP', '企业软件', '高新技术企业'] },
+      { name: '用友网络科技股份有限公司', legalRep: '王文京', region: '北京市海淀区', founded: '1988-12-01', capital: '8亿', tags: ['ERP', '企业软件', '高新技术企业'] },
+      { name: '神州数码集团股份有限公司', legalRep: '郭为', region: '北京市海淀区', founded: '1982-06-01', capital: '6亿', tags: ['IT分销', '云计算', '高新技术企业'] }
+    ],
+    ageData: [2, 10, 30, 85, 150, 135, 5],
+    capitalData: [45, 180, 140, 60, 45, 42],
+    trendData: [520, 580, 650, 720, 820],
+    growthData: [0.12, 0.1, 0.12, 0.11, 0.14],
+    newData: [15, 22, 28, 35, 42, 45],
+    newGrowthData: [0.3, 0.28, 0.25, 0.25, 0.18, 0.1],
+    riskHigh: 25,
+    riskMedium: 85,
+    riskLow: 320
+  }
+};
 
 Object.assign(MOCK_CATEGORY_TREES, {
   'chain-002': {

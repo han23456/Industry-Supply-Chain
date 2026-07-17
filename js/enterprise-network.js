@@ -7,11 +7,14 @@ let enterprises = [];
 let relations = [];
 let currentLayout = 'force';
 let currentZoom = 1;
-let selectedRelationTypes = 'all';
+let selectedRelationTypes = ['equity', 'transaction', 'cooperation', 'supply_demand'];
 let selectedStrength = 'all';
 let searchKeyword = '';
 let pathSource = '';
 let pathTarget = '';
+let isPathExpanded = false;
+let isBoxSelectMode = false;
+let focusedNodeId = null;
 
 const ROLE_COLORS = {
   parts_supplier: '#1890FF',
@@ -58,14 +61,72 @@ async function init() {
   if (document.getElementById('breadcrumbContainer')) {
     document.getElementById('breadcrumbContainer').innerHTML = renderBreadcrumb('enterprise-network.html');
   }
+  
   await loadData();
+  
+  const params = getUrlParams();
+  if (params.enterpriseId) {
+    const targetEnterprise = enterprises.find(e => e.id === params.enterpriseId);
+    if (targetEnterprise) {
+      searchKeyword = targetEnterprise.name;
+      document.getElementById('searchInput').value = targetEnterprise.name;
+    }
+  }
+  
   initChart();
   renderPathSelects();
-  window.addEventListener('resize', debounce(() => networkChart && networkChart.resize(), 200));
+  
+  if (params.enterpriseId) {
+    setTimeout(() => {
+      networkChart.dispatchAction({
+        type: 'highlight',
+        seriesIndex: 0,
+        name: params.enterpriseId
+      });
+      networkChart.dispatchAction({
+        type: 'focusNodeAdjacency',
+        seriesIndex: 0,
+        name: params.enterpriseId
+      });
+    }, 500);
+  }
+  
+  window.addEventListener('resize', debounce(() => {
+    if (networkChart) networkChart.resize();
+    if (document.getElementById('pathSourceDropdown').classList.contains('open')) {
+      positionDropdown('pathSource');
+    }
+    if (document.getElementById('pathTargetDropdown').classList.contains('open')) {
+      positionDropdown('pathTarget');
+    }
+  }, 200));
+  
+  const pageContent = document.querySelector('.page-content');
+  const scrollHandler = () => {
+    if (document.getElementById('pathSourceDropdown').classList.contains('open')) {
+      positionDropdown('pathSource');
+    }
+    if (document.getElementById('pathTargetDropdown').classList.contains('open')) {
+      positionDropdown('pathTarget');
+    }
+  };
+  if (pageContent) {
+    pageContent.addEventListener('scroll', scrollHandler);
+  }
+  window.addEventListener('scroll', scrollHandler, true);
+  
+  document.addEventListener('click', function(e) {
+    const sourceContainer = document.getElementById('sourceSelectContainer');
+    const targetContainer = document.getElementById('targetSelectContainer');
+    if (!sourceContainer.contains(e.target) && !targetContainer.contains(e.target)) {
+      closeSelectDropdown('pathSource');
+      closeSelectDropdown('pathTarget');
+    }
+  });
 }
 
 async function loadData() {
-  enterprises = await MockAPI.getAllEnterprises();
+  enterprises = NETWORK_DATA.enterprises;
   relations = MOCK_ENTERPRISE_RELATIONS;
 }
 
@@ -76,90 +137,157 @@ function initChart() {
 
   networkChart.on('click', params => {
     if (params.dataType === 'node') {
+      if (focusedNodeId === params.data.id) {
+        focusedNodeId = null;
+      } else {
+        focusedNodeId = params.data.id;
+      }
+      renderNetwork();
       openEnterpriseDrawer(params.data.id);
     }
   });
 
   networkChart.on('dblclick', params => {
     if (params.dataType === 'node') {
-      window.location.href = `enterprise-profile.html?enterpriseId=${params.data.id}`;
+      window.location.href = `enterprise-profile.html?enterpriseId=${encodeURIComponent(params.data.id)}`;
     }
   });
+
+  initBoxSelectEvents();
 }
 
 function getFilteredRelations() {
-  return relations.filter(r => {
-    if (selectedRelationTypes !== 'all' && r.relation_type !== selectedRelationTypes) return false;
+  let filtered = relations.filter(r => {
+    if (!selectedRelationTypes.includes(r.relation_type)) return false;
     if (selectedStrength === 'high' && r.relation_strength < 0.8) return false;
     if (selectedStrength === 'medium' && (r.relation_strength < 0.5 || r.relation_strength >= 0.8)) return false;
     if (selectedStrength === 'low' && r.relation_strength >= 0.5) return false;
     return true;
   });
+
+  if (searchKeyword) {
+    const matchedIds = new Set();
+    enterprises.forEach(e => {
+      if (e.name.includes(searchKeyword) || (e.credit_code && e.credit_code.includes(searchKeyword))) {
+        matchedIds.add(e.id);
+      }
+    });
+    filtered = filtered.filter(r => 
+      matchedIds.has(r.from_enterprise_id) || matchedIds.has(r.to_enterprise_id)
+    );
+  }
+
+  return filtered;
 }
 
 function getFilteredNodes() {
+  if (searchKeyword) {
+    const matchedIds = new Set();
+    enterprises.forEach(e => {
+      if (e.name.includes(searchKeyword) || (e.credit_code && e.credit_code.includes(searchKeyword))) {
+        matchedIds.add(e.id);
+      }
+    });
+
+    const relatedIds = new Set(matchedIds);
+    relations.forEach(r => {
+      if (matchedIds.has(r.from_enterprise_id) || matchedIds.has(r.to_enterprise_id)) {
+        relatedIds.add(r.from_enterprise_id);
+        relatedIds.add(r.to_enterprise_id);
+      }
+    });
+
+    return enterprises.filter(e => relatedIds.has(e.id));
+  }
+
   const activeIds = new Set();
   getFilteredRelations().forEach(r => {
     activeIds.add(r.from_enterprise_id);
     activeIds.add(r.to_enterprise_id);
   });
 
-  return enterprises.filter(e => {
-    if (searchKeyword) {
-      const match = e.name.includes(searchKeyword) || (e.credit_code && e.credit_code.includes(searchKeyword));
-      if (!match) return false;
-    }
-    return activeIds.has(e.id);
-  });
+  return enterprises.filter(e => activeIds.has(e.id));
 }
 
 function renderNetwork() {
   const filteredRelations = getFilteredRelations();
   const filteredNodes = getFilteredNodes();
   const nodeMap = new Map(filteredNodes.map(n => [n.id, n]));
+  
+  const activeIds = new Set();
+  if (focusedNodeId) {
+    activeIds.add(focusedNodeId);
+    relations.forEach(r => {
+      if (r.from_enterprise_id === focusedNodeId || r.to_enterprise_id === focusedNodeId) {
+        activeIds.add(r.from_enterprise_id);
+        activeIds.add(r.to_enterprise_id);
+      }
+    });
+    relations.forEach(r => {
+      if (activeIds.has(r.from_enterprise_id) || activeIds.has(r.to_enterprise_id)) {
+        activeIds.add(r.from_enterprise_id);
+        activeIds.add(r.to_enterprise_id);
+      }
+    });
+  }
 
   const nodes = filteredNodes.map(e => {
-    const size = Math.max(24, Math.min(60, 20 + Math.log(e.annual_revenue + 1) * 8));
+    const isLeading = e.is_leading || e.enterprise_scale === 'large';
+    const baseSize = isLeading ? 45 : (e.enterprise_scale === 'medium' ? 28 : (e.enterprise_scale === 'small' ? 20 : 14));
+    const size = Math.max(12, Math.min(70, baseSize));
+    
+    const isActive = !focusedNodeId || activeIds.has(e.id);
+    const opacity = e.is_local ? (isActive ? 1 : 0.15) : (isActive ? 0.6 : 0.1);
+    
     return {
       id: e.id,
       name: e.name,
       value: e.annual_revenue,
-      symbolSize: size,
+      symbolSize: isActive ? size : size * 0.6,
       x: null,
       y: null,
       itemStyle: {
         color: ROLE_COLORS[e.industry_role] || '#8C8C8C',
         borderColor: RISK_BORDERS[e.risk_level] || 'transparent',
-        borderWidth: e.risk_level !== 'normal' ? 3 : 1
+        borderWidth: e.risk_level !== 'normal' ? 3 : (isLeading ? 2 : 1),
+        opacity: opacity
       },
       label: {
-        show: size >= 30,
+        show: isActive && size >= 24,
         position: 'bottom',
         formatter: '{b}',
-        fontSize: 12,
-        color: '#262626'
+        fontSize: Math.max(10, size * 0.35),
+        color: '#262626',
+        opacity: isActive ? 1 : 0
       },
       emphasis: {
         focus: 'adjacency',
-        label: { show: true }
+        label: { show: true },
+        itemStyle: { opacity: 1 }
       }
     };
   });
 
   const edges = filteredRelations
     .filter(r => nodeMap.has(r.from_enterprise_id) && nodeMap.has(r.to_enterprise_id))
-    .map(r => ({
-      source: r.from_enterprise_id,
-      target: r.to_enterprise_id,
-      value: r.relation_strength,
-      lineStyle: {
-        width: Math.max(1, r.relation_strength * 6),
-        color: RELATION_COLORS[r.relation_type] || '#999',
-        type: r.relation_type === 'cooperation' ? 'dashed' : r.relation_type === 'supply_demand' ? 'dotted' : 'solid',
-        curveness: 0.1
-      },
-      relation: r
-    }));
+    .map(r => {
+      const isActive = !focusedNodeId || (activeIds.has(r.from_enterprise_id) && activeIds.has(r.to_enterprise_id));
+      const baseOpacity = r.relation_strength > 0.7 ? 0.85 : (r.relation_strength > 0.4 ? 0.6 : 0.35);
+      
+      return {
+        source: r.from_enterprise_id,
+        target: r.to_enterprise_id,
+        value: r.relation_strength,
+        lineStyle: {
+          width: isActive ? Math.max(1, r.relation_strength * 5) : 0.5,
+          color: RELATION_COLORS[r.relation_type] || '#999',
+          type: r.relation_type === 'cooperation' ? 'dashed' : r.relation_type === 'supply_demand' ? 'dotted' : 'solid',
+          curveness: 0.15,
+          opacity: isActive ? baseOpacity : 0.05
+        },
+        relation: r
+      };
+    });
 
   const option = {
     tooltip: {
@@ -203,9 +331,9 @@ function renderNetwork() {
       zoom: currentZoom,
       label: { show: true },
       force: {
-        repulsion: 800,
-        gravity: 0.1,
-        edgeLength: [80, 200],
+        repulsion: 1800,
+        gravity: 0.05,
+        edgeLength: [120, 300],
         layoutAnimation: true
       },
       lineStyle: { opacity: 0.8 }
@@ -267,8 +395,15 @@ function applyCircularLayout(nodes, edges) {
   });
 }
 
+function onRelationCheckboxChange() {
+  const checkboxes = document.querySelectorAll('.relation-checkboxes input[type="checkbox"]');
+  selectedRelationTypes = Array.from(checkboxes)
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+  renderNetwork();
+}
+
 function applyFilters() {
-  selectedRelationTypes = document.getElementById('relationTypeFilter').value;
   selectedStrength = document.getElementById('strengthFilter').value;
   renderNetwork();
 }
@@ -285,14 +420,15 @@ function switchLayout() {
 }
 
 function resetNetworkFilters() {
-  document.getElementById('relationTypeFilter').value = 'all';
+  document.querySelectorAll('.relation-checkboxes input[type="checkbox"]').forEach(cb => cb.checked = true);
   document.getElementById('strengthFilter').value = 'all';
   document.getElementById('searchInput').value = '';
   document.getElementById('layoutSelect').value = 'force';
-  selectedRelationTypes = 'all';
+  selectedRelationTypes = ['equity', 'transaction', 'cooperation', 'supply_demand'];
   selectedStrength = 'all';
   searchKeyword = '';
   currentLayout = 'force';
+  focusedNodeId = null;
   renderNetwork();
 }
 
@@ -310,12 +446,328 @@ function zoomReset() {
   document.getElementById('zoomValue').textContent = '1.0x';
 }
 
+function centerGraph() {
+  networkChart.dispatchAction({ type: 'graphRestore' });
+  currentZoom = 1;
+  document.getElementById('zoomValue').textContent = '1.0x';
+}
+
+function clearFocus() {
+  focusedNodeId = null;
+  renderNetwork();
+}
+
+function toggleBoxSelect() {
+  isBoxSelectMode = !isBoxSelectMode;
+  const btn = document.getElementById('btnBoxSelect');
+  if (isBoxSelectMode) {
+    btn.style.background = '#2563EB';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#2563EB';
+    document.getElementById('networkChart').style.cursor = 'crosshair';
+  } else {
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+    document.getElementById('networkChart').style.cursor = 'default';
+    clearSelectionRect();
+  }
+}
+
+let selectRectEl = null;
+let selectStartX = 0;
+let selectStartY = 0;
+
+function createSelectionRect() {
+  if (!selectRectEl) {
+    selectRectEl = document.createElement('div');
+    selectRectEl.style.cssText = `
+      position: absolute;
+      border: 1px dashed #2563EB;
+      background: rgba(37, 99, 235, 0.1);
+      pointer-events: none;
+      z-index: 100;
+    `;
+    document.getElementById('networkChart').appendChild(selectRectEl);
+  }
+}
+
+function clearSelectionRect() {
+  if (selectRectEl) {
+    selectRectEl.style.display = 'none';
+  }
+}
+
+function updateSelectionRect(x1, y1, x2, y2) {
+  if (!selectRectEl) createSelectionRect();
+  const left = Math.min(x1, x2);
+  const top = Math.min(y1, y2);
+  const width = Math.abs(x2 - x1);
+  const height = Math.abs(y2 - y1);
+  selectRectEl.style.left = left + 'px';
+  selectRectEl.style.top = top + 'px';
+  selectRectEl.style.width = width + 'px';
+  selectRectEl.style.height = height + 'px';
+  selectRectEl.style.display = width > 5 && height > 5 ? 'block' : 'none';
+}
+
+function initBoxSelectEvents() {
+  const chartDom = document.getElementById('networkChart');
+  
+  chartDom.addEventListener('mousedown', function(e) {
+    if (!isBoxSelectMode) return;
+    const rect = chartDom.getBoundingClientRect();
+    selectStartX = e.clientX - rect.left;
+    selectStartY = e.clientY - rect.top;
+    createSelectionRect();
+    
+    const onMouseMove = function(e) {
+      if (!isBoxSelectMode) return;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      updateSelectionRect(selectStartX, selectStartY, x, y);
+    };
+    
+    const onMouseUp = function(e) {
+      if (!isBoxSelectMode) return;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      updateSelectionRect(selectStartX, selectStartY, x, y);
+      
+      const width = Math.abs(x - selectStartX);
+      const height = Math.abs(y - selectStartY);
+      
+      if (width > 10 && height > 10) {
+        const minX = Math.min(selectStartX, x);
+        const maxX = Math.max(selectStartX, x);
+        const minY = Math.min(selectStartY, y);
+        const maxY = Math.max(selectStartY, y);
+        
+        const option = networkChart.getOption();
+        const selectedNodes = [];
+        
+        option.series[0].data.forEach((node, index) => {
+          if (node.x !== null && node.y !== null) {
+            const screenPos = networkChart.convertToPixel({ seriesIndex: 0 }, [node.x, node.y]);
+            if (screenPos && screenPos[0] >= minX && screenPos[0] <= maxX &&
+                screenPos[1] >= minY && screenPos[1] <= maxY) {
+              selectedNodes.push(index);
+            }
+          }
+        });
+        
+        if (selectedNodes.length > 0) {
+          networkChart.dispatchAction({ type: 'downplay', seriesIndex: 0 });
+          networkChart.dispatchAction({
+            type: 'highlight',
+            seriesIndex: 0,
+            dataIndex: selectedNodes
+          });
+        }
+      }
+      
+      clearSelectionRect();
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  });
+}
+
 function renderPathSelects() {
-  const sourceSelect = document.getElementById('pathSource');
-  const targetSelect = document.getElementById('pathTarget');
-  const options = enterprises.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-  sourceSelect.innerHTML = '<option value="">请选择源企业</option>' + options;
-  targetSelect.innerHTML = '<option value="">请选择目标企业</option>' + options;
+  renderSearchableSelectOptions('pathSource');
+  renderSearchableSelectOptions('pathTarget');
+}
+
+function renderSearchableSelectOptions(type) {
+  const containerId = type === 'pathSource' ? 'pathSourceOptions' : 'pathTargetOptions';
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  if (!enterprises || !enterprises.length) {
+    container.innerHTML = '<div class="dropdown-empty">企业数据加载中...</div>';
+    return;
+  }
+  
+  const optionsHTML = enterprises.map(e => {
+    const tags = [];
+    if (e.is_local) {
+      tags.push('<span class="option-tag local">本区</span>');
+    } else {
+      tags.push('<span class="option-tag remote">外地</span>');
+    }
+    if (e.is_leading || e.enterprise_scale === 'large') {
+      tags.push('<span class="option-tag leading">龙头</span>');
+    }
+    return `<div class="dropdown-option" data-id="${e.id}" data-name="${e.name}" onclick="selectOption('${type}', '${e.id}', '${e.name}')">
+      ${e.name}
+      ${tags.join('')}
+    </div>`;
+  }).join('');
+  
+  container.innerHTML = optionsHTML;
+}
+
+function openSelectDropdown(type) {
+  const inputId = type === 'pathSource' ? 'pathSourceInput' : 'pathTargetInput';
+  const dropdownId = type === 'pathSource' ? 'pathSourceDropdown' : 'pathTargetDropdown';
+  const dropdown = document.getElementById(dropdownId);
+  const otherType = type === 'pathSource' ? 'pathTarget' : 'pathSource';
+  document.getElementById(otherType + 'Dropdown').classList.remove('open');
+  
+  positionDropdown(type);
+  dropdown.classList.add('open');
+}
+
+function closeSelectDropdown(type) {
+  const dropdownId = type === 'pathSource' ? 'pathSourceDropdown' : 'pathTargetDropdown';
+  const dropdown = document.getElementById(dropdownId);
+  dropdown.classList.remove('open');
+  dropdown.style.top = '';
+  dropdown.style.bottom = '';
+  dropdown.style.left = '';
+  dropdown.style.width = '';
+  dropdown.classList.remove('drop-up');
+}
+
+function positionDropdown(type) {
+  const inputId = type === 'pathSource' ? 'pathSourceInput' : 'pathTargetInput';
+  const dropdownId = type === 'pathSource' ? 'pathSourceDropdown' : 'pathTargetDropdown';
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  if (!input || !dropdown) return;
+  
+  const rect = input.getBoundingClientRect();
+  // 输入框滚出视口时关闭下拉框
+  if (rect.bottom < 0 || rect.top > window.innerHeight) {
+    closeSelectDropdown(type);
+    return;
+  }
+  
+  const dropdownHeight = Math.min(dropdown.scrollHeight || 200, 200);
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+  
+  dropdown.style.left = rect.left + 'px';
+  dropdown.style.width = rect.width + 'px';
+  
+  if (spaceBelow >= dropdownHeight + 4 || spaceBelow >= spaceAbove) {
+    // 优先向下展开；下方空间不足时，若仍比上方大也向下（部分内容可滚动查看）
+    dropdown.style.top = (rect.bottom + 4) + 'px';
+    dropdown.style.bottom = '';
+    dropdown.classList.remove('drop-up');
+  } else {
+    // 向上展开
+    dropdown.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+    dropdown.style.top = '';
+    dropdown.classList.add('drop-up');
+  }
+}
+
+function toggleSelectDropdown(type) {
+  const dropdownId = type === 'pathSource' ? 'pathSourceDropdown' : 'pathTargetDropdown';
+  const dropdown = document.getElementById(dropdownId);
+  if (dropdown.classList.contains('open')) {
+    closeSelectDropdown(type);
+  } else {
+    openSelectDropdown(type);
+  }
+}
+
+function filterSelectOptions(type) {
+  const inputId = type === 'pathSource' ? 'pathSourceInput' : 'pathTargetInput';
+  const optionsId = type === 'pathSource' ? 'pathSourceOptions' : 'pathTargetOptions';
+  const input = document.getElementById(inputId);
+  const optionsContainer = document.getElementById(optionsId);
+  if (!input || !optionsContainer) return;
+  
+  const filter = input.value.toLowerCase().trim();
+  
+  // 输入时自动展开下拉框
+  openSelectDropdown(type);
+  
+  // 移除之前的空提示
+  const existingEmpty = optionsContainer.querySelector('.dropdown-empty');
+  if (existingEmpty) existingEmpty.remove();
+  
+  const options = optionsContainer.querySelectorAll('.dropdown-option');
+  let visibleCount = 0;
+  options.forEach(opt => {
+    const text = opt.textContent.toLowerCase();
+    const match = text.includes(filter);
+    opt.style.display = match ? 'flex' : 'none';
+    if (match) visibleCount++;
+  });
+  
+  if (visibleCount === 0) {
+    const emptyDiv = document.createElement('div');
+    emptyDiv.className = 'dropdown-empty';
+    emptyDiv.textContent = '未找到匹配的企业';
+    optionsContainer.appendChild(emptyDiv);
+  }
+  
+  // 如果输入内容精确匹配某企业，自动回填隐藏值
+  resolvePathInput(type);
+}
+
+function handleSelectKeydown(event, type) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    const inputId = type === 'pathSource' ? 'pathSourceInput' : 'pathTargetInput';
+    const input = document.getElementById(inputId);
+    const val = input.value.trim();
+    if (!val) return;
+    
+    // 优先精确匹配，其次唯一包含匹配，再次选择第一个可见项
+    let matched = resolveEnterpriseByName(val);
+    if (!matched) {
+      const optionsId = type === 'pathSource' ? 'pathSourceOptions' : 'pathTargetOptions';
+      const optionsContainer = document.getElementById(optionsId);
+      const firstVisible = optionsContainer.querySelector('.dropdown-option:not([style*="none"])');
+      if (firstVisible) {
+        matched = enterprises.find(e => e.id === firstVisible.dataset.id);
+      }
+    }
+    if (matched) {
+      selectOption(type, matched.id, matched.name);
+    }
+  } else if (event.key === 'Escape') {
+    closeSelectDropdown(type);
+  }
+}
+
+function resolveEnterpriseByName(name) {
+  if (!name) return null;
+  const exact = enterprises.find(e => e.name === name);
+  if (exact) return exact;
+  const includes = enterprises.filter(e => e.name.includes(name));
+  return includes.length === 1 ? includes[0] : null;
+}
+
+function resolvePathInput(type) {
+  const inputId = type === 'pathSource' ? 'pathSourceInput' : 'pathTargetInput';
+  const hiddenId = type === 'pathSource' ? 'pathSource' : 'pathTarget';
+  const input = document.getElementById(inputId);
+  const val = input.value.trim();
+  const matched = resolveEnterpriseByName(val);
+  document.getElementById(hiddenId).value = matched ? matched.id : '';
+  onPathSelectChange();
+}
+
+function selectOption(type, id, name) {
+  const inputId = type === 'pathSource' ? 'pathSourceInput' : 'pathTargetInput';
+  const hiddenId = type === 'pathSource' ? 'pathSource' : 'pathTarget';
+  const dropdownId = type === 'pathSource' ? 'pathSourceDropdown' : 'pathTargetDropdown';
+  
+  document.getElementById(inputId).value = name;
+  document.getElementById(hiddenId).value = id;
+  
+  const dropdown = document.getElementById(dropdownId);
+  dropdown.classList.remove('open');
+  
+  onPathSelectChange();
 }
 
 function onPathSelectChange() {
@@ -325,6 +777,24 @@ function onPathSelectChange() {
 }
 
 function analyzePath() {
+  // 若未从下拉框选择，尝试按输入的企业名称匹配
+  if (!pathSource) {
+    const sourceName = document.getElementById('pathSourceInput').value.trim();
+    const matched = resolveEnterpriseByName(sourceName);
+    if (matched) {
+      document.getElementById('pathSource').value = matched.id;
+      pathSource = matched.id;
+    }
+  }
+  if (!pathTarget) {
+    const targetName = document.getElementById('pathTargetInput').value.trim();
+    const matched = resolveEnterpriseByName(targetName);
+    if (matched) {
+      document.getElementById('pathTarget').value = matched.id;
+      pathTarget = matched.id;
+    }
+  }
+  
   if (!pathSource || !pathTarget || pathSource === pathTarget) return;
   const graph = buildGraph();
   const result = findShortestPath(graph, pathSource, pathTarget);
@@ -439,13 +909,49 @@ function highlightPath(pathNodes) {
 function clearPath() {
   document.getElementById('pathSource').value = '';
   document.getElementById('pathTarget').value = '';
+  document.getElementById('pathSourceInput').value = '';
+  document.getElementById('pathTargetInput').value = '';
   document.getElementById('pathResult').style.display = 'none';
   document.getElementById('btnAnalyzePath').disabled = true;
   networkChart.dispatchAction({ type: 'downplay', seriesIndex: 0 });
 }
 
+function toggleLegend() {
+  const popup = document.getElementById('legendPopup');
+  popup.classList.toggle('show');
+}
+
+function togglePathAnalysis() {
+  isPathExpanded = !isPathExpanded;
+  const body = document.getElementById('pathBody');
+  const toggle = document.getElementById('pathToggle');
+  const canvas = document.querySelector('.network-canvas');
+  const result = document.getElementById('pathResult');
+  
+  if (isPathExpanded) {
+    body.classList.add('expanded');
+    toggle.classList.add('expanded');
+    canvas.classList.add('path-expanded');
+  } else {
+    body.classList.remove('expanded');
+    toggle.classList.remove('expanded');
+    canvas.classList.remove('path-expanded');
+    result.style.display = 'none';
+  }
+  
+  if (networkChart) {
+    setTimeout(() => networkChart.resize(), 350);
+  }
+}
+
 async function openEnterpriseDrawer(enterpriseId) {
-  const detail = await MockAPI.getEnterpriseDetail(enterpriseId);
+  let detail = await MockAPI.getEnterpriseDetail(enterpriseId);
+  const enterprise = enterprises.find(e => e.id === enterpriseId);
+  
+  if (!detail && enterprise) {
+    detail = enterprise;
+  }
+  
   if (!detail) return;
 
   const products = await MockAPI.getEnterpriseProducts(enterpriseId);
@@ -463,11 +969,11 @@ async function openEnterpriseDrawer(enterpriseId) {
         <div class="enterprise-logo">${detail.name.charAt(0)}</div>
         <div class="enterprise-title">
           <div class="enterprise-name">${detail.name}</div>
-          <div class="enterprise-code">${detail.credit_code}</div>
+          <div class="enterprise-code">${detail.credit_code || '-'}</div>
           <div class="enterprise-tags">
             <span class="tag tag-primary">${roleLabel}</span>
             <span class="tag ${detail.is_local ? 'tag-success' : 'tag-default'}">${detail.is_local ? '本区企业' : '外地企业'}</span>
-            ${detail.tags.map(t => `<span class="tag tag-default">${t}</span>`).join('')}
+            ${detail.tags ? detail.tags.map(t => `<span class="tag tag-default">${t}</span>`).join('') : ''}
           </div>
         </div>
       </div>
@@ -478,17 +984,17 @@ async function openEnterpriseDrawer(enterpriseId) {
         <div class="metric-item"><div class="metric-item-label">经营状态</div><div class="metric-item-value">${statusMap[detail.status] || detail.status}</div></div>
       </div>
       <div class="enterprise-info">
-        <div class="info-row"><span class="info-label">注册地址</span><span class="info-value">${detail.register_address}</span></div>
-        <div class="info-row"><span class="info-label">法定代表人</span><span class="info-value">${detail.legal_person}</span></div>
-        <div class="info-row"><span class="info-label">成立日期</span><span class="info-value">${detail.establishment_date}</span></div>
-        <div class="info-row"><span class="info-label">注册资本</span><span class="info-value">${formatNumber(detail.registered_capital)} 万</span></div>
+        <div class="info-row"><span class="info-label">注册地址</span><span class="info-value">${detail.register_address || '-'}</span></div>
+        <div class="info-row"><span class="info-label">法定代表人</span><span class="info-value">${detail.legal_person || '-'}</span></div>
+        <div class="info-row"><span class="info-label">成立日期</span><span class="info-value">${detail.establishment_date || '-'}</span></div>
+        <div class="info-row"><span class="info-label">注册资本</span><span class="info-value">${detail.registered_capital ? formatNumber(detail.registered_capital) + ' 万' : '-'}</span></div>
       </div>
     </div>
     <div class="enterprise-card">
       <div class="card-title" style="--title-bar-color:#1890FF;font-size:14px">产业链定位</div>
-      <div class="info-row"><span class="info-label">所属产业链</span><span class="info-value">${detail.chain_position.chain_name}</span></div>
-      <div class="info-row"><span class="info-label">所属环节</span><span class="info-value">${detail.chain_position.node_name}</span></div>
-      <div class="info-row"><span class="info-label">产业角色</span><span class="info-value">${detail.chain_position.role === 'core' ? '⭐ 核心企业' : detail.chain_position.role === 'supporting' ? '○ 配套企业' : '□ 服务机构'}</span></div>
+      <div class="info-row"><span class="info-label">所属产业链</span><span class="info-value">${detail.chain_position ? detail.chain_position.chain_name : '-'}</span></div>
+      <div class="info-row"><span class="info-label">所属环节</span><span class="info-value">${detail.chain_position ? detail.chain_position.node_name : '-'}</span></div>
+      <div class="info-row"><span class="info-label">产业角色</span><span class="info-value">${detail.chain_position && detail.chain_position.role === 'core' ? '⭐ 核心企业' : detail.chain_position && detail.chain_position.role === 'supporting' ? '○ 配套企业' : '□ 服务机构'}</span></div>
     </div>
     <div class="enterprise-card">
       <div class="card-title" style="--title-bar-color:#52C41A;font-size:14px">主营产品/服务（${products.length}）</div>
@@ -506,7 +1012,7 @@ async function openEnterpriseDrawer(enterpriseId) {
     <div class="enterprise-card">
       <div class="card-title" style="--title-bar-color:#FA8C16;font-size:14px">关联关系（${rels.length}）</div>
       <div class="relation-list">
-        ${rels.slice(0, 5).map(r => {
+        ${rels.length ? rels.slice(0, 5).map(r => {
           const isFrom = r.from_enterprise_id === enterpriseId;
           const peerId = isFrom ? r.to_enterprise_id : r.from_enterprise_id;
           const peer = enterprises.find(e => e.id === peerId);
@@ -521,12 +1027,12 @@ async function openEnterpriseDrawer(enterpriseId) {
               ${r.transaction_amount ? `<span class="relation-amount">${formatNumber(r.transaction_amount)}万</span>` : ''}
             </div>
           `;
-        }).join('')}
+        }).join('') : '<div class="empty-text">暂无关联关系数据</div>'}
       </div>
     </div>
   `;
   document.getElementById('drawerFooter').innerHTML = `
-    <button class="btn btn-primary" onclick="window.location.href='enterprise-profile.html?enterpriseId=${enterpriseId}'">查看完整画像</button>
+    <button class="btn btn-primary" onclick="window.location.href='enterprise-profile.html?enterpriseId=${encodeURIComponent(enterpriseId)}'">查看完整画像</button>
     <button class="btn btn-default" onclick="closeNetworkDrawer()">关闭</button>
   `;
   document.getElementById('drawerOverlay').classList.add('open');

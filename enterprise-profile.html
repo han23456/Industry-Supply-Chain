@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>企业画像 - 产业链/供应链图谱系统</title>
   <link rel="stylesheet" href="css/common.css?v=3">
-  <link rel="stylesheet" href="css/enterprise-profile.css?v=1">
+  <link rel="stylesheet" href="css/enterprise-profile.css?v=2">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/data.js"></script>
@@ -54,7 +54,7 @@
       </nav>
     </aside>
 
-    <main class="page-content">
+    <main class="page-content profile-page">
       <section class="top-bar">
         <div class="breadcrumb" id="breadcrumbContainer"></div>
         <div class="top-actions">
@@ -77,20 +77,30 @@
           </div>
         </div>
         <div class="profile-metrics" id="profileMetrics"></div>
+        <div class="profile-actions">
+          <button class="btn btn-default" onclick="window.location.href='enterprise-network.html'">返回网络</button>
+          <button class="btn btn-default" onclick="window.location.href='supply-demand.html?enterpriseId=' + currentEnterpriseId">查看供需匹配</button>
+          <button class="btn btn-primary" onclick="window.location.href='chain-gap.html?enterpriseId=' + currentEnterpriseId">加入补链分析</button>
+        </div>
       </section>
 
-      <section class="profile-tabs">
-        <div class="tab active" data-tab="basic" onclick="switchTab('basic')">基本信息</div>
-        <div class="tab" data-tab="products" onclick="switchTab('products')">产品/服务</div>
-        <div class="tab" data-tab="demands" onclick="switchTab('demands')">需求目录</div>
-        <div class="tab" data-tab="relations" onclick="switchTab('relations')">关联企业</div>
-        <div class="tab" data-tab="chain" onclick="switchTab('chain')">产业链定位</div>
-        <div class="tab" data-tab="risks" onclick="switchTab('risks')">风险状态</div>
-      </section>
+      <div class="profile-content-area">
+        <section class="profile-tabs">
+          <div class="tab active" data-tab="basic" onclick="switchTab('basic')">基本信息</div>
+          <div class="tab" data-tab="business" onclick="switchTab('business')">业务概况</div>
+          <div class="tab" data-tab="layout" onclick="switchTab('layout')">企业布局</div>
+          <div class="tab" data-tab="supply" onclick="switchTab('supply')">供应链分析</div>
+          <div class="tab" data-tab="innovation" onclick="switchTab('innovation')">创新能力</div>
+          <div class="tab" data-tab="finance" onclick="switchTab('finance')">财务状况</div>
+          <div class="tab" data-tab="risk" onclick="switchTab('risk')">风险信息</div>
+          <div class="tab" data-tab="competition" onclick="switchTab('competition')">竞争分析</div>
+          <div class="tab" data-tab="history" onclick="switchTab('history')">企业历程</div>
+          <div class="tab" data-tab="news" onclick="switchTab('news')">企业动态</div>
+          <div class="tab" data-tab="policy" onclick="switchTab('policy')">政策支持</div>
+        </section>
 
-      <section class="card profile-content" id="tabContent">
-        <!-- 动态内容 -->
-      </section>
+        <section class="card profile-content" id="tabContent"></section>
+      </div>
     </main>
   </div>
 

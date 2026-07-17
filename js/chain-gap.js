@@ -147,7 +147,7 @@ function renderPlan(node, recommended) {
           <div class="plan-enterprise-item">
             <span class="plan-enterprise-name">${e.enterprise_name}</span>
             <span class="plan-enterprise-score">${(e.match_score * 100).toFixed(0)}%</span>
-            <button class="btn btn-text btn-sm" onclick="window.open('enterprise-profile.html?enterpriseId=${e.id}','_blank')">画像</button>
+            <button class="btn btn-text btn-sm" onclick="window.open('enterprise-profile.html?enterpriseId=${encodeURIComponent(e.id)}','_blank')">画像</button>
           </div>
         `).join('')}
       </div>
@@ -200,7 +200,7 @@ async function openRecommendDrawer(node, recommended) {
         </div>
         <div class="recommend-actions" style="margin-top:10px">
           <button class="btn btn-primary btn-sm" onclick="markStatus(this,'${e.id}')">标记跟进</button>
-          <button class="btn btn-default btn-sm" onclick="window.open('enterprise-profile.html?enterpriseId=${e.id}','_blank')">查看画像</button>
+          <button class="btn btn-default btn-sm" onclick="window.open('enterprise-profile.html?enterpriseId=${encodeURIComponent(e.id)}','_blank')">查看画像</button>
         </div>
       </div>
     `;

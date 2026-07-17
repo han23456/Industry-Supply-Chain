@@ -72,13 +72,28 @@
           <div class="filter-groups">
             <div class="filter-item">
               <label>关系类型</label>
-              <select id="relationTypeFilter" onchange="applyFilters()">
-                <option value="all">全部关系</option>
-                <option value="equity">股权关系</option>
-                <option value="transaction">交易关系</option>
-                <option value="cooperation">合作关系</option>
-                <option value="supply_demand">供需推断</option>
-              </select>
+              <div class="relation-checkboxes">
+                <label class="checkbox-item">
+                  <input type="checkbox" value="equity" checked onchange="onRelationCheckboxChange()">
+                  <span class="checkbox-color" style="background:#722ED1"></span>
+                  <span>股权</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="supply_demand" checked onchange="onRelationCheckboxChange()">
+                  <span class="checkbox-color" style="background:#FA8C16"></span>
+                  <span>供需</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="transaction" checked onchange="onRelationCheckboxChange()">
+                  <span class="checkbox-color" style="background:#1890FF"></span>
+                  <span>交易</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="cooperation" checked onchange="onRelationCheckboxChange()">
+                  <span class="checkbox-color" style="background:#52C41A"></span>
+                  <span>合作</span>
+                </label>
+              </div>
             </div>
             <div class="filter-item">
               <label>关系强度</label>
@@ -110,46 +125,44 @@
             <button class="btn btn-sm btn-default" onclick="zoomReset()">重置</button>
             <button class="btn btn-sm btn-default" onclick="zoomIn()">+</button>
             <span class="zoom-value" id="zoomValue">1.0x</span>
+            <div class="toolbar-divider"></div>
+            <button class="btn btn-sm btn-default" onclick="centerGraph()" title="全局居中">🗺️</button>
+            <button class="btn btn-sm btn-default" onclick="toggleBoxSelect()" title="框选聚焦" id="btnBoxSelect">📐</button>
+            <button class="btn btn-sm btn-default" onclick="clearFocus()" title="取消聚焦" id="btnClearFocus">✖️</button>
           </div>
-          <div class="network-legend">
-            <div class="legend-group">
-              <span class="legend-title">产业角色</span>
-              <span class="legend-item"><i class="dot" style="background:#1890FF"></i>零部件</span>
-              <span class="legend-item"><i class="dot" style="background:#52C41A"></i>制造商</span>
-              <span class="legend-item"><i class="dot" style="background:#722ED1"></i>集成商</span>
-              <span class="legend-item"><i class="dot" style="background:#FA8C16"></i>终端</span>
-              <span class="legend-item"><i class="dot" style="background:#13C2C2"></i>服务商</span>
-              <span class="legend-item"><i class="dot" style="background:#EB2F96"></i>使能技术</span>
-            </div>
-            <div class="legend-group">
-              <span class="legend-title">关系类型</span>
-              <span class="legend-item"><i class="line" style="background:#722ED1"></i>股权</span>
-              <span class="legend-item"><i class="line" style="background:#1890FF"></i>交易</span>
-              <span class="legend-item"><i class="line dashed" style="background:#52C41A"></i>合作</span>
-              <span class="legend-item"><i class="line dotted" style="background:#FA8C16"></i>供需</span>
-            </div>
-          </div>
+          <button class="legend-toggle-btn" onclick="toggleLegend()" title="显示图例">📋</button>
         </div>
       </section>
 
-      <section class="path-analysis card">
-        <div class="path-header">
+      <section class="path-analysis card" id="pathAnalysis">
+        <div class="path-header" onclick="togglePathAnalysis()">
           <div class="card-title" style="--title-bar-color:#722ED1">路径分析工具</div>
           <span class="path-desc">选择两个企业，分析它们之间的连接路径与关系强度</span>
+          <span class="path-toggle" id="pathToggle">▼</span>
         </div>
-        <div class="path-body">
+        <div class="path-body" id="pathBody">
           <div class="path-select">
             <label>源企业</label>
-            <select id="pathSource" onchange="onPathSelectChange()">
-              <option value="">请选择源企业</option>
-            </select>
+            <div class="searchable-select" id="sourceSelectContainer">
+              <input type="text" id="pathSourceInput" placeholder="输入企业名称搜索..." oninput="filterSelectOptions('pathSource')" onfocus="openSelectDropdown('pathSource')" onkeydown="handleSelectKeydown(event, 'pathSource')">
+              <span class="select-arrow" onclick="toggleSelectDropdown('pathSource')">▼</span>
+              <div class="select-dropdown" id="pathSourceDropdown">
+                <div class="dropdown-options" id="pathSourceOptions"></div>
+              </div>
+            </div>
+            <input type="hidden" id="pathSource" value="">
           </div>
           <div class="path-arrow">→</div>
           <div class="path-select">
             <label>目标企业</label>
-            <select id="pathTarget" onchange="onPathSelectChange()">
-              <option value="">请选择目标企业</option>
-            </select>
+            <div class="searchable-select" id="targetSelectContainer">
+              <input type="text" id="pathTargetInput" placeholder="输入企业名称搜索..." oninput="filterSelectOptions('pathTarget')" onfocus="openSelectDropdown('pathTarget')" onkeydown="handleSelectKeydown(event, 'pathTarget')">
+              <span class="select-arrow" onclick="toggleSelectDropdown('pathTarget')">▼</span>
+              <div class="select-dropdown" id="pathTargetDropdown">
+                <div class="dropdown-options" id="pathTargetOptions"></div>
+              </div>
+            </div>
+            <input type="hidden" id="pathTarget" value="">
           </div>
           <button class="btn btn-primary" onclick="analyzePath()" id="btnAnalyzePath" disabled>分析路径</button>
           <button class="btn btn-default" onclick="clearPath()">清除</button>
@@ -168,6 +181,31 @@
     <div class="drawer-body" id="drawerBody"></div>
     <div class="drawer-footer" id="drawerFooter"></div>
   </aside>
+
+  <div class="legend-popup" id="legendPopup">
+    <div class="legend-popup-header">
+      <span class="legend-popup-title">图例说明</span>
+      <button class="legend-popup-close" onclick="toggleLegend()">✕</button>
+    </div>
+    <div class="legend-popup-body">
+      <div class="legend-group">
+        <span class="legend-title">产业角色</span>
+        <span class="legend-item"><i class="dot" style="background:#1890FF"></i>零部件</span>
+        <span class="legend-item"><i class="dot" style="background:#52C41A"></i>制造商</span>
+        <span class="legend-item"><i class="dot" style="background:#722ED1"></i>集成商</span>
+        <span class="legend-item"><i class="dot" style="background:#FA8C16"></i>终端</span>
+        <span class="legend-item"><i class="dot" style="background:#13C2C2"></i>服务商</span>
+        <span class="legend-item"><i class="dot" style="background:#EB2F96"></i>使能技术</span>
+      </div>
+      <div class="legend-group">
+        <span class="legend-title">关系类型</span>
+        <span class="legend-item"><i class="line" style="background:#722ED1"></i>股权</span>
+        <span class="legend-item"><i class="line" style="background:#1890FF"></i>交易</span>
+        <span class="legend-item"><i class="line dashed" style="background:#52C41A"></i>合作</span>
+        <span class="legend-item"><i class="line dotted" style="background:#FA8C16"></i>供需</span>
+      </div>
+    </div>
+  </div>
 
   <script src="js/enterprise-network.js"></script>
 </body>

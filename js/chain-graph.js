@@ -17,13 +17,31 @@ let hiddenNodeTypes = new Set();
 let currentMainTab = 'structure';
 let regionChart = null;
 
+function navigateToEnterpriseProfile(enterpriseId, enterpriseName, el) {
+  if (!enterpriseId || enterpriseId === 'undefined' || enterpriseId === 'null') {
+    showToast('该企业暂无画像信息', 'warning');
+    return;
+  }
+  // 同步校验企业是否在企业池中
+  if (typeof ALL_ENTERPRISES !== 'undefined' && !ALL_ENTERPRISES.some(e => e.id === enterpriseId)) {
+    showToast(`未找到企业“${enterpriseName || enterpriseId}”的画像信息`, 'warning');
+    return;
+  }
+  window.location.href = `enterprise-profile.html?enterpriseId=${encodeURIComponent(enterpriseId)}`;
+}
+
 function init() {
   if (document.getElementById('globalSearchContainer')) {
     document.getElementById('globalSearchContainer').innerHTML = renderGlobalSearch();
   }
 
   const params = getUrlParams();
-  chainId = params.chainId || 'chain-robot';
+  chainId = params.chainId;
+
+  if (!chainId) {
+    showChainSelection();
+    return;
+  }
 
   const storedView = localStorage.getItem('chainView_' + chainId);
   const hashView = window.location.hash.replace('#', '');
@@ -50,6 +68,78 @@ function init() {
       renderRelationEdges();
     }
   }, 200));
+}
+
+function showChainSelection() {
+  const container = document.querySelector('.page-content');
+  container.innerHTML = `
+    <div class="chain-selection-page">
+      <div class="selection-header">
+        <h2>选择产业链</h2>
+        <p>请选择要查看的产业链结构图谱</p>
+      </div>
+      <div class="chain-grid">
+        ${MOCK_INDUSTRY_CHAINS.map(chain => `
+          <div class="chain-card" onclick="window.location.href='chain-graph.html?chainId=${chain.id}'">
+            <div class="chain-card-icon">${getChainIcon(chain.strategic_orientation)}</div>
+            <div class="chain-card-name">${chain.name}</div>
+            <div class="chain-card-desc">${getChainDescription(chain)}</div>
+            <div class="chain-card-meta">
+              <span class="chain-tag">${getChainCategoryLabel(chain.category)}</span>
+              <span class="chain-completeness">完整度 ${chain.completeness_score}%</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function getChainIcon(orientation) {
+  const icons = {
+    'chain_master': '🏛️',
+    'core_pillar': '🚀',
+    'emerging': '💡',
+    'traditional': '🏭',
+    'other': '📊'
+  };
+  return icons[orientation] || '📊';
+}
+
+function getChainDescription(chain) {
+  const descriptions = {
+    'chain-007': '信息技术服务产业链，涵盖云计算、大数据、人工智能等领域',
+    'chain-008': '现代金融服务产业链，包括银行、证券、保险等业态',
+    'chain-009': '国际贸易与物流产业链，连接国内外市场',
+    'chain-010': '专业服务产业链，提供法律、会计、咨询等专业服务',
+    'chain-011': '科技服务产业链，涵盖研发、检测、孵化等服务',
+    'chain-012': '文体旅商产业链，融合文化、体育、旅游、商业',
+    'chain-robot': '人工智能与具身智能机器人产业链，核心战略性新兴产业',
+    'chain-002': '海洋产业链，发展海洋经济与海洋科技',
+    'chain-003': '细胞与基因产业链，生物医药前沿领域',
+    'chain-004': '智能终端产业链，涵盖智能手机、智能穿戴等',
+    'chain-005': '低空经济产业链，发展通用航空与低空飞行',
+    'chain-006': '数据产业，数据采集、存储、分析与应用'
+  };
+  return descriptions[chain.id] || `${chain.name}产业链`;
+}
+
+function getChainCategoryLabel(category) {
+  const labels = {
+    'information': '信息服务',
+    'finance': '金融服务',
+    'trade': '贸易物流',
+    'professional': '专业服务',
+    'tech': '科技服务',
+    'culture': '文体旅商',
+    'robot': '机器人',
+    'ocean': '海洋',
+    'biotech': '生物医药',
+    'terminal': '智能终端',
+    'low_altitude': '低空经济',
+    'data': '数据产业'
+  };
+  return labels[category] || category;
 }
 
 async function loadData() {
@@ -255,16 +345,400 @@ function switchMainTab(tab) {
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
 
   if (tab === 'overview') {
-    renderOverviewTab();
+    setTimeout(renderOverviewTab, 50);
   } else if (tab === 'news') {
     renderNewsTab();
   } else if (tab === 'gap-filling') {
-    renderGapFillingTab();
+    setTimeout(renderGapFillingTab, 50);
   } else if (tab === 'structure') {
     renderStructureView();
     updateBottomBar();
     updateNodeCount();
+  } else if (tab === 'risk-monitor') {
+    setTimeout(renderRiskMonitorTab, 50);
+  } else if (tab === 'key-enterprise') {
+    setTimeout(renderKeyEnterpriseTab, 50);
   }
+}
+
+function renderKeyEnterpriseTab() {
+  const chainData = CHAIN_INDUSTRY_DATA[chainId] || CHAIN_INDUSTRY_DATA['chain-robot'];
+  renderKeyEnterpriseTrendChart(chainData);
+  renderKeyEnterpriseNewChart(chainData);
+  renderKeyEnterpriseCapitalChart(chainData);
+  renderKeyEnterpriseAgeChart(chainData);
+  renderKeyEnterpriseDomainChart(chainData);
+  renderKeyEnterpriseLinkChart(chainData);
+  renderKeyEnterpriseTable(chainData);
+}
+
+function renderKeyEnterpriseTrendChart(chainData) {
+  const chartDom = document.getElementById('keyEnterpriseTrendChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const years = ['2022', '2023', '2024', '2025', '2026'];
+  const countData = chainData.trendData || [420, 380, 350, 360, 420];
+  const growthData = chainData.growthData || [0.8, 0.6, 0.3, 0.25, 0.2];
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['企业总数（家）', '企业增速（%）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: years, axisLabel: { fontSize: 12, color: '#8F959E' }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [{ type: 'value', name: '企业总数（家）', nameTextStyle: { color: '#8F959E', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } }, { type: 'value', name: '增速（%）', nameTextStyle: { color: '#8F959E', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { show: false } }],
+    series: [
+      { type: 'bar', name: '企业总数（家）', data: countData, itemStyle: { color: '#3B82F6', borderRadius: [4, 4, 0, 0] }, barWidth: '50%' },
+      { type: 'line', name: '企业增速（%）', data: growthData, yAxisIndex: 1, itemStyle: { color: '#EF4444' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6 }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderKeyEnterpriseNewChart(chainData) {
+  const chartDom = document.getElementById('keyEnterpriseNewChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const years = ['2021', '2022', '2023', '2024', '2025', '2026'];
+  const newCountData = chainData.newData || [3, 5, 2, 1, 1, 0];
+  const growthData = chainData.newGrowthData || [0.6, 0.5, 0.3, 0.4, 0.8, 0];
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['新增企业数量（家）', '增速（%）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: years, axisLabel: { fontSize: 12, color: '#8F959E' }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [{ type: 'value', name: '新增企业数（家）', nameTextStyle: { color: '#8F959E', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } }, { type: 'value', name: '增速（%）', nameTextStyle: { color: '#8F959E', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { show: false } }],
+    series: [
+      { type: 'bar', name: '新增企业数量（家）', data: newCountData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '50%' },
+      { type: 'line', name: '增速（%）', data: growthData, yAxisIndex: 1, itemStyle: { color: '#F59E0B' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6 }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderKeyEnterpriseCapitalChart(chainData) {
+  const chartDom = document.getElementById('keyEnterpriseCapitalChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const capitalData = chainData.capitalData || [24, 154, 113, 47, 32, 53];
+  chart.setOption({
+    tooltip: { trigger: 'item' },
+    legend: { right: 0, top: 10, orient: 'vertical', textStyle: { fontSize: 11, color: '#646A73' } },
+    series: [{
+      type: 'pie',
+      radius: ['40%', '70%'],
+      center: ['40%', '50%'],
+      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      label: { show: false },
+      data: [
+        { value: capitalData[0], name: '0-100万', itemStyle: { color: '#3B82F6' } },
+        { value: capitalData[1], name: '100-1000万', itemStyle: { color: '#10B981' } },
+        { value: capitalData[2], name: '1000-5000万', itemStyle: { color: '#F59E0B' } },
+        { value: capitalData[3], name: '5000万-1亿', itemStyle: { color: '#F97316' } },
+        { value: capitalData[4], name: '1亿-10亿', itemStyle: { color: '#EF4444' } },
+        { value: capitalData[5], name: '10亿以上', itemStyle: { color: '#8B5CF6' } }
+      ]
+    }]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderKeyEnterpriseAgeChart(chainData) {
+  const chartDom = document.getElementById('keyEnterpriseAgeChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const ageData = chainData.ageData || [0, 3, 11, 80, 152, 152, 2];
+  chart.setOption({
+    tooltip: { trigger: 'item' },
+    legend: { right: 0, top: 10, orient: 'vertical', textStyle: { fontSize: 11, color: '#646A73' } },
+    series: [{
+      type: 'pie',
+      radius: ['40%', '70%'],
+      center: ['40%', '50%'],
+      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      label: { show: false },
+      data: [
+        { value: ageData[0], name: '0-1年', itemStyle: { color: '#3B82F6' } },
+        { value: ageData[1], name: '1-3年', itemStyle: { color: '#60A5FA' } },
+        { value: ageData[2], name: '3-5年', itemStyle: { color: '#10B981' } },
+        { value: ageData[3], name: '5-10年', itemStyle: { color: '#F59E0B' } },
+        { value: ageData[4], name: '10-20年', itemStyle: { color: '#F97316' } },
+        { value: ageData[5], name: '20年以上', itemStyle: { color: '#EF4444' } },
+        { value: ageData[6], name: '其他', itemStyle: { color: '#9CA3AF' } }
+      ]
+    }]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderKeyEnterpriseDomainChart(chainData) {
+  const chartDom = document.getElementById('keyEnterpriseDomainChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const domains = chainData.domains || [
+    { value: 105, name: '涉海设备制造', color: '#3B82F6' },
+    { value: 15, name: '涉海材料制造', color: '#10B981' },
+    { value: 24, name: '海洋产业', color: '#F59E0B' },
+    { value: 3, name: '海洋科研教育', color: '#8B5CF6' },
+    { value: 3, name: '海洋科研教育', color: '#EC4899' },
+    { value: 19, name: '海洋公共管理服务', color: '#06B6D4' },
+    { value: 28, name: '涉海产品再加工', color: '#F97316' },
+    { value: 28, name: '海洋产品批发与零售', color: '#EF4444' }
+  ];
+  chart.setOption({
+    tooltip: { trigger: 'item' },
+    legend: { right: 0, top: 10, orient: 'vertical', textStyle: { fontSize: 11, color: '#646A73' } },
+    series: [{
+      type: 'pie',
+      radius: ['40%', '70%'],
+      center: ['40%', '50%'],
+      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      label: { show: false },
+      data: domains.map(d => ({ value: d.value, name: d.name, itemStyle: { color: d.color } }))
+    }]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderKeyEnterpriseLinkChart(chainData) {
+  const chartDom = document.getElementById('keyEnterpriseLinkChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const links = chainData.links || ['海水淡化与综合利用装备制造', '海洋交通运输设备制造', '海洋矿产资源勘探开发', '海盐设备制造', '海洋工程通用设备制造'];
+  const data = chainData.linkData || [70, 41, 30, 30, 30];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: '3%', right: '4%', bottom: '10%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: links, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', name: '企业数量（家）', nameTextStyle: { color: '#8F959E', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [{ type: 'bar', data: data, itemStyle: { color: '#3B82F6', borderRadius: [4, 4, 0, 0] }, barWidth: '50%' }]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderKeyEnterpriseTable(chainData) {
+  const tbody = document.getElementById('keyEnterpriseTableBody');
+  if (!tbody) return;
+  const enterprises = chainData.enterprises || [];
+  tbody.innerHTML = enterprises.map((item, index) => {
+    const tagsHtml = item.tags.map(tag => `<span class="enterprise-tag-sm">${tag}</span>`).join('');
+    return `
+      <tr class="${index % 2 === 0 ? '' : 'table-row-alt'}">
+        <td><input type="checkbox" class="enterprise-checkbox"></td>
+        <td>
+          <div class="enterprise-name-wrap">
+            <span class="enterprise-name-text">${item.name}</span>
+            <span class="enterprise-status-tag">存续</span>
+          </div>
+          <div class="enterprise-tags-wrap">${tagsHtml}</div>
+        </td>
+        <td>${item.legalRep}</td>
+        <td>${item.region}</td>
+        <td>${item.founded}</td>
+        <td>${item.capital}</td>
+        <td>
+          <button class="btn btn-sm btn-default" onclick="showToast('收藏企业功能开发中', 'info')">⭐</button>
+          <button class="btn btn-sm btn-default" onclick="showToast('招商触达功能开发中', 'info')">📮</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function toggleSelectAll(checkbox) {
+  document.querySelectorAll('.enterprise-checkbox').forEach(cb => cb.checked = checkbox.checked);
+}
+
+function toggleEnterpriseTableView(view) {
+  showToast(view === 'list' ? '列表视图' : '网格视图', 'info');
+}
+
+function renderRiskMonitorTab() {
+  if (!chainData) return;
+
+  const industryData = CHAIN_INDUSTRY_DATA[chainId] || CHAIN_INDUSTRY_DATA['chain-robot'];
+  const totalEnterprises = chainData.enterprise_count || 856;
+  const highCount = industryData.riskHigh || 47;
+  const mediumCount = industryData.riskMedium || 168;
+  const lowCount = industryData.riskLow || (totalEnterprises - highCount - mediumCount);
+
+  document.getElementById('riskTotalEnterprises').textContent = totalEnterprises;
+  document.getElementById('riskHighCount').textContent = highCount;
+  document.getElementById('riskMediumCount').textContent = mediumCount;
+  document.getElementById('riskLowCount').textContent = lowCount;
+
+  renderRiskBusinessChart();
+  renderRiskInspectionChart();
+  renderRiskTaxChart();
+  renderRiskTaxDebtChart();
+  renderRiskCreditChart();
+  renderRiskCaseChart();
+  renderRiskAdminChart();
+  renderRiskEnvChart();
+}
+
+function renderRiskBusinessChart() {
+  const chartDom = document.getElementById('riskBusinessChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = ['2022-Q4', '2023-Q1', '2023-Q2', '2023-Q3', '2023-Q4', '2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2', '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'];
+  const enterpriseData = [180, 220, 120, 80, 150, 100, 50, 180, 320, 280, 100, 80, 120, 60, 30, 0];
+  const eventData = [190, 210, 130, 75, 140, 95, 55, 170, 310, 270, 95, 85, 115, 65, 35, 0];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['企业数（家）', '事件数（次）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'bar', name: '企业数（家）', data: enterpriseData, itemStyle: { color: '#3B82F6', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' },
+      { type: 'bar', name: '事件数（次）', data: eventData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderRiskInspectionChart() {
+  const chartDom = document.getElementById('riskInspectionChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = ['2022-Q4', '2023-Q1', '2023-Q2', '2023-Q3', '2023-Q4', '2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2', '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'];
+  const enterpriseData = [5, 7, 8, 11, 2, 1, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0];
+  const eventData = [5, 7, 8, 11, 2, 1, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['企业数（家）', '事件数（次）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'bar', name: '企业数（家）', data: enterpriseData, itemStyle: { color: '#3B82F6', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' },
+      { type: 'bar', name: '事件数（次）', data: eventData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderRiskTaxChart() {
+  const chartDom = document.getElementById('riskTaxChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = ['2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2', '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'];
+  const data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['企业数（家）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', max: 1, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [{ type: 'bar', name: '企业数（家）', data: data, itemStyle: { color: '#3B82F6', borderRadius: [4, 4, 0, 0] }, barWidth: '50%' }]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderRiskTaxDebtChart() {
+  const chartDom = document.getElementById('riskTaxDebtChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = ['2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2', '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'];
+  const enterpriseData = [30, 35, 40, 45, 50, 60, 80, 90, 100, 120, 50];
+  const eventData = [60, 65, 70, 75, 85, 100, 130, 150, 170, 210, 80];
+  const amountData = [1200, 1300, 1400, 1500, 1600, 1800, 2200, 2600, 3000, 3500, 1500];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['企业数（家）', '事件数（次）', '金额（万元）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [{ type: 'value', axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } }],
+    series: [
+      { type: 'bar', name: '企业数（家）', data: enterpriseData, itemStyle: { color: '#3B82F6', borderRadius: [4, 4, 0, 0] }, barWidth: '25%' },
+      { type: 'bar', name: '事件数（次）', data: eventData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '25%' },
+      { type: 'line', name: '金额（万元）', data: amountData, itemStyle: { color: '#F59E0B' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6 }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderRiskCreditChart() {
+  const chartDom = document.getElementById('riskCreditChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = ['2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2', '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'];
+  const enterpriseData = [8, 10, 12, 15, 18, 22, 28, 35, 40, 45, 25];
+  const eventData = [12, 15, 18, 22, 28, 35, 45, 58, 70, 85, 40];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['企业数（家）', '事件数（次）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'bar', name: '企业数（家）', data: enterpriseData, itemStyle: { color: '#F97316', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' },
+      { type: 'bar', name: '事件数（次）', data: eventData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderRiskCaseChart() {
+  const chartDom = document.getElementById('riskCaseChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = ['2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2', '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'];
+  const enterpriseData = [15, 18, 22, 25, 28, 35, 45, 55, 65, 75, 40];
+  const eventData = [25, 30, 38, 45, 55, 70, 95, 120, 145, 170, 85];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['企业数（家）', '事件数（次）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'bar', name: '企业数（家）', data: enterpriseData, itemStyle: { color: '#F97316', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' },
+      { type: 'bar', name: '事件数（次）', data: eventData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderRiskAdminChart() {
+  const chartDom = document.getElementById('riskAdminChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = ['2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2', '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'];
+  const enterpriseData = [55, 58, 65, 72, 35, 30, 25, 20, 18, 15, 8];
+  const eventData = [60, 62, 70, 75, 38, 32, 28, 22, 20, 16, 9];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['企业数（家）', '事件数（次）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'bar', name: '企业数（家）', data: enterpriseData, itemStyle: { color: '#EF4444', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' },
+      { type: 'bar', name: '事件数（次）', data: eventData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderRiskEnvChart() {
+  const chartDom = document.getElementById('riskEnvChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = ['2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2', '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'];
+  const enterpriseData = [8, 10, 12, 10, 6, 5, 3, 2, 2, 1, 0];
+  const eventData = [9, 12, 14, 12, 7, 6, 4, 3, 3, 2, 0];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['企业数（家）', '事件数（次）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { fontSize: 10, color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'bar', name: '企业数（家）', data: enterpriseData, itemStyle: { color: '#EF4444', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' },
+      { type: 'bar', name: '事件数（次）', data: eventData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
 }
 
 function renderOverviewTab() {
@@ -286,6 +760,99 @@ function renderOverviewTab() {
   document.getElementById('metricEmployees').textContent = formatNumber(totalEmployees);
 
   renderRegionChart();
+  renderInnovationRAndDChart();
+  renderInnovationStaffChart();
+  renderInnovationPatentTypeChart();
+  renderInnovationPatentTrendChart();
+}
+
+function renderInnovationRAndDChart() {
+  const chartDom = document.getElementById('innovationRAndDChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const years = ['2021', '2022', '2023', '2024', '2025'];
+  const localData = [2.4, 3.2, 5.0, 4.5, 5.6];
+  const nationalData = [1.8, 2.2, 2.6, 2.7, 2.8];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'line' } },
+    legend: { data: ['产业内 (%)', '全国 (%)'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: years, axisLabel: { fontSize: 12, color: '#8F959E' }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', name: '占比 (%)', nameTextStyle: { color: '#8F959E', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'line', name: '产业内 (%)', data: localData, itemStyle: { color: '#2563EB' }, lineStyle: { width: 2 }, areaStyle: { color: 'rgba(37, 99, 235, 0.1)' }, symbol: 'circle', symbolSize: 6 },
+      { type: 'line', name: '全国 (%)', data: nationalData, itemStyle: { color: '#10B981' }, lineStyle: { width: 2 }, areaStyle: { color: 'rgba(16, 185, 129, 0.1)' }, symbol: 'circle', symbolSize: 6 }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderInnovationStaffChart() {
+  const chartDom = document.getElementById('innovationStaffChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const years = ['2021', '2022', '2023', '2024', '2025'];
+  const localData = [0.05, 0.06, 0, 0.05, 0];
+  const nationalData = [1.8, 0.7, 0.55, 0.65, 0.45];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'line' } },
+    legend: { data: ['产业内 (%)', '全国 (%)'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: years, axisLabel: { fontSize: 12, color: '#8F959E' }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', name: '占比 (%)', nameTextStyle: { color: '#8F959E', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'line', name: '产业内 (%)', data: localData, itemStyle: { color: '#2563EB' }, lineStyle: { width: 2 }, areaStyle: { color: 'rgba(37, 99, 235, 0.1)' }, symbol: 'circle', symbolSize: 6 },
+      { type: 'line', name: '全国 (%)', data: nationalData, itemStyle: { color: '#10B981' }, lineStyle: { width: 2 }, areaStyle: { color: 'rgba(16, 185, 129, 0.1)' }, symbol: 'circle', symbolSize: 6 }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderInnovationPatentTypeChart() {
+  const chartDom = document.getElementById('innovationPatentTypeChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  chart.setOption({
+    tooltip: { trigger: 'item' },
+    legend: { right: 0, top: 10, orient: 'vertical', textStyle: { fontSize: 11, color: '#646A73' } },
+    series: [{
+      type: 'pie',
+      radius: ['40%', '70%'],
+      center: ['40%', '50%'],
+      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      label: { show: false },
+      data: [
+        { value: 78791, name: '发明专利公布（件）', itemStyle: { color: '#2563EB' } },
+        { value: 53901, name: '发明专利授权（件）', itemStyle: { color: '#3B82F6' } },
+        { value: 40343, name: '实用新型（件）', itemStyle: { color: '#F59E0B' } },
+        { value: 6843, name: '外观设计（件）', itemStyle: { color: '#F97316' } }
+      ]
+    }]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderInnovationPatentTrendChart() {
+  const chartDom = document.getElementById('innovationPatentTrendChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const years = ['2022', '2023', '2024', '2025', '2026'];
+  const inventionData = [11000, 12000, 13000, 15000, 2000];
+  const utilityModelData = [3000, 4000, 5000, 5000, 0];
+  const designData = [1600, 1900, 2200, 2300, 0];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['发明专利（件）', '实用新型（件）', '外观设计（件）'], bottom: 0, textStyle: { fontSize: 11, color: '#646A73' } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: years, axisLabel: { fontSize: 12, color: '#8F959E' }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', name: '数量（件）', nameTextStyle: { color: '#8F959E', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { type: 'bar', name: '发明专利（件）', data: inventionData, itemStyle: { color: '#2563EB', borderRadius: [4, 4, 0, 0] }, barWidth: '25%' },
+      { type: 'bar', name: '实用新型（件）', data: utilityModelData, itemStyle: { color: '#F59E0B', borderRadius: [4, 4, 0, 0] }, barWidth: '25%' },
+      { type: 'bar', name: '外观设计（件）', data: designData, itemStyle: { color: '#10B981', borderRadius: [4, 4, 0, 0] }, barWidth: '25%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
 }
 
 function renderRegionChart() {
@@ -402,60 +969,107 @@ function showNewsDetail(id) {
   }
 }
 
+let currentSelectedGapNodeId = null;
+
 function renderGapFillingTab() {
-  if (!gapData) return;
+  const selectedChainId = document.getElementById('gapChainSelect')?.value || chainId;
+  const searchText = document.getElementById('gapSearchInput')?.value || '';
+  const riskLevel = document.getElementById('gapRiskLevelSelect')?.value || 'all';
+  const priority = document.getElementById('gapPrioritySelect')?.value || 'all';
 
-  renderGapWarnings();
-  renderSupplyMatches();
-}
-
-function renderGapWarnings() {
-  const warnings = gapData.gaps || [];
-  const warningCount = warnings.length;
-
-  document.getElementById('gapWarningCount').textContent = warningCount + ' 项预警';
-
-  const warningList = document.getElementById('gapWarningList');
-  if (!warningList) return;
-
-  if (warnings.length === 0) {
-    warningList.innerHTML = `<div class="empty-state" style="height:200px"><div class="empty-state-icon">✅</div><div class="empty-state-title">暂无预警信息</div></div>`;
+  if (selectedChainId !== chainId) {
+    chainId = selectedChainId;
+    loadData();
     return;
   }
 
-  warningList.innerHTML = warnings.slice(0, 4).map(gap => `
-    <div class="warning-item">
-      <span class="warning-icon">⚠️</span>
-      <div class="warning-content">
-        <div class="warning-title">${gap.name}</div>
-        <div class="warning-desc">本区企业：${gap.localCount}家，全国企业：${gap.nationalCount}家</div>
+  if (!gapData) return;
+
+  let gaps = gapData.gaps || [];
+
+  if (searchText) {
+    gaps = gaps.filter(g => g.name.includes(searchText));
+  }
+
+  if (riskLevel !== 'all') {
+    gaps = gaps.filter(g => g.gapType === riskLevel);
+  }
+
+  gaps = gaps.map(g => {
+    const priorityScore = g.localCount === 0 ? 0.9 : 0.6;
+    const pLevel = g.localCount === 0 ? 'P1' : 'P2';
+    const gapRatio = g.nationalCount > 0 ? ((g.nationalCount - g.localCount) / g.nationalCount * 100).toFixed(0) : '100';
+    return { ...g, priorityScore, pLevel, gapRatio };
+  });
+
+  if (priority !== 'all') {
+    gaps = gaps.filter(g => g.pLevel === priority);
+  }
+
+  gaps.sort((a, b) => {
+    if (a.pLevel !== b.pLevel) {
+      return a.pLevel === 'P1' ? -1 : 1;
+    }
+    return b.priorityScore - a.priorityScore;
+  });
+
+  const p1Count = gaps.filter(g => g.pLevel === 'P1').length;
+  const p2Count = gaps.filter(g => g.pLevel === 'P2').length;
+
+  document.getElementById('gapP1Count').textContent = 'P1 ' + p1Count;
+  document.getElementById('gapP2Count').textContent = 'P2 ' + p2Count;
+
+  const priorityList = document.getElementById('priorityList');
+  if (!priorityList) return;
+
+  if (gaps.length === 0) {
+    priorityList.innerHTML = `<div class="empty-detail"><div class="empty-icon">✅</div><div class="empty-text">暂无匹配的缺失环节</div></div>`;
+    return;
+  }
+
+  priorityList.innerHTML = gaps.map((gap, index) => `
+    <div class="priority-item ${gap.pLevel === 'P1' ? 'severe' : ''}"
+         onclick="window.location.href='chain-gap.html?chainId=${chainId}&nodeId=${gap.nodeId}'" data-node-id="${gap.nodeId}">
+      <div class="priority-prefix ${gap.pLevel.toLowerCase()}">${gap.pLevel}</div>
+      <div class="priority-info">
+        <div class="priority-name">${gap.name}</div>
+        <div class="priority-meta">
+          <div class="priority-meta-item">缺口比例 <span class="value ${gap.pLevel === 'P1' ? 'danger' : 'warning'}">${gap.gapRatio}%</span></div>
+          <div class="priority-meta-item">受影响企业 <span class="value">${gap.affectedDownstream?.length || 0}家</span></div>
+          <div class="priority-meta-item">推荐招商 <span class="value">${gap.recommended?.length || 0}家</span></div>
+          <div class="priority-meta-item">优先级分值 <span class="value">${(gap.priorityScore * 100).toFixed(0)}分</span></div>
+        </div>
       </div>
-      <span class="warning-severity ${gap.localCount === 0 ? 'high' : 'medium'}">${gap.localCount === 0 ? '高风险' : '中风险'}</span>
+      <div class="priority-actions">
+        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation();window.location.href='chain-gap.html?chainId=${chainId}&nodeId=${gap.nodeId}'">查看补链方案</button>
+        <button class="btn btn-sm btn-default" onclick="event.stopPropagation();locateInGraph('${gap.nodeId}')">定位图谱</button>
+      </div>
     </div>
   `).join('');
+
 }
 
-function renderSupplyMatches() {
-  const matches = [
-    { id: 1, title: '智能传感器制造项目', desc: '拟投资5亿，预计年产能1000万只', score: '85%', type: '制造' },
-    { id: 2, title: '工业互联网平台建设', desc: '与区内龙头企业需求高度匹配', score: '92%', type: '平台' },
-    { id: 3, title: '精密零部件加工基地', desc: '填补产业链关键环节缺口', score: '78%', type: '制造' },
-    { id: 4, title: '科技服务外包中心', desc: '提供研发、检测、认证一站式服务', score: '88%', type: '服务' }
-  ];
+function selectGapItem(nodeId) {
+  window.location.href = `chain-gap.html?chainId=${chainId}&nodeId=${nodeId}`;
+}
 
-  const matchList = document.getElementById('supplyMatchList');
-  if (!matchList) return;
+function resetGapFilters() {
+  document.getElementById('gapSearchInput').value = '';
+  document.getElementById('gapRiskLevelSelect').value = 'all';
+  document.getElementById('gapPrioritySelect').value = 'all';
+  currentSelectedGapNodeId = null;
+  renderGapFillingTab();
+}
 
-  matchList.innerHTML = matches.map(match => `
-    <div class="match-item">
-      <span class="match-icon">🎯</span>
-      <div class="match-content">
-        <div class="match-title">${match.title}</div>
-        <div class="match-desc">${match.desc}</div>
-      </div>
-      <span class="match-score">匹配度 ${match.score}</span>
-    </div>
-  `).join('');
+
+
+function locateInGraph(nodeId) {
+  switchMainTab('structure');
+  setTimeout(() => {
+    selectTreeNode(nodeId);
+    openNodeDrawer(nodeId);
+    showToast('已定位到图谱节点：' + findNodeInTree(categoryTree.tree, nodeId)?.name, 'success');
+  }, 300);
 }
 
 // ==================== 结构视图 ====================
@@ -698,7 +1312,7 @@ function createRelationNode(node, pos) {
   el.addEventListener('mouseleave', hideRelationTooltip);
   el.addEventListener('dblclick', e => {
     e.stopPropagation();
-    window.open('enterprise-profile.html?enterpriseId=' + node.id, '_blank');
+    window.open('enterprise-profile.html?enterpriseId=' + encodeURIComponent(node.id), '_blank');
   });
 
   // 节点拖拽
@@ -1005,7 +1619,7 @@ async function openNodeDrawer(id, type = 'node') {
     content = renderEnterpriseDrawerContent(enterprise);
     footer = `
       <button class="btn btn-primary" onclick="window.location.href='enterprise-network.html'">查看关系网络</button>
-      <button class="btn btn-default" onclick="window.location.href='enterprise-profile.html?enterpriseId=${enterprise.id}'">查看企业画像</button>
+      <button class="btn btn-default" onclick="window.location.href='enterprise-profile.html?enterpriseId=${encodeURIComponent(enterprise.id)}'">查看企业画像</button>
     `;
   } else {
     const node = findNodeInTree(categoryTree.tree, id);
@@ -1013,10 +1627,19 @@ async function openNodeDrawer(id, type = 'node') {
     title = node.name;
     const result = await renderNodeDrawerContent(node);
     content = result.html;
-    footer = `
-      <button class="btn btn-primary" onclick="window.location.href='enterprise-network.html'">查看企业关系网络</button>
-      <button class="btn btn-default" onclick="window.location.href='chain-gap.html?chainId=${chainId}&nodeId=${node.id}'">加入补链分析</button>
-    `;
+    
+    const isMissing = node.status === 'missing' || node.gapType === '严重缺失' || node.gapType === '轻度缺失';
+    if (isMissing) {
+      footer = `
+        <button class="btn btn-primary" onclick="window.location.href='chain-gap.html?chainId=${chainId}&nodeId=${node.id}'">跳转到强链补链</button>
+        <button class="btn btn-default" onclick="window.location.href='enterprise-network.html'">查看企业关系网络</button>
+      `;
+    } else {
+      footer = `
+        <button class="btn btn-primary" onclick="window.location.href='enterprise-network.html'">查看企业关系网络</button>
+        <button class="btn btn-default" onclick="window.location.href='chain-gap.html?chainId=${chainId}&nodeId=${node.id}'">加入补链分析</button>
+      `;
+    }
     setTimeout(() => renderEnablingPie(result.techData), 50);
   }
 
@@ -1169,7 +1792,7 @@ async function renderNodeDrawerContent(node) {
         </div>
         <div class="enterprise-list" id="enterpriseList">
           ${enterprises.map(e => `
-            <div class="enterprise-item" onclick="${e.placeholder ? '' : `window.location.href='enterprise-profile.html?enterpriseId=${e.id || e.name}'`}">
+            <div class="enterprise-item" ${e.placeholder ? '' : `onclick="navigateToEnterpriseProfile('${e.id}', '${e.name.replace(/'/g, '\\\'')}', this)" style="cursor:pointer"`}>
               <div class="enterprise-main">
                 <div class="enterprise-header">
                   <span class="enterprise-name ${e.placeholder ? 'text-muted' : 'text-primary'}">${e.name}</span>

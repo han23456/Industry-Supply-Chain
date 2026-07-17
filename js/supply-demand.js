@@ -143,7 +143,7 @@ function renderMatchResults() {
             <div class="match-actions">
               <span class="tag ${statusClass[m.status]}">${m.status}</span>
               <button class="btn btn-primary btn-sm" onclick="openMatchDrawer('${m.id}')">撮合建议</button>
-              <button class="btn btn-default btn-sm" onclick="window.open('enterprise-profile.html?enterpriseId=${otherId}','_blank')">画像</button>
+              <button class="btn btn-default btn-sm" onclick="window.open('enterprise-profile.html?enterpriseId=${encodeURIComponent(otherId)}','_blank')">画像</button>
             </div>
           </div>
         `;

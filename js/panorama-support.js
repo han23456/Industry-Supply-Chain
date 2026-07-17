@@ -87,7 +87,7 @@
         <div class="dashboard-info">年外流金额估算 · 本区服务企业 <strong>${gap.services}家</strong></div>
         <div class="dashboard-actions">
           <button class="btn btn-primary btn-sm" onclick="openSupportDrawer(${gapSi}, ${gapIi})">查看缺口详情</button>
-          <button class="btn btn-default btn-sm" onclick="window.location.href='enterprise-profile.html'">查看目标企业</button>
+          <button class="btn btn-default btn-sm" onclick="window.location.href='enterprise-profile.html?enterpriseId=ent-001'">查看目标企业</button>
         </div>
       </div>
       <div class="dashboard-card">

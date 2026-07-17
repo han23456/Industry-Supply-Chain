@@ -133,7 +133,7 @@ function renderRiskDetail(risk, enterprise) {
 
     <div class="detail-actions">
       <button class="btn btn-primary" onclick="handleRisk('${risk.id}')">${risk.status === '未处理' ? '开始处置' : '更新状态'}</button>
-      <button class="btn btn-default" onclick="window.open('enterprise-profile.html?enterpriseId=${risk.enterprise_id}','_blank')">查看企业画像</button>
+      <button class="btn btn-default" onclick="window.open('enterprise-profile.html?enterpriseId=${encodeURIComponent(risk.enterprise_id)}','_blank')">查看企业画像</button>
       <button class="btn btn-default" onclick="window.open('enterprise-network.html?focusId=${risk.enterprise_id}','_blank')">查看传导网络</button>
     </div>
   `;
