@@ -298,6 +298,59 @@
   font-size: 11px; color: var(--text-tertiary);
   white-space: nowrap;
 }
+
+/* 节点信息浮层：完整展示叶子节点信息，不影响树形布局 */
+.node-info-tooltip {
+  position: fixed;
+  z-index: 1000;
+  max-width: 280px;
+  background: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.6;
+  pointer-events: none;
+}
+.node-info-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #F0F0F0;
+}
+.node-info-tooltip-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1F2329;
+  word-break: break-all;
+}
+.node-info-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 4px;
+}
+.node-info-tooltip-label {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.node-info-tooltip-value {
+  color: var(--text);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-all;
+}
+.node-info-tooltip-value.highlight {
+  color: var(--primary);
+}
+
 .tree-children {
   padding-left: 18px;
   overflow: hidden;

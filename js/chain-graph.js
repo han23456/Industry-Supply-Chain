@@ -233,7 +233,10 @@ function renderTreeNode(node, depth, localOnly, missingOnly) {
       <div class="tree-row ${node.status === 'missing' ? 'missing' : ''} ${isSelected ? 'active' : ''}"
            data-id="${node.id}"
            onclick="onTreeRowClick('${node.id}', ${hasChildren})"
-           ondblclick="onTreeRowDblClick('${node.id}', ${node.isLeaf})">
+           ondblclick="onTreeRowDblClick('${node.id}', ${node.isLeaf})"
+           onmouseenter="showNodeInfoTooltip(event, '${node.id}')"
+           onmousemove="moveNodeInfoTooltip(event)"
+           onmouseleave="hideNodeInfoTooltip()">
         <span class="tree-toggle ${hasChildren ? '' : 'leaf'} ${childrenHtml ? '' : 'collapsed'}"
               onclick="event.stopPropagation();toggleTreeNode('${node.id}', ${hasChildren})">▼</span>
         <span class="tree-status-icon ${node.status}">${statusCfg.icon}</span>
@@ -280,6 +283,92 @@ function selectTreeNode(nodeId) {
 
 function applyTreeFilter() {
   renderTree();
+}
+
+// ==================== 节点信息浮层（叶子节点完整展示） ====================
+function showNodeInfoTooltip(event, nodeId) {
+  if (!categoryTree) return;
+  const node = findNodeInTree(categoryTree.tree, nodeId);
+  if (!node) return;
+
+  const tooltip = document.getElementById('nodeInfoTooltip');
+  const isLeaf = node.isLeaf;
+  const coverageRate = node.nationalCount ? (node.localCount / node.nationalCount * 100).toFixed(1) : 0;
+  const typeLabel = node.type
+    ? (CONFIG.enterpriseType[node.type]?.label || node.type)
+    : (isLeaf ? '叶子节点' : '目录节点');
+
+  let extraRows = '';
+  if (isLeaf) {
+    extraRows = `
+      <div class="node-info-tooltip-row">
+        <span class="node-info-tooltip-label">本区企业数</span>
+        <span class="node-info-tooltip-value">${formatNumber(node.localCount ?? 0)} 家</span>
+      </div>
+      <div class="node-info-tooltip-row">
+        <span class="node-info-tooltip-label">全国企业数</span>
+        <span class="node-info-tooltip-value">${formatNumber(node.nationalCount ?? 0)} 家</span>
+      </div>
+      <div class="node-info-tooltip-row">
+        <span class="node-info-tooltip-label">本区覆盖率</span>
+        <span class="node-info-tooltip-value highlight">${coverageRate}%</span>
+      </div>
+    `;
+  }
+
+  tooltip.innerHTML = `
+    <div class="node-info-tooltip-header">
+      <span class="node-info-tooltip-name">${node.name}</span>
+      ${renderTreeStatusTag(node.status)}
+    </div>
+    <div class="node-info-tooltip-row">
+      <span class="node-info-tooltip-label">节点ID</span>
+      <span class="node-info-tooltip-value">${node.id}</span>
+    </div>
+    <div class="node-info-tooltip-row">
+      <span class="node-info-tooltip-label">节点类型</span>
+      <span class="node-info-tooltip-value">${typeLabel}</span>
+    </div>
+    <div class="node-info-tooltip-row">
+      <span class="node-info-tooltip-label">层级</span>
+      <span class="node-info-tooltip-value">L${node.level}</span>
+    </div>
+    ${extraRows}
+  `;
+
+  tooltip.style.display = 'block';
+  positionNodeInfoTooltip(event.clientX, event.clientY);
+}
+
+function moveNodeInfoTooltip(event) {
+  positionNodeInfoTooltip(event.clientX, event.clientY);
+}
+
+function hideNodeInfoTooltip() {
+  const tooltip = document.getElementById('nodeInfoTooltip');
+  if (tooltip) tooltip.style.display = 'none';
+}
+
+function positionNodeInfoTooltip(x, y) {
+  const tooltip = document.getElementById('nodeInfoTooltip');
+  if (!tooltip) return;
+
+  const rect = tooltip.getBoundingClientRect();
+  const gap = 12;
+  let left = x + gap;
+  let top = y + gap;
+
+  if (left + rect.width > window.innerWidth) {
+    left = x - rect.width - gap;
+  }
+  if (top + rect.height > window.innerHeight) {
+    top = y - rect.height - gap;
+  }
+  if (left < 0) left = gap;
+  if (top < 0) top = gap;
+
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
 }
 
 // ==================== 视图切换 ====================
@@ -1114,6 +1203,13 @@ function renderStructureView() {
   myChart.setOption(option);
   myChart.on('click', params => {
     selectTreeNode(params.data.id);
+  });
+  myChart.on('dblclick', params => {
+    if (!params.data || !params.data.id) return;
+    const node = findNodeInTree(categoryTree.tree, params.data.id);
+    if (node && node.isLeaf) {
+      openNodeDrawer(node.id);
+    }
   });
 }
 
