@@ -14,7 +14,7 @@ let currentLayout = 'hierarchy';
 let currentZoom = 1;
 let selectedNodeId = null;
 let hiddenNodeTypes = new Set();
-let currentMainTab = 'structure';
+let currentMainTab = 'overview';
 let regionChart = null;
 
 function navigateToEnterpriseProfile(enterpriseId, enterpriseName, el) {
@@ -45,28 +45,12 @@ function init() {
 
   const storedView = localStorage.getItem('chainView_' + chainId);
   const hashView = window.location.hash.replace('#', '');
-  currentView = hashView || storedView || 'relation';
-
-  const storedLayout = localStorage.getItem('chainLayout_' + chainId);
-  currentLayout = storedLayout || 'hierarchy';
-  currentZoom = parseFloat(localStorage.getItem('chainZoom_' + chainId)) || 1;
+  currentView = hashView || storedView || 'structure';
 
   loadData();
   setupKeyboard();
-  setupLegendFilter();
   window.addEventListener('resize', debounce(() => {
-    if (myChart) myChart.resize();
-    if (currentView === 'relation') {
-      calculateRelationPositions();
-      relationNodes.forEach(node => {
-        const el = document.querySelector(`.relation-node[data-id="${node.id}"]`);
-        if (el) {
-          el.style.left = relationPositions[node.id].x + 'px';
-          el.style.top = relationPositions[node.id].y + 'px';
-        }
-      });
-      renderRelationEdges();
-    }
+    if (myChart && myChart.resize) myChart.resize();
   }, 200));
 }
 
@@ -159,38 +143,43 @@ async function loadData() {
   }
 
   renderTopInfo();
-  renderTree();
-  renderStructureView();
-  updateBottomBar();
-  updateNodeCount();
+  renderChainColumns();
+  if (currentMainTab === 'overview') {
+    renderOverviewTab();
+  }
 }
 
-function showLoading(show) {
-  document.getElementById('graphLoading').style.display = show ? 'flex' : 'none';
-}
+function showLoading(show) {}
 
 function renderTopInfo() {
-  document.getElementById('chainName').textContent = chainData.name + '产业链图谱';
   document.title = chainData.name + '产业链图谱 - 产业链/供应链图谱系统';
 
+  const chainName = document.getElementById('chainName');
+  if (chainName) chainName.textContent = chainData.name + '产业链图谱';
+
   const c = chainData.completeness_score;
-  document.getElementById('completenessValue').textContent = c + '%';
-  document.getElementById('completenessValue').style.color = c >= 80 ? '#52C41A' : c >= 60 ? '#1890FF' : '#F5222D';
-  document.getElementById('completenessRing').innerHTML = renderProgressRing(c, 48, 5);
+  const completenessValue = document.getElementById('completenessValue');
+  if (completenessValue) {
+    completenessValue.textContent = c + '%';
+    completenessValue.style.color = c >= 80 ? '#52C41A' : c >= 60 ? '#1890FF' : '#F5222D';
+  }
+  const completenessRing = document.getElementById('completenessRing');
+  if (completenessRing) completenessRing.innerHTML = renderProgressRing(c, 48, 5);
 
-  document.getElementById('chainTags').innerHTML = `
-    ${renderStrategicTag(chainData.strategic_orientation)}
-    ${renderLifecycleTag(chainData.life_cycle)}
-    <span class="tag tag-default">${CONFIG.category[chainData.category] || chainData.category}</span>
-  `;
-
-  document.getElementById('btnLayoutHierarchy').className = 'btn btn-sm ' + (currentLayout === 'hierarchy' ? 'btn-primary' : 'btn-default');
-  document.getElementById('btnLayoutForce').className = 'btn btn-sm ' + (currentLayout === 'force' ? 'btn-primary' : 'btn-default');
+  const chainTags = document.getElementById('chainTags');
+  if (chainTags) {
+    chainTags.innerHTML = `
+      ${renderStrategicTag(chainData.strategic_orientation)}
+      ${renderLifecycleTag(chainData.life_cycle)}
+      <span class="tag tag-default">${CONFIG.category[chainData.category] || chainData.category}</span>
+    `;
+  }
 }
 
 // ==================== 左侧分类树 ====================
 function renderTree() {
   const body = document.getElementById('treeBody');
+  if (!body) return;
   const localOnly = document.getElementById('filterLocalOnly')?.checked;
   const missingOnly = document.getElementById('filterMissingOnly')?.checked;
 
@@ -382,12 +371,14 @@ function switchView(view, save = true) {
   document.querySelectorAll('.view-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
 
   const chartDom = document.getElementById('mainChart');
+  if (!chartDom) return;
+
   const gapPanel = document.getElementById('gapPanel');
   const scenarioPanel = document.getElementById('scenarioPanel');
 
   chartDom.style.display = 'none';
-  gapPanel.style.display = 'none';
-  scenarioPanel.style.display = 'none';
+  if (gapPanel) gapPanel.style.display = 'none';
+  if (scenarioPanel) scenarioPanel.style.display = 'none';
 
   if (myChart) {
     myChart.dispose();
@@ -401,10 +392,10 @@ function switchView(view, save = true) {
     chartDom.style.display = 'block';
     renderRelationView();
   } else if (view === 'gap') {
-    gapPanel.style.display = 'block';
+    if (gapPanel) gapPanel.style.display = 'block';
     renderGapView();
   } else if (view === 'scenario') {
-    scenarioPanel.style.display = 'block';
+    if (scenarioPanel) scenarioPanel.style.display = 'block';
     renderScenarioView();
   }
 
@@ -440,9 +431,7 @@ function switchMainTab(tab) {
   } else if (tab === 'gap-filling') {
     setTimeout(renderGapFillingTab, 50);
   } else if (tab === 'structure') {
-    renderStructureView();
-    updateBottomBar();
-    updateNodeCount();
+    renderChainColumns();
   } else if (tab === 'risk-monitor') {
     setTimeout(renderRiskMonitorTab, 50);
   } else if (tab === 'key-enterprise') {
@@ -836,23 +825,25 @@ function renderOverviewTab() {
   document.getElementById('overviewTitle').textContent = chainData.name + '产业链';
   document.getElementById('overviewDesc').textContent = chainData.description || '该产业链涵盖多个核心环节，是区域经济发展的重要支柱产业。';
 
-  document.getElementById('statTotal').textContent = '1';
-  document.getElementById('statEnterprises').textContent = chainData.enterprise_count;
-  document.getElementById('statCompleteness').textContent = chainData.completeness_score + '%';
-  document.getElementById('statRevenue').textContent = chainData.revenue_total;
+  const statScale = document.getElementById('statScale');
+  if (statScale) statScale.textContent = chainData.revenue_total || '0';
+  const statEnterprises = document.getElementById('statEnterprises');
+  if (statEnterprises) statEnterprises.textContent = chainData.enterprise_count || '0';
+  const statCompleteness = document.getElementById('statCompleteness');
+  if (statCompleteness) statCompleteness.textContent = chainData.completeness_score + '%';
+  const statRevenue = document.getElementById('statRevenue');
+  if (statRevenue) statRevenue.textContent = chainData.revenue_total || '0';
 
-  document.getElementById('metricScale').textContent = chainData.revenue_total;
-  document.getElementById('metricCount').textContent = chainData.enterprise_count;
-  document.getElementById('metricTax').textContent = chainData.tax_contribution;
+  document.getElementById('metricScale').textContent = chainData.revenue_total || '0';
+  document.getElementById('metricCount').textContent = chainData.enterprise_count || '0';
+  document.getElementById('metricTax').textContent = chainData.tax_contribution || '0';
+  document.getElementById('metricEmployees').textContent = formatNumber(6180);
 
-  const totalEmployees = enterpriseNetwork ? enterpriseNetwork.nodes.reduce((sum, n) => sum + n.employees, 0) : 0;
-  document.getElementById('metricEmployees').textContent = formatNumber(totalEmployees);
-
-  renderRegionChart();
-  renderInnovationRAndDChart();
-  renderInnovationStaffChart();
-  renderInnovationPatentTypeChart();
-  renderInnovationPatentTrendChart();
+  renderEnterpriseLayerDashboard();
+  renderNewEnterpriseGrowthChart();
+  renderProsperityIndexChart();
+  renderMonthlyTrendCharts();
+  renderEmployeeScaleChart();
 }
 
 function renderInnovationRAndDChart() {
@@ -1155,10 +1146,14 @@ function resetGapFilters() {
 function locateInGraph(nodeId) {
   switchMainTab('structure');
   setTimeout(() => {
-    selectTreeNode(nodeId);
-    openNodeDrawer(nodeId);
-    showToast('已定位到图谱节点：' + findNodeInTree(categoryTree.tree, nodeId)?.name, 'success');
-  }, 300);
+    const node = findNodeInTree(categoryTree.tree, nodeId);
+    if (!node) return;
+    if (node.isLeaf) {
+      openSegmentModal(nodeId);
+    } else {
+      showToast('已定位到产业链环节：' + node.name, 'success');
+    }
+  }, 200);
 }
 
 // ==================== 结构视图 ====================
@@ -2143,13 +2138,492 @@ function showScoreDetail() {
 function setupKeyboard() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      closeNodeDrawer();
+      closeModal();
       if (document.body.classList.contains('fullscreen')) {
         document.body.classList.remove('fullscreen');
-        setTimeout(() => myChart && myChart.resize(), 300);
       }
     }
   });
+}
+
+// ==================== 新上下游三栏卡片结构 ====================
+
+function getChainSegments() {
+  if (!categoryTree || !categoryTree.tree || !categoryTree.tree.length) {
+    return { upstream: [], midstream: [], downstream: [] };
+  }
+  const root = categoryTree.tree[0];
+  const segments = { upstream: [], midstream: [], downstream: [] };
+  if (!root.children) return segments;
+
+  // 机器人产业按核心零部件/本体/集成系统+应用终端映射
+  if (chainId === 'chain-robot') {
+    root.children.forEach(child => {
+      if (child.name.includes('核心零部件')) segments.upstream.push(child);
+      else if (child.name.includes('机器人本体')) segments.midstream.push(child);
+      else if (child.name.includes('集成系统') || child.name.includes('应用终端')) segments.downstream.push(child);
+    });
+    return segments;
+  }
+
+  // 其他产业链按名称关键字自动映射
+  root.children.forEach(child => {
+    if (child.name.includes('上游')) segments.upstream.push(child);
+    else if (child.name.includes('中游')) segments.midstream.push(child);
+    else if (child.name.includes('下游')) segments.downstream.push(child);
+    else segments.midstream.push(child);
+  });
+  return segments;
+}
+
+function sumLocal(node) {
+  if (!node) return 0;
+  if (node.isLeaf || !node.children || !node.children.length) {
+    return node.localCount || 0;
+  }
+  return node.children.reduce((sum, child) => sum + sumLocal(child), 0);
+}
+
+function sumNational(node) {
+  if (!node) return 0;
+  if (node.isLeaf || !node.children || !node.children.length) {
+    return node.nationalCount || 0;
+  }
+  return node.children.reduce((sum, child) => sum + sumNational(child), 0);
+}
+
+function classifyNode(node) {
+  if (!node) return { key: 'broken', label: '断', color: '#9CA3AF' };
+  const local = node.localCount || 0;
+  const national = node.nationalCount || 0;
+  if (local === 0 || node.status === 'missing') {
+    return { key: 'broken', label: '断', color: '#9CA3AF' };
+  }
+  if (node.status === 'advantage') {
+    return { key: 'advantage', label: '优', color: '#FA8C16' };
+  }
+  const ratio = national > 0 ? local / national : 1;
+  if (ratio >= 0.005 || local >= 30) {
+    return { key: 'core', label: '核', color: '#165DFF' };
+  }
+  return { key: 'weak', label: '弱', color: '#52C41A' };
+}
+
+function renderChainTag(node) {
+  const cfg = classifyNode(node);
+  return `<span class="chain-row-tag" style="background:${cfg.color}">${cfg.label}</span>`;
+}
+
+function renderChainColumns() {
+  const segments = getChainSegments();
+  const upCount = segments.upstream.reduce((s, n) => s + sumLocal(n), 0);
+  const midCount = segments.midstream.reduce((s, n) => s + sumLocal(n), 0);
+  const downCount = segments.downstream.reduce((s, n) => s + sumLocal(n), 0);
+
+  const upEl = document.getElementById('upCount');
+  const midEl = document.getElementById('midCount');
+  const downEl = document.getElementById('downCount');
+  if (upEl) upEl.textContent = upCount;
+  if (midEl) midEl.textContent = midCount;
+  if (downEl) downEl.textContent = downCount;
+
+  const upColumn = document.getElementById('upColumn');
+  const midColumn = document.getElementById('midColumn');
+  const downColumn = document.getElementById('downColumn');
+  if (upColumn) upColumn.innerHTML = segments.upstream.map(renderChainPanel).join('');
+  if (midColumn) midColumn.innerHTML = segments.midstream.map(renderChainPanel).join('');
+  if (downColumn) downColumn.innerHTML = segments.downstream.map(renderChainPanel).join('');
+}
+
+function renderChainPanel(node) {
+  const localTotal = sumLocal(node);
+  const nationalTotal = sumNational(node);
+  const hasChildren = node.children && node.children.length;
+  const cfg = classifyNode(node);
+  const tag = `<span class="chain-status-tag ${cfg.key}">${cfg.label}</span>`;
+   const body = hasChildren
+    ? `<div class="chain-panel-body">${node.children.map(child => renderChainSubRow(child, 0)).join('')}</div>`
+    : '';
+  return `
+    <div class="chain-panel ${hasChildren ? '' : 'no-children'}" data-id="${node.id}">
+      <div class="chain-panel-header" onclick="onChainPanelHeaderClick('${node.id}', ${hasChildren})">
+        <span class="chain-panel-arrow">▼</span>
+        <span class="chain-panel-title">${node.name}</span>
+        ${tag}
+        <span class="chain-panel-count">(本地企业数: ${localTotal}, 全国企业数: ${nationalTotal})</span>
+      </div>
+      ${body}
+    </div>
+  `;
+}
+
+function renderChainSubRow(node, level = 0) {
+  const hasChildren = node.children && node.children.length;
+  const cfg = classifyNode(node);
+  const localCount = hasChildren ? sumLocal(node) : (node.localCount || 0);
+  const nationalCount = hasChildren ? sumNational(node) : (node.nationalCount || 0);
+  const countText = `(本地企业数: ${localCount}, 全国企业数: ${nationalCount})`;
+  const indent = level * 20;
+
+  if (hasChildren) {
+    return `
+      <div class="chain-sub-group" data-id="${node.id}">
+        <div class="chain-sub-row" onclick="toggleChainSubGroup('${node.id}', event)" style="margin-left:${indent}px">
+          <span class="chain-panel-arrow">▼</span>
+          <span class="chain-sub-name">${node.name}</span>
+          <span class="chain-status-tag ${cfg.key}">${cfg.label}</span>
+          <span class="chain-sub-count">${countText}</span>
+        </div>
+        <div class="chain-sub-children" id="chain-sub-children-${node.id}">
+          ${node.children.map(c => renderChainSubRow(c, level + 1)).join('')}
+        </div>
+      </div>
+    `;
+  }
+  return `
+    <div class="chain-sub-row" onclick="openSegmentModal('${node.id}')" style="margin-left:${indent}px">
+      <span class="chain-panel-arrow" style="visibility:hidden">▼</span>
+      <span class="chain-sub-name">${node.name}</span>
+      <span class="chain-status-tag ${cfg.key}">${cfg.label}</span>
+      <span class="chain-sub-count">${countText}</span>
+    </div>
+  `;
+}
+
+function onChainPanelHeaderClick(nodeId, hasChildren) {
+  if (hasChildren) {
+    toggleChainPanel(nodeId);
+  } else {
+    openSegmentModal(nodeId);
+  }
+}
+
+function toggleChainPanel(nodeId) {
+  const panel = document.querySelector(`.chain-panel[data-id="${nodeId}"]`);
+  if (!panel) return;
+  panel.classList.toggle('collapsed');
+}
+
+function toggleChainSubGroup(nodeId, event) {
+  if (event) event.stopPropagation();
+  const group = document.querySelector(`.chain-sub-group[data-id="${nodeId}"]`);
+  if (!group) return;
+  group.classList.toggle('collapsed');
+}
+
+function openSegmentModal(nodeId) {
+  const node = findNodeInTree(categoryTree.tree, nodeId);
+  if (!node) return;
+  const stats = buildSegmentStats(node);
+  const cfg = classifyNode(node);
+  const content = `
+    <div class="segment-modal">
+      <div class="segment-modal-head">
+        <span class="segment-modal-name">${node.name}</span>
+        <span class="segment-modal-tag" style="background:${cfg.color}">${cfg.label}</span>
+      </div>
+      <div class="segment-modal-grid">
+        <div class="segment-module">
+          <div class="segment-module-title">① 产业产值</div>
+          <div class="segment-module-body">
+            <div class="segment-metric"><span class="segment-metric-label">本地总产值</span><span class="segment-metric-value">${stats.localOutput} 亿</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">全国总产值</span><span class="segment-metric-value">${stats.nationalOutput} 亿</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">本地占全国比重</span><span class="segment-metric-value">${stats.outputShare}%</span></div>
+          </div>
+        </div>
+        <div class="segment-module">
+          <div class="segment-module-title">② 专利科创</div>
+          <div class="segment-module-body">
+            <div class="segment-metric"><span class="segment-metric-label">发明专利</span><span class="segment-metric-value">${stats.inventionPatents} 件</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">实用新型</span><span class="segment-metric-value">${stats.utilityModels} 件</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">软著</span><span class="segment-metric-value">${stats.softwareCopyrights} 项</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">高价值专利</span><span class="segment-metric-value">${stats.highValuePatents} 件</span></div>
+          </div>
+        </div>
+        <div class="segment-module">
+          <div class="segment-module-title">③ 市场竞争力</div>
+          <div class="segment-module-body">
+            <div class="segment-metric"><span class="segment-metric-label">本地市占率</span><span class="segment-metric-value">${stats.marketShare}%</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">产业链完备度</span><span class="segment-metric-value">${stats.completeness}%</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">供需缺口指数</span><span class="segment-metric-value">${stats.gapIndex}</span></div>
+          </div>
+        </div>
+        <div class="segment-module">
+          <div class="segment-module-title">④ 龙头企业统计</div>
+          <div class="segment-module-body">
+            <div class="segment-metric"><span class="segment-metric-label">规上龙头</span><span class="segment-metric-value">${stats.leadingEnterprises} 家</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">专精特新</span><span class="segment-metric-value">${stats.specializedEnterprises} 家</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">单项冠军</span><span class="segment-metric-value">${stats.singleChampions} 家</span></div>
+          </div>
+        </div>
+        <div class="segment-module">
+          <div class="segment-module-title">⑤ 全国Top100分布</div>
+          <div class="segment-module-body">
+            <div class="segment-metric"><span class="segment-metric-label">本地落地数量</span><span class="segment-metric-value">${stats.top100Local} 家</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">全国Top100总部</span><span class="segment-metric-value">${stats.top100National} 家</span></div>
+          </div>
+        </div>
+        <div class="segment-module segment-module-wide">
+          <div class="segment-module-title">⑥ 本地产业特色</div>
+          <div class="segment-module-body segment-module-text">
+            <div class="segment-feature"><span>园区载体：</span>${stats.parks}</div>
+            <div class="segment-feature"><span>专项政策：</span>${stats.policies}</div>
+            <div class="segment-feature"><span>深港协同：</span>${stats.shenzhenHongKong}</div>
+          </div>
+        </div>
+        <div class="segment-module">
+          <div class="segment-module-title">⑦ 科创能力</div>
+          <div class="segment-module-body">
+            <div class="segment-metric"><span class="segment-metric-label">研发投入占比</span><span class="segment-metric-value">${stats.rdRatio}%</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">科研平台数量</span><span class="segment-metric-value">${stats.researchPlatforms} 个</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">产学研合作项目</span><span class="segment-metric-value">${stats.industryProjects} 项</span></div>
+          </div>
+        </div>
+        <div class="segment-module">
+          <div class="segment-module-title">⑧ 行业影响力</div>
+          <div class="segment-module-body">
+            <div class="segment-metric"><span class="segment-metric-label">全国赛道排名</span><span class="segment-metric-value">第 ${stats.nationalRank} 名</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">区域辐射范围</span><span class="segment-metric-value">${stats.radiation}</span></div>
+            <div class="segment-metric"><span class="segment-metric-label">产业链话语权</span><span class="segment-metric-value">${stats.discourseRating}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  openModal(node.name, content);
+}
+
+function buildSegmentStats(node) {
+  const local = node.localCount || 0;
+  const national = node.nationalCount || 0;
+  const seed = hashCode(node.id || node.name);
+  const rand = seededRandom(seed);
+
+  const localAvgRevenue = 0.5 + rand() * 2.5; // 亿/家
+  const nationalAvgRevenue = 0.3 + rand() * 2.0;
+  const localOutput = (local * localAvgRevenue).toFixed(1);
+  const nationalOutput = (national * nationalAvgRevenue).toFixed(1);
+  const outputShare = national > 0 ? ((local / national) * 100).toFixed(1) : '0.0';
+
+  const marketShare = national > 0 ? ((local / national) * 100).toFixed(2) : '0.00';
+  const completeness = Math.min(100, Math.round(45 + rand() * 50));
+  const gapIndex = Math.min(100, Math.round(rand() * 100));
+
+  const leadingEnterprises = Math.round(local * (0.05 + rand() * 0.15));
+  const specializedEnterprises = Math.round(local * (0.08 + rand() * 0.20));
+  const singleChampions = Math.round(local * (0.01 + rand() * 0.06));
+
+  const top100Local = Math.min(20, Math.round(local * (0.005 + rand() * 0.03)));
+  const top100National = Math.min(100, Math.round(national * (0.02 + rand() * 0.08)));
+
+  const parks = ['前海智能制造产业园', '机器人产业园A区', '深港创新科技工业园'][seed % 3];
+  const policies = ['机器人产业高质量发展专项', '智能制造技改补贴', '深港科技合作计划'][seed % 3];
+  const shenzhenHongKong = '毗邻香港高校及研发机构，具备深港联合实验室与成果转化通道';
+
+  const rdRatio = (2.5 + rand() * 6.5).toFixed(2);
+  const researchPlatforms = Math.round(1 + rand() * 8);
+  const industryProjects = Math.round(rand() * 15);
+
+  const nationalRank = Math.max(1, Math.round(1 + rand() * 49));
+  const radiation = ['珠三角核心区', '粤港澳大湾区', '华南及东南亚'][seed % 3];
+  const discourseRating = ['A+ 强话语权', 'A 较强话语权', 'B 中等话语权', 'B+ 中强话语权'][seed % 4];
+
+  return {
+    localOutput, nationalOutput, outputShare,
+    inventionPatents: Math.round(local * (0.2 + rand() * 1.5)),
+    utilityModels: Math.round(local * (0.1 + rand() * 1.0)),
+    softwareCopyrights: Math.round(local * (0.05 + rand() * 0.8)),
+    highValuePatents: Math.round(local * (0.05 + rand() * 0.4)),
+    marketShare, completeness, gapIndex,
+    leadingEnterprises, specializedEnterprises, singleChampions,
+    top100Local, top100National,
+    parks, policies, shenzhenHongKong,
+    rdRatio, researchPlatforms, industryProjects,
+    nationalRank, radiation, discourseRating
+  };
+}
+
+function hashCode(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h) + str.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h);
+}
+
+function seededRandom(seed) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return function () {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function updateBottomBar() {}
+function updateNodeCount() {}
+function closeNodeDrawer() { closeModal(); }
+
+// 确保 findNodeInTree 可用
+function findNodeInTree(nodes, nodeId) {
+  for (const node of nodes) {
+    if (node.id === nodeId) return node;
+    if (node.children) {
+      const found = findNodeInTree(node.children, nodeId);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// ==================== 产业概览Tab新增图表 ====================
+function renderEnterpriseLayerDashboard() {
+  const grid = document.getElementById('enterpriseLayerGrid');
+  if (!grid) return;
+  const data = [
+    { title: '全部重点企业', value: 433, ratio: '4.2%' },
+    { title: '上市公司', value: 73, ratio: '1.5%' },
+    { title: '央企及子公司', value: 52, ratio: '0.9%' },
+    { title: '国有大型企业', value: 22, ratio: '0.5%' },
+    { title: '制造业单项冠军', value: 12, ratio: '0.3%' },
+    { title: 'IPO辅导企业', value: 3, ratio: '0.1%' },
+    { title: '世界500强子公司', value: 5, ratio: '0.2%' },
+    { title: '中国500强子公司', value: 24, ratio: '0.5%' },
+    { title: '专精特新小巨人', value: 36, ratio: '0.8%' },
+    { title: '专精特新企业', value: 162, ratio: '2.1%' },
+    { title: '高新技术企业', value: 321, ratio: '3.5%' },
+    { title: '独角兽企业', value: 3, ratio: '0.1%' }
+  ];
+  grid.innerHTML = data.map(item => `
+    <div class="layer-card" title="全省占比 ${item.ratio}">
+      <span class="layer-more">更多</span>
+      <div class="layer-card-title">${item.title}</div>
+      <div class="layer-card-value">${formatNumber(item.value)}</div>
+      <div class="layer-card-hover">全省占比 ${item.ratio}</div>
+    </div>
+  `).join('');
+}
+
+function renderNewEnterpriseGrowthChart() {
+  const chartDom = document.getElementById('newEnterpriseGrowthChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const years = ['2021', '2022', '2023', '2024', '2025'];
+  const newCount = [42, 58, 47, 63, 51];
+  const szGrowth = [12.5, 18.3, 8.7, 15.2, 11.0];
+  const gdGrowth = [10.1, 14.6, 7.2, 12.8, 9.5];
+  const markData = [];
+  szGrowth.forEach((v, i) => { if (v < 0) markData.push({ xAxis: years[i], yAxis: v, value: v }); });
+  gdGrowth.forEach((v, i) => { if (v < 0) markData.push({ xAxis: years[i], yAxis: v, value: v }); });
+
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['新增企业数量', '深圳增速', '广东增速'], bottom: 0, textStyle: { color: '#646A73', fontSize: 12 } },
+    grid: { left: '3%', right: '4%', bottom: '12%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: years, axisLabel: { color: '#8F959E' }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [
+      { type: 'value', name: '新增企业（家）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '增速（%）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E', formatter: '{value}%' }, splitLine: { show: false } }
+    ],
+    series: [
+      { name: '新增企业数量', type: 'bar', data: newCount, itemStyle: { color: '#165DFF', borderRadius: [4, 4, 0, 0] }, barWidth: '40%' },
+      { name: '深圳增速', type: 'line', yAxisIndex: 1, data: szGrowth, itemStyle: { color: '#FA8C16' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6, markPoint: { data: markData, itemStyle: { color: '#F5222D' } } },
+      { name: '广东增速', type: 'line', yAxisIndex: 1, data: gdGrowth, itemStyle: { color: '#52C41A' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6 }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderProsperityIndexChart() {
+  const chartDom = document.getElementById('prosperityIndexChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const quarters = [];
+  const immediate = [];
+  const cumulative = [];
+  let y = 2019, q = 2;
+  let imm = 94.0, cum = 99.5;
+  for (let i = 0; i < 29; i++) {
+    quarters.push(`${y}Q${q}`);
+    const change = Math.sin(i / 3) * 1.5 + (Math.random() - 0.5) * 1.2;
+    imm += change;
+    cum += change * 0.35;
+    immediate.push(+imm.toFixed(2));
+    cumulative.push(+cum.toFixed(2));
+    q++; if (q > 4) { q = 1; y++; }
+  }
+  immediate[immediate.length - 1] = 98.40;
+  cumulative[cumulative.length - 1] = 101.73;
+
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['即时指数', '累积指数'], bottom: 0, textStyle: { color: '#646A73', fontSize: 12 } },
+    grid: { left: '3%', right: '4%', bottom: '12%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLabel: { color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: { type: 'value', min: 90, max: 105, name: '景气指数', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    series: [
+      { name: '即时指数', type: 'line', data: immediate, itemStyle: { color: '#165DFF' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
+      { name: '累积指数', type: 'line', data: cumulative, itemStyle: { color: '#52C41A' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
+      { type: 'line', markLine: { data: [{ yAxis: 100, lineStyle: { color: '#9CA3AF', type: 'dashed' }, label: { formatter: '景气阈值100', position: 'end', color: '#646A73' } }], silent: true }, symbol: 'none' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderMonthlyTrendCharts() {
+  const months = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  renderMonthlyChart('monthlyEnterpriseChart', '存量企业总量', '月度新注册', months,
+    [380, 382, 383, 384, 385, 385, 386, 385, 387, 388, 389, 390],
+    [5, 8, 6, 4, 7, 3, 6, 2, 8, 5, 7, 4], '#165DFF', '#165DFF');
+  renderMonthlyChart('monthlyEmploymentChart', '产业总就业人数', '月度新增用工', months,
+    [5900, 5950, 6000, 6020, 6050, 6080, 6100, 6120, 6140, 6150, 6170, 6180],
+    [80, 120, 90, 60, 100, 70, 50, 90, 40, 80, 60, 50], '#FA8C16', '#FA8C16');
+  renderMonthlyChart('monthlyPatentChart', '累计专利总量', '月度新增专利申请', months,
+    [15800, 16020, 16250, 16480, 16700, 16950, 17180, 17400, 17650, 17880, 18100, 18350],
+    [180, 210, 195, 170, 205, 190, 150, 185, 175, 160, 140, 155], '#722ED1', '#722ED1');
+}
+
+function renderMonthlyChart(domId, lineName, barName, months, lineData, barData, lineColor, barColor) {
+  const chartDom = document.getElementById(domId);
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: [lineName, barName], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+    xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [
+      { type: 'value', name: lineName, position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: barName, position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+    ],
+    series: [
+      { name: lineName, type: 'line', data: lineData, itemStyle: { color: lineColor }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
+      { name: barName, type: 'bar', yAxisIndex: 1, data: barData, itemStyle: { color: barColor, borderRadius: [4, 4, 0, 0] }, barWidth: '40%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderEmployeeScaleChart() {
+  const chartDom = document.getElementById('employeeScaleChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const categories = ['50人以下', '50-99人', '100-299人', '300-499人', '500-999人', '1000人以上'];
+  const values = [120, 85, 95, 45, 25, 16];
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+    xAxis: { type: 'value', name: '企业数（家）', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+    yAxis: { type: 'category', data: categories, inverse: true, axisLabel: { color: '#1D2129' }, axisLine: { lineStyle: { color: '#EBEEF5' } }, splitLine: { show: false } },
+    series: [{ type: 'bar', data: values, itemStyle: { color: '#165DFF', borderRadius: [0, 4, 4, 0] }, barWidth: '50%', label: { show: true, position: 'right', color: '#165DFF', fontWeight: 600 } }]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
 }
 
 document.addEventListener('DOMContentLoaded', init);

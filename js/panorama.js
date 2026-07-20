@@ -232,7 +232,7 @@ function renderIndustryCard(item, index) {
         <div class="card-completeness">
           ${renderProgressRing(item.completeness_score, 48, 5)}
           <div class="card-completeness-info">
-            <span class="card-completeness-label">完整度</span>
+            <span class="card-completeness-label">配套覆盖率</span>
             <span class="card-completeness-value" style="color:${item.completeness_score >= 80 ? '#36CFC9' : item.completeness_score >= 60 ? '#165DFF' : '#F5222D'}">${item.completeness_score}%</span>
           </div>
         </div>
@@ -244,9 +244,9 @@ function renderIndustryCard(item, index) {
       <div class="card-metrics">
         <div class="card-metric-block">
           <div class="card-metric-title">📊 存量指标</div>
-          <div class="card-metric-item"><span class="label">税收</span><span class="value">${item.tax_contribution}亿</span></div>
-          <div class="card-metric-item"><span class="label">就业</span><span class="value">${(item.employment_count / 10000).toFixed(1)}万人</span></div>
           <div class="card-metric-item"><span class="label">营收</span><span class="value">${item.revenue_total}亿</span></div>
+          <div class="card-metric-item"><span class="label">就业</span><span class="value">${(item.employment_count / 10000).toFixed(1)}万人</span></div>
+          <div class="card-metric-item"><span class="label">规上企业数量</span><span class="value">${item.regulated_enterprise_count}家</span></div>
         </div>
         <div class="card-metric-block">
           <div class="card-metric-title">🚀 增量指标</div>
@@ -288,15 +288,15 @@ function showIndustryDetail(chainId) {
       <p style="color:#595959;font-size:13px;line-height:1.8">
         该产业链是区域重点发展的${CONFIG.strategic[chain.strategic_orientation].label}，
         当前处于${CONFIG.lifecycle[chain.life_cycle].label}阶段，
-        完整度评分${chain.completeness_score}%，关联企业${chain.enterprise_count}家。
+        配套覆盖率${chain.completeness_score}%，关联企业${chain.enterprise_count}家。
       </p>
     </div>
     <div class="mb-12">
       <div class="card-metric-title" style="font-size:14px;margin-bottom:8px">核心经济指标</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="card-metric-block"><div class="card-metric-item"><span class="label">税收贡献</span><span class="value">${chain.tax_contribution}亿</span></div></div>
-        <div class="card-metric-block"><div class="card-metric-item"><span class="label">就业人数</span><span class="value">${formatNumber(chain.employment_count)}人</span></div></div>
         <div class="card-metric-block"><div class="card-metric-item"><span class="label">总营收</span><span class="value">${chain.revenue_total}亿</span></div></div>
+        <div class="card-metric-block"><div class="card-metric-item"><span class="label">就业人数</span><span class="value">${formatNumber(chain.employment_count)}人</span></div></div>
+        <div class="card-metric-block"><div class="card-metric-item"><span class="label">规上企业数量</span><span class="value">${chain.regulated_enterprise_count}家</span></div></div>
         <div class="card-metric-block"><div class="card-metric-item"><span class="label">增速</span><span class="value growth">+${chain.growth_rate}%</span></div></div>
       </div>
     </div>
@@ -315,7 +315,7 @@ function showIndustryDetail(chainId) {
 function handleUrgentClick() {
   currentFilters = { strategic: ['all'], lifecycle: ['all'], enabling: ['all'], matrix: currentFilters.matrix || 'all', sortBy: 'urgent' };
   updateUrlAndReload();
-  showToast('已按完整度升序排列，缺失产业置顶', 'info');
+  showToast('已按配套覆盖率升序排列，缺失产业置顶', 'info');
 }
 
 function showCompletenessModal() {
@@ -329,7 +329,7 @@ function showCompletenessModal() {
   const content = `
     <div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span>平均完整度</span>
+        <span>平均配套覆盖率</span>
         <span style="font-size:20px;font-weight:700;color:#1890FF">${(data.reduce((s, i) => s + i.score * i.weight, 0) / totalWeight).toFixed(1)}%</span>
       </div>
       <div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden">
@@ -344,7 +344,7 @@ function showCompletenessModal() {
       </div>
     `).join('')}
   `;
-  openModal('完整度趋势分析', content);
+  openModal('配套覆盖率趋势分析', content);
 }
 
 function renderGapTable(gaps) {

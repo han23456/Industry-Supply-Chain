@@ -200,7 +200,7 @@ function renderAlternativeTable(risk) {
       <td>${a.capacity}</td>
       <td>${a.distance} km</td>
       <td><span class="tag ${a.feasibility === '高' ? 'tag-success' : a.feasibility === '中' ? 'tag-warning' : 'tag-default'}">${a.feasibility}</span></td>
-      <td><button class="btn btn-text btn-sm" onclick="window.open('enterprise-profile.html?enterpriseId=e-a','_blank')">查看画像</button></td>
+      <td><button class="btn btn-text btn-sm" onclick="window.open('enterprise-profile.html?enterpriseId=ent-net-001','_blank')">查看画像</button></td>
     </tr>
   `).join('');
 }

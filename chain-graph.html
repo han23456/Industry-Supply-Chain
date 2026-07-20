@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>产业链结构图谱 - 产业链/供应链图谱系统</title>
   <link rel="stylesheet" href="css/common.css?v=3">
-  <link rel="stylesheet" href="css/chain-graph.css?v=3">
+  <link rel="stylesheet" href="css/chain-graph.css?v=11">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-  <script src="js/common.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
 </head>
 <body>
   <header class="gov-header">
@@ -27,236 +27,212 @@
     </div>
   </header>
 
-  <div class="page-layout">
-    <aside class="sidebar graph-sidebar">
-      <div class="sidebar-title">功能导航</div>
-      <nav class="sidebar-menu">
-        <div class="sidebar-item" onclick="window.location.href='index.html'">
-          <span class="sidebar-icon">▦</span>
-          <span>产业全景看板</span>
+  <main class="page-content graph-page">
+    <section class="top-info-bar">
+      <div class="top-info-left">
+        <div class="breadcrumb">
+          <a href="index.html">首页</a>
+          <span class="breadcrumb-sep">/</span>
+          <span id="chainName">产业链结构图谱</span>
         </div>
-        <div class="sidebar-item" onclick="window.location.href='enterprise-network.html'">
-          <span class="sidebar-icon">🕸</span>
-          <span>企业关系网络</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='risk-warning.html'">
-          <span class="sidebar-icon">⚠️</span>
-          <span>风险预警</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='chain-gap.html'">
-          <span class="sidebar-icon">🔧</span>
-          <span>强链补链</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='supply-demand.html'">
-          <span class="sidebar-icon">📊</span>
-          <span>供需对接</span>
-        </div>
-      </nav>
-    </aside>
+        <div class="chain-tags" id="chainTags"></div>
+      </div>
+      <div class="top-info-right">
+        <button class="btn btn-primary" onclick="exportChainReport()">导出报告</button>
+        <button class="btn btn-default" onclick="toggleFullscreen()">全屏</button>
+        <button class="btn btn-default" onclick="window.location.href='index.html'">返回全景</button>
+      </div>
+    </section>
 
-    <main class="page-content graph-page">
-      <section class="top-info-bar" id="topInfoBar">
-        <div class="top-left">
-          <div class="breadcrumb">
-            <a href="index.html">首页</a>
-            <span class="sep">/</span>
-            <a href="index.html" id="backToPanorama">产业全景</a>
-            <span class="sep">/</span>
-            <span class="current" id="chainName">产业链</span>
+    <section class="main-tabs">
+      <div class="main-tab" data-tab="structure" onclick="switchMainTab('structure')">
+        <span class="main-tab-icon">🌳</span>结构视图
+      </div>
+      <div class="main-tab active" data-tab="overview" onclick="switchMainTab('overview')">
+        <span class="main-tab-icon">📊</span>产业概览
+      </div>
+      <div class="main-tab" data-tab="news" onclick="switchMainTab('news')">
+        <span class="main-tab-icon">📰</span>新闻产业
+      </div>
+      <div class="main-tab" data-tab="gap-filling" onclick="switchMainTab('gap-filling')">
+        <span class="main-tab-icon">🔧</span>强链补链
+      </div>
+      <div class="main-tab" data-tab="risk-monitor" onclick="switchMainTab('risk-monitor')">
+        <span class="main-tab-icon">⚠️</span>产业风险监测
+      </div>
+      <div class="main-tab" data-tab="key-enterprise" onclick="switchMainTab('key-enterprise')">
+        <span class="main-tab-icon">🏢</span>重点企业
+      </div>
+    </section>
+
+    <section class="tab-content" id="tabContent">
+      <!-- 结构视图：三栏布局 -->
+      <div class="tab-pane" id="tab-structure">
+        <div class="chain-legend">
+          <span class="legend-item"><i class="legend-dot" style="background:#165DFF"></i>核心环节</span>
+          <span class="legend-item"><i class="legend-dot" style="background:#FA8C16"></i>优势环节</span>
+          <span class="legend-item"><i class="legend-dot" style="background:#52C41A"></i>弱势环节</span>
+          <span class="legend-item"><i class="legend-dot" style="background:#9CA3AF"></i>断链环节</span>
+        </div>
+        <div class="structure-columns">
+          <div class="structure-column">
+            <div class="column-header">上游(<span id="upCount">0</span>)</div>
+            <div class="column-body" id="upColumn"></div>
           </div>
-          <div class="chain-tags" id="chainTags"></div>
-        </div>
-        <div class="top-center">
-          <div class="completeness-display" onclick="showScoreDetail()">
-            <span class="completeness-label">完整度评分</span>
-            <span class="completeness-value" id="completenessValue">0%</span>
-            <span id="completenessRing"></span>
+          <div class="structure-column">
+            <div class="column-header">中游(<span id="midCount">0</span>)</div>
+            <div class="column-body" id="midColumn"></div>
+          </div>
+          <div class="structure-column">
+            <div class="column-header">下游(<span id="downCount">0</span>)</div>
+            <div class="column-body" id="downColumn"></div>
           </div>
         </div>
-        <div class="top-right">
-          <button class="btn btn-default" onclick="goBackToPanorama()">← 返回看板</button>
-          <button class="btn btn-default" onclick="exportReport()">导出报告</button>
-          <button class="btn btn-primary" onclick="toggleFullscreen()">全屏展示</button>
-        </div>
-      </section>
+      </div>
 
-      <section class="main-tabs">
-        <div class="main-tab active" data-tab="structure" onclick="switchMainTab('structure')">
-          <span class="main-tab-icon">🌳</span>产业链图谱
-        </div>
-        <div class="main-tab" data-tab="overview" onclick="switchMainTab('overview')">
-          <span class="main-tab-icon">📊</span>产业概览
-        </div>
-        <div class="main-tab" data-tab="risk-monitor" onclick="switchMainTab('risk-monitor')">
-          <span class="main-tab-icon">⚠️</span>产业风险监测
-        </div>
-        <div class="main-tab" data-tab="key-enterprise" onclick="switchMainTab('key-enterprise')">
-          <span class="main-tab-icon">🏢</span>重点企业
-        </div>
-        <div class="main-tab" data-tab="news" onclick="switchMainTab('news')">
-          <span class="main-tab-icon">📰</span>新闻产业
-        </div>
-        <div class="main-tab" data-tab="gap-filling" onclick="switchMainTab('gap-filling')">
-          <span class="main-tab-icon">🔧</span>强链补链
-        </div>
-      </section>
-
-      <section class="tab-content" id="tabContent">
-        <div class="tab-pane active" id="tab-structure">
-          <section class="graph-main">
-            <aside class="node-tree card" id="nodeTree">
-              <div class="tree-filter">
-                <label class="tree-filter-item"><input type="checkbox" id="filterLocalOnly" onchange="applyTreeFilter()"> 只看本区有</label>
-                <label class="tree-filter-item"><input type="checkbox" id="filterMissingOnly" onchange="applyTreeFilter()"> 只看缺失</label>
-              </div>
-              <div class="tree-body" id="treeBody"></div>
-            </aside>
-
-            <div class="graph-canvas card" id="graphCanvasCard">
-              <div id="mainChart"></div>
-              <div class="graph-loading" id="graphLoading" style="display:none">
-                <div class="loading-spinner"></div>
-                <p>正在加载图谱数据...</p>
-              </div>
-            </div>
-          </section>
-
-          <section class="bottom-status-bar" id="bottomStatusBar">
-            <div class="legend-group" id="legendGroup">
-              <span class="legend-title">节点类型：</span>
-              <span class="legend-item" data-type="parts"><i class="dot" style="background:#1890FF"></i>零部件</span>
-              <span class="legend-item" data-type="body"><i class="dot" style="background:#52C41A"></i>本体</span>
-              <span class="legend-item" data-type="integration"><i class="dot" style="background:#722ED1"></i>集成</span>
-              <span class="legend-item" data-type="terminal"><i class="dot" style="background:#FA8C16"></i>终端</span>
-              <span class="legend-item" data-type="external"><i class="dot" style="background:#8C8C8C;border:2px dashed #595959"></i>外地</span>
-            </div>
-            <div class="legend-group" id="edgeLegendGroup">
-              <span class="legend-title">连线类型：</span>
-              <span class="legend-item"><i class="line solid" style="background:#1890FF"></i>交易</span>
-              <span class="legend-item"><i class="line dashed" style="background:#722ED1"></i>股权</span>
-              <span class="legend-item"><i class="line dashed" style="background:#D9D9D9"></i>推断</span>
-              <span class="legend-item"><i class="line dotted" style="background:#13C2C2"></i>使能</span>
-            </div>
-            <div class="layout-controls">
-              <button class="btn btn-sm btn-primary" id="btnLayoutHierarchy" onclick="switchLayout('hierarchy')">层次布局</button>
-              <button class="btn btn-sm btn-default" id="btnLayoutForce" onclick="switchLayout('force')">力导向布局</button>
-            </div>
-            <div class="zoom-controls">
-              <button class="btn btn-default btn-sm" onclick="zoomOut()">-</button>
-              <button class="btn btn-default btn-sm" onclick="zoomReset()">重置</button>
-              <button class="btn btn-default btn-sm" onclick="zoomIn()">+</button>
-              <span class="zoom-value" id="zoomValue">1.0x</span>
-            </div>
-            <div class="node-count" id="nodeCount">节点 0 / 0</div>
-          </section>
-        </div>
-
-        <div class="tab-pane" id="tab-overview">
-          <div class="overview-banner card">
-            <div class="banner-content">
-              <h2 id="overviewTitle">产业链简介</h2>
-              <p id="overviewDesc" class="banner-desc">暂无产业简介数据</p>
-            </div>
-            <div class="banner-stats">
-              <div class="banner-stat">
-                <span class="stat-value" id="statTotal">0</span>
-                <span class="stat-label">产业链总数</span>
-              </div>
-              <div class="banner-stat">
-                <span class="stat-value" id="statEnterprises">0</span>
-                <span class="stat-label">关联企业</span>
-              </div>
-              <div class="banner-stat">
-                <span class="stat-value" id="statCompleteness">0%</span>
-                <span class="stat-label">完整度</span>
-              </div>
-              <div class="banner-stat">
-                <span class="stat-value" id="statRevenue">0</span>
-                <span class="stat-label">总营收(亿)</span>
-              </div>
-            </div>
+      <!-- 产业概览 -->
+      <div class="tab-pane active" id="tab-overview">
+        <div class="overview-banner card">
+          <div class="banner-content">
+            <h2 id="overviewTitle">产业链简介</h2>
+            <p id="overviewDesc" class="banner-desc">暂无产业简介数据</p>
           </div>
+        </div>
 
-          <div class="overview-grid">
-            <div class="card overview-metrics">
-              <div class="card-header">
-                <div class="card-title">核心指标</div>
-              </div>
-              <div class="metrics-grid">
-                <div class="metric-item">
-                  <div class="metric-icon-wrap bg-blue">📈</div>
-                  <div class="metric-info">
-                    <div class="metric-name">产业规模</div>
+        <div class="overview-grid">
+          <div class="card overview-metrics">
+            <div class="card-header">
+              <div class="card-title">核心指标</div>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <div class="metric-icon-wrap bg-blue">📈</div>
+                <div class="metric-info">
+                  <div class="metric-name">产业规模</div>
+                  <div class="metric-value-row">
                     <div class="metric-num" id="metricScale">0</div>
                     <div class="metric-unit">亿</div>
                   </div>
                 </div>
-                <div class="metric-item">
-                  <div class="metric-icon-wrap bg-green">🏢</div>
-                  <div class="metric-info">
-                    <div class="metric-name">企业数量</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-icon-wrap bg-green">🏢</div>
+                <div class="metric-info">
+                  <div class="metric-name">企业数量</div>
+                  <div class="metric-value-row">
                     <div class="metric-num" id="metricCount">0</div>
                     <div class="metric-unit">家</div>
                   </div>
                 </div>
-                <div class="metric-item">
-                  <div class="metric-icon-wrap bg-orange">💰</div>
-                  <div class="metric-info">
-                    <div class="metric-name">税收贡献</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-icon-wrap bg-orange">💰</div>
+                <div class="metric-info">
+                  <div class="metric-name">税收贡献</div>
+                  <div class="metric-value-row">
                     <div class="metric-num" id="metricTax">0</div>
                     <div class="metric-unit">亿</div>
                   </div>
                 </div>
-                <div class="metric-item">
-                  <div class="metric-icon-wrap bg-purple">👥</div>
-                  <div class="metric-info">
-                    <div class="metric-name">就业人数</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-icon-wrap bg-purple">👥</div>
+                <div class="metric-info">
+                  <div class="metric-name">就业人数</div>
+                  <div class="metric-value-row">
                     <div class="metric-num" id="metricEmployees">0</div>
                     <div class="metric-unit">人</div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div class="card overview-chart">
-              <div class="card-header">
-                <div class="card-title">区域分布</div>
-              </div>
-              <div id="regionChart" style="height: 300px;"></div>
-            </div>
           </div>
+        </div>
 
+        <div class="card enterprise-layer-card">
+          <div class="card-header">
+            <div class="card-title">重点企业分层统计看板</div>
+          </div>
+          <div class="layer-grid" id="enterpriseLayerGrid">
+            <div class="layer-card"><div class="layer-card-title">全部重点企业</div><div class="layer-card-value">433</div></div>
+            <div class="layer-card"><div class="layer-card-title">上市公司</div><div class="layer-card-value">73</div></div>
+            <div class="layer-card"><div class="layer-card-title">央企及子公司</div><div class="layer-card-value">52</div></div>
+            <div class="layer-card"><div class="layer-card-title">国有大型企业</div><div class="layer-card-value">22</div></div>
+            <div class="layer-card"><div class="layer-card-title">制造业单项冠军</div><div class="layer-card-value">12</div></div>
+            <div class="layer-card"><div class="layer-card-title">IPO辅导企业</div><div class="layer-card-value">3</div></div>
+            <div class="layer-card"><div class="layer-card-title">世界500强子公司</div><div class="layer-card-value">5</div></div>
+            <div class="layer-card"><div class="layer-card-title">中国500强子公司</div><div class="layer-card-value">24</div></div>
+            <div class="layer-card"><div class="layer-card-title">专精特新小巨人</div><div class="layer-card-value">36</div></div>
+            <div class="layer-card"><div class="layer-card-title">专精特新企业</div><div class="layer-card-value">162</div></div>
+            <div class="layer-card"><div class="layer-card-title">高新技术企业</div><div class="layer-card-value">321</div></div>
+            <div class="layer-card"><div class="layer-card-title">独角兽企业</div><div class="layer-card-value">3</div></div>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title">过去五年新增企业增速对比图</div>
+          </div>
+          <div class="chart-subtitle">近五年新增企业数量及省、市增速对比，体现深圳产业带动效应</div>
+          <div id="newEnterpriseGrowthChart" style="height:360px;"></div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title">产业景气度指数趋势图</div>
+          </div>
+          <div class="chart-subtitle">2026Q2产业即时指数98.40，当期发展放缓，累积指数101.73，微景气状态</div>
+          <div id="prosperityIndexChart" style="height:360px;"></div>
+        </div>
+
+        <div class="chart-row-three">
+          <div class="card chart-card">
+            <div class="card-header"><div class="card-title">企业总数趋势图</div></div>
+            <div id="monthlyEnterpriseChart" style="height:280px;"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-header"><div class="card-title">用工总数趋势图</div></div>
+            <div id="monthlyEmploymentChart" style="height:280px;"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-header"><div class="card-title">专利总数趋势图</div></div>
+            <div id="monthlyPatentChart" style="height:280px;"></div>
+          </div>
+        </div>
+
+        <div class="overview-split-row">
           <div class="card innovation-card">
-            <div class="card-header">
-              <div class="card-title">创新成果清单</div>
-              <span class="card-hint">ℹ️</span>
-            </div>
+            <div class="card-header"><div class="card-title">创新成果清单</div></div>
             <div class="innovation-section">
               <div class="innovation-section-title">创新主体</div>
               <div class="innovation-subjects-grid">
                 <div class="innovation-subject-item">
                   <div class="innovation-subject-icon">🔬</div>
-                  <div class="innovation-subject-name">有发明专利企业</div>
-                  <div class="innovation-subject-value">644</div>
-                  <div class="innovation-subject-unit">家</div>
+                  <div>
+                    <div class="innovation-subject-name">有发明专利企业</div>
+                    <div class="innovation-value-row"><div class="innovation-subject-value">644</div><div class="innovation-subject-unit">家</div></div>
+                  </div>
                 </div>
                 <div class="innovation-subject-item">
                   <div class="innovation-subject-icon">🔥</div>
-                  <div class="innovation-subject-name">高新技术企业</div>
-                  <div class="innovation-subject-value">321</div>
-                  <div class="innovation-subject-unit">家</div>
+                  <div>
+                    <div class="innovation-subject-name">高新技术企业</div>
+                    <div class="innovation-value-row"><div class="innovation-subject-value">321</div><div class="innovation-subject-unit">家</div></div>
+                  </div>
                 </div>
                 <div class="innovation-subject-item">
                   <div class="innovation-subject-icon">💪</div>
-                  <div class="innovation-subject-name">科技小巨人企业</div>
-                  <div class="innovation-subject-value">0</div>
-                  <div class="innovation-subject-unit">家</div>
+                  <div>
+                    <div class="innovation-subject-name">科技小巨人企业</div>
+                    <div class="innovation-value-row"><div class="innovation-subject-value">0</div><div class="innovation-subject-unit">家</div></div>
+                  </div>
                 </div>
                 <div class="innovation-subject-item">
                   <div class="innovation-subject-icon">🏭</div>
-                  <div class="innovation-subject-name">专精特新中小企业</div>
-                  <div class="innovation-subject-value">162</div>
-                  <div class="innovation-subject-unit">家</div>
+                  <div>
+                    <div class="innovation-subject-name">专精特新中小企业</div>
+                    <div class="innovation-value-row"><div class="innovation-subject-value">162</div><div class="innovation-subject-unit">家</div></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -264,16 +240,14 @@
               <div class="innovation-section-title">创新空间</div>
               <div class="innovation-spaces-grid">
                 <div class="innovation-space-item">
-                  <div class="innovation-space-icon">📦</div>
-                  <div class="innovation-space-name">众创空间</div>
+                  <div class="innovation-space-header"><div class="innovation-space-icon">📦</div><div class="innovation-space-name">众创空间</div></div>
                   <div class="innovation-space-levels">
                     <span class="space-level">国家级 <strong>0</strong></span>
                     <span class="space-level">省级 <strong>0</strong></span>
                   </div>
                 </div>
                 <div class="innovation-space-item">
-                  <div class="innovation-space-icon">🏢</div>
-                  <div class="innovation-space-name">科技企业孵化器</div>
+                  <div class="innovation-space-header"><div class="innovation-space-icon">🏢</div><div class="innovation-space-name">科技企业孵化器</div></div>
                   <div class="innovation-space-levels">
                     <span class="space-level">国家级 <strong>0</strong></span>
                     <span class="space-level">省级 <strong>0</strong></span>
@@ -281,315 +255,186 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="innovation-chart-row">
-            <div class="card innovation-chart-card">
-              <div class="card-header">
-                <div class="card-title">创新投入</div>
-                <button class="btn btn-sm btn-default innovation-export-btn">导出</button>
+            <div class="innovation-section">
+              <div class="innovation-section-title">创新载体</div>
+              <div class="innovation-carriers-bar">
+                <span class="carrier-tag">国家级实验室 <strong>2</strong></span>
+                <span class="carrier-tag">省级实验室 <strong>5</strong></span>
+                <span class="carrier-tag">工程研究中心 <strong>8</strong></span>
+                <span class="carrier-tag">企业技术中心 <strong>12</strong></span>
               </div>
-              <div class="innovation-chart-title">研发投入占比</div>
-              <div class="innovation-chart-desc">深圳市产业内上市公司近5年平均研发投入占比为4.24%，高于全国产业内上市公司近5年平均研发投入占比2.51%，创新投入水平较高。</div>
-              <div id="innovationRAndDChart" style="height:250px"></div>
-            </div>
-            <div class="card innovation-chart-card">
-              <div class="card-header">
-                <div class="card-title">创新投入</div>
-                <button class="btn btn-sm btn-default innovation-export-btn">导出</button>
-              </div>
-              <div class="innovation-chart-title">研发人员占比</div>
-              <div class="innovation-chart-desc">深圳市产业内上市公司近5年平均研发人员占比为0.14%，低于全国产业内上市公司近5年平均研发人员占比0.82%。</div>
-              <div id="innovationStaffChart" style="height:250px"></div>
             </div>
           </div>
 
-          <div class="innovation-chart-row">
-            <div class="card innovation-chart-card">
-              <div class="card-header">
-                <div class="card-title">创新产出</div>
-                <button class="btn btn-sm btn-default innovation-export-btn">导出</button>
-              </div>
-              <div class="innovation-chart-title">专利类型分布</div>
-              <div class="innovation-chart-desc">广东省深圳市产业内企业拥有专利总数179878件，其中发明专利132692件，占比73.8%，发明专利授权53901件，占比30.0%。</div>
-              <div id="innovationPatentTypeChart" style="height:250px"></div>
+          <div class="card chart-card">
+            <div class="card-header"><div class="card-title">用工规模结构横向条形图</div></div>
+            <div id="employeeScaleChart" style="height:360px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 新闻产业 -->
+      <div class="tab-pane" id="tab-news">
+        <div class="news-filter">
+          <button class="news-tab active" data-news-type="all" onclick="filterNews('all')">全部</button>
+          <button class="news-tab" data-news-type="policy" onclick="filterNews('policy')">政策新闻</button>
+          <button class="news-tab" data-news-type="industry" onclick="filterNews('industry')">产业动态</button>
+          <button class="news-tab" data-news-type="enterprise" onclick="filterNews('enterprise')">企业资讯</button>
+          <button class="news-tab" data-news-type="report" onclick="filterNews('report')">行业报告</button>
+        </div>
+        <div class="news-list card" id="newsList">
+          <div class="news-skeleton">
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 强链补链 -->
+      <div class="tab-pane" id="tab-gap-filling">
+        <div class="card gap-priority-list-card">
+          <div class="card-header">
+            <div class="card-title">缺失环节优先级列表</div>
+            <div class="card-stats">
+              <span class="stat-badge badge-danger" id="gapP1Count">0</span>
+              <span class="stat-badge badge-warning" id="gapP2Count">0</span>
             </div>
-            <div class="card innovation-chart-card">
-              <div class="card-header">
-                <div class="card-title">创新产出</div>
-                <div class="card-header-right">
-                  <span class="patent-tab active">专利总数</span>
-                  <span class="patent-tab">每百家企业专利数</span>
-                </div>
-              </div>
-              <div class="innovation-chart-title">专利新增趋势</div>
-              <div class="innovation-chart-desc">广东省深圳市产业内企业近5年一共新增专利申请76481件。2022年-2025年平均每年新增专利18431件，其中2024年新增最多。</div>
-              <div id="innovationPatentTrendChart" style="height:250px"></div>
+          </div>
+          <div class="priority-list" id="priorityList">
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 产业风险监测 -->
+      <div class="tab-pane" id="tab-risk-monitor">
+        <div class="risk-overview-card card">
+          <div class="card-header"><div class="card-title">风险概览</div></div>
+          <div class="risk-overview-grid">
+            <div class="risk-stat"><div class="risk-stat-value" id="riskTotalEnterprises">0</div><div class="risk-stat-label">监测企业数</div></div>
+            <div class="risk-stat"><div class="risk-stat-value risk-high" id="riskHighCount">0</div><div class="risk-stat-label">高风险企业</div></div>
+            <div class="risk-stat"><div class="risk-stat-value risk-medium" id="riskMediumCount">0</div><div class="risk-stat-label">中风险企业</div></div>
+            <div class="risk-stat"><div class="risk-stat-value risk-low" id="riskLowCount">0</div><div class="risk-stat-label">低风险企业</div></div>
+          </div>
+        </div>
+        <div class="risk-section-card card">
+          <div class="card-header"><div class="card-title">经营风险</div></div>
+          <div class="risk-section-grid">
+            <div class="risk-chart-box">
+              <div class="risk-chart-header"><div class="risk-chart-title">经营异常</div></div>
+              <div class="risk-chart-desc">广东省深圳市该产业近4个季度有527家企业发生了经营异常，共发生532次，相比上个周期下降30.37%。</div>
+              <div id="riskBusinessChart" style="height:220px"></div>
+            </div>
+            <div class="risk-chart-box">
+              <div class="risk-chart-header"><div class="risk-chart-title">抽查检查/双随机抽查异常</div></div>
+              <div class="risk-chart-desc">广东省深圳市该产业近4个季度有1家企业发生了抽查检查/双随机抽查异常，共发生1次，相比上个周期下降88.89%。</div>
+              <div id="riskInspectionChart" style="height:220px"></div>
             </div>
           </div>
         </div>
-
-        <div class="tab-pane" id="tab-news">
-          <div class="news-filter">
-            <button class="news-tab active" data-news-type="all" onclick="filterNews('all')">全部</button>
-            <button class="news-tab" data-news-type="policy" onclick="filterNews('policy')">政策新闻</button>
-            <button class="news-tab" data-news-type="industry" onclick="filterNews('industry')">产业动态</button>
-            <button class="news-tab" data-news-type="enterprise" onclick="filterNews('enterprise')">企业资讯</button>
-            <button class="news-tab" data-news-type="report" onclick="filterNews('report')">行业报告</button>
-          </div>
-          <div class="news-list card" id="newsList">
-            <div class="news-skeleton">
-              <div class="skeleton-item"></div>
-              <div class="skeleton-item"></div>
-              <div class="skeleton-item"></div>
+        <div class="risk-section-card card">
+          <div class="card-header"><div class="card-title">税务风险</div></div>
+          <div class="risk-section-grid">
+            <div class="risk-chart-box">
+              <div class="risk-chart-header"><div class="risk-chart-title">纳税非正常户</div></div>
+              <div class="risk-chart-desc">广东省深圳市该产业近4个季度有0家企业被认定为纳税非正常户，相比上个周期保持不变。</div>
+              <div id="riskTaxChart" style="height:220px"></div>
+            </div>
+            <div class="risk-chart-box">
+              <div class="risk-chart-header"><div class="risk-chart-title">欠税信息</div></div>
+              <div class="risk-chart-desc">广东省深圳市该产业近4个季度有168家企业发生了欠税信息，共发生324次，相比上个周期下降7.95%。</div>
+              <div id="riskTaxDebtChart" style="height:220px"></div>
             </div>
           </div>
         </div>
-
-        <div class="tab-pane" id="tab-gap-filling">
-          <div class="card gap-priority-list-card">
-            <div class="card-header">
-              <div class="card-title">缺失环节优先级列表</div>
-              <div class="card-stats">
-                <span class="stat-badge badge-danger" id="gapP1Count">0</span>
-                <span class="stat-badge badge-warning" id="gapP2Count">0</span>
-              </div>
+        <div class="risk-section-card card">
+          <div class="card-header"><div class="card-title">债务风险</div></div>
+          <div class="risk-section-grid">
+            <div class="risk-chart-box">
+              <div class="risk-chart-header"><div class="risk-chart-title">失信人</div></div>
+              <div class="risk-chart-desc">广东省深圳市该产业近4个季度有47家企业被认定为失信人，共发生104次事件，相比上个周期上升42.47%。</div>
+              <div id="riskCreditChart" style="height:220px"></div>
             </div>
-            <div class="priority-list" id="priorityList">
-              <div class="skeleton-item"></div>
-              <div class="skeleton-item"></div>
-              <div class="skeleton-item"></div>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="tab-pane" id="tab-risk-monitor">
-          <div class="risk-overview-card card">
-            <div class="card-header">
-              <div class="card-title">风险概览</div>
-            </div>
-            <div class="risk-overview-grid">
-              <div class="risk-stat">
-                <div class="risk-stat-value" id="riskTotalEnterprises">0</div>
-                <div class="risk-stat-label">监测企业数</div>
-              </div>
-              <div class="risk-stat">
-                <div class="risk-stat-value risk-high" id="riskHighCount">0</div>
-                <div class="risk-stat-label">高风险企业</div>
-              </div>
-              <div class="risk-stat">
-                <div class="risk-stat-value risk-medium" id="riskMediumCount">0</div>
-                <div class="risk-stat-label">中风险企业</div>
-              </div>
-              <div class="risk-stat">
-                <div class="risk-stat-value risk-low" id="riskLowCount">0</div>
-                <div class="risk-stat-label">低风险企业</div>
-              </div>
-            </div>
-          </div>
-          <div class="risk-section-card card">
-            <div class="card-header">
-              <div class="card-title">经营风险</div>
-            </div>
-            <div class="risk-section-grid">
-              <div class="risk-chart-box">
-                <div class="risk-chart-header">
-                  <div class="risk-chart-title">经营异常</div>
-                </div>
-                <div class="risk-chart-desc">广东省深圳市该产业近4个季度有527家企业发生了经营异常，共发生532次，相比上个周期下降30.37%。</div>
-                <div id="riskBusinessChart" style="height:220px"></div>
-              </div>
-              <div class="risk-chart-box">
-                <div class="risk-chart-header">
-                  <div class="risk-chart-title">抽查检查/双随机抽查异常</div>
-                </div>
-                <div class="risk-chart-desc">广东省深圳市该产业近4个季度有1家企业发生了抽查检查/双随机抽查异常，共发生1次，相比上个周期下降88.89%。</div>
-                <div id="riskInspectionChart" style="height:220px"></div>
-              </div>
-            </div>
-          </div>
-          <div class="risk-section-card card">
-            <div class="card-header">
-              <div class="card-title">税务风险</div>
-            </div>
-            <div class="risk-section-grid">
-              <div class="risk-chart-box">
-                <div class="risk-chart-header">
-                  <div class="risk-chart-title">纳税非正常户</div>
-                </div>
-                <div class="risk-chart-desc">广东省深圳市该产业近4个季度有0家企业被认定为纳税非正常户，相比上个周期保持不变。</div>
-                <div id="riskTaxChart" style="height:220px"></div>
-              </div>
-              <div class="risk-chart-box">
-                <div class="risk-chart-header">
-                  <div class="risk-chart-title">欠税信息</div>
-                </div>
-                <div class="risk-chart-desc">广东省深圳市该产业近4个季度有168家企业发生了欠税信息，共发生324次，相比上个周期下降7.95%。</div>
-                <div id="riskTaxDebtChart" style="height:220px"></div>
-              </div>
-            </div>
-          </div>
-          <div class="risk-section-card card">
-            <div class="card-header">
-              <div class="card-title">债务风险</div>
-            </div>
-            <div class="risk-section-grid">
-              <div class="risk-chart-box">
-                <div class="risk-chart-header">
-                  <div class="risk-chart-title">失信人</div>
-                </div>
-                <div class="risk-chart-desc">广东省深圳市该产业近4个季度有47家企业被认定为失信人，共发生104次事件，相比上个周期上升42.47%。</div>
-                <div id="riskCreditChart" style="height:220px"></div>
-              </div>
-              <div class="risk-chart-box">
-                <div class="risk-chart-header">
-                  <div class="risk-chart-title">终本案件</div>
-                </div>
-                <div class="risk-chart-desc">广东省深圳市该产业近4个季度有87家企业发生了终本案件，共发生176次，相比上个周期上升4.14%。</div>
-                <div id="riskCaseChart" style="height:220px"></div>
-              </div>
-            </div>
-          </div>
-          <div class="risk-section-card card">
-            <div class="card-header">
-              <div class="card-title">监管处罚风险</div>
-            </div>
-            <div class="risk-section-grid">
-              <div class="risk-chart-box">
-                <div class="risk-chart-header">
-                  <div class="risk-chart-title">行政处罚</div>
-                </div>
-                <div class="risk-chart-desc">广东省深圳市该产业近4个季度有66家企业发生了行政处罚，共发生75次，相比上个周期下降64.45%。</div>
-                <div id="riskAdminChart" style="height:220px"></div>
-              </div>
-              <div class="risk-chart-box">
-                <div class="risk-chart-header">
-                  <div class="risk-chart-title">环保处罚</div>
-                </div>
-                <div class="risk-chart-desc">广东省深圳市该产业近4个季度有10家企业发生了环保处罚，共发生13次，相比上个周期下降50.09%。</div>
-                <div id="riskEnvChart" style="height:220px"></div>
-              </div>
+            <div class="risk-chart-box">
+              <div class="risk-chart-header"><div class="risk-chart-title">终本案件</div></div>
+              <div class="risk-chart-desc">广东省深圳市该产业近4个季度有87家企业发生了终本案件，共发生176次，相比上个周期上升4.14%。</div>
+              <div id="riskCaseChart" style="height:220px"></div>
             </div>
           </div>
         </div>
-
-        <div class="tab-pane" id="tab-key-enterprise">
-          <div class="key-enterprise-card card">
-            <div class="card-header">
-              <div class="card-title">重点企业数量</div>
+        <div class="risk-section-card card">
+          <div class="card-header"><div class="card-title">监管处罚风险</div></div>
+          <div class="risk-section-grid">
+            <div class="risk-chart-box">
+              <div class="risk-chart-header"><div class="risk-chart-title">行政处罚</div></div>
+              <div class="risk-chart-desc">广东省深圳市该产业近4个季度有66家企业发生了行政处罚，共发生75次，相比上个周期下降64.45%。</div>
+              <div id="riskAdminChart" style="height:220px"></div>
             </div>
-            <div class="key-enterprise-grid">
-              <div class="key-enterprise-item primary">
-                <div class="key-enterprise-value">433</div>
-                <div class="key-enterprise-label">全部重点企业</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">73</div>
-                <div class="key-enterprise-label">上市公司</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">3</div>
-                <div class="key-enterprise-label">IPO辅导</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">52</div>
-                <div class="key-enterprise-label">央企及其子公司</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">22</div>
-                <div class="key-enterprise-label">国有大型企业</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">12</div>
-                <div class="key-enterprise-label">制造业单项冠军</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">5</div>
-                <div class="key-enterprise-label">世界500强及其子公司</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">24</div>
-                <div class="key-enterprise-label">中国500强及其子公司</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">36</div>
-                <div class="key-enterprise-label">专精特新小巨人</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">162</div>
-                <div class="key-enterprise-label">专精特新企业</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">321</div>
-                <div class="key-enterprise-label">高新技术企业</div>
-              </div>
-              <div class="key-enterprise-item">
-                <div class="key-enterprise-value">3</div>
-                <div class="key-enterprise-label">独角兽企业</div>
-              </div>
+            <div class="risk-chart-box">
+              <div class="risk-chart-header"><div class="risk-chart-title">环保处罚</div></div>
+              <div class="risk-chart-desc">广东省深圳市该产业近4个季度有10家企业发生了环保处罚，共发生13次，相比上个周期下降50.09%。</div>
+              <div id="riskEnvChart" style="height:220px"></div>
             </div>
           </div>
-          <div class="key-enterprise-chart-row">
-            <div class="card key-enterprise-chart-card">
-              <div class="card-header">
-                <div class="card-title">近五年企业数量变化趋势</div>
-              </div>
-              <div id="keyEnterpriseTrendChart" style="height:280px"></div>
-            </div>
-            <div class="card key-enterprise-chart-card">
-              <div class="card-header">
-                <div class="card-title">近五年新增企业数量变化趋势</div>
-              </div>
-              <div id="keyEnterpriseNewChart" style="height:280px"></div>
-            </div>
-          </div>
-          <div class="key-enterprise-chart-row">
-            <div class="card key-enterprise-chart-card">
-              <div class="card-header">
-                <div class="card-title">注册资本分布</div>
-              </div>
-              <div id="keyEnterpriseCapitalChart" style="height:280px"></div>
-            </div>
-            <div class="card key-enterprise-chart-card">
-              <div class="card-header">
-                <div class="card-title">成立年限分布</div>
-              </div>
-              <div id="keyEnterpriseAgeChart" style="height:280px"></div>
-            </div>
-          </div>
-          <div class="key-enterprise-chart-row">
-            <div class="card key-enterprise-chart-card">
-              <div class="card-header">
-                <div class="card-title">细分领域分布</div>
-              </div>
-              <div id="keyEnterpriseDomainChart" style="height:280px"></div>
-            </div>
-            <div class="card key-enterprise-chart-card">
-              <div class="card-header">
-                <div class="card-title">环节分布TOP5</div>
-              </div>
-              <div id="keyEnterpriseLinkChart" style="height:280px"></div>
-            </div>
-          </div>
-
         </div>
-      </section>
-    </main>
-  </div>
+      </div>
 
-  <div class="node-info-tooltip" id="nodeInfoTooltip" style="display:none"></div>
+      <!-- 重点企业 -->
+      <div class="tab-pane" id="tab-key-enterprise">
+        <div class="key-enterprise-card card">
+          <div class="card-header"><div class="card-title">重点企业数量</div></div>
+          <div class="key-enterprise-grid">
+            <div class="key-enterprise-item primary"><div class="key-enterprise-value">433</div><div class="key-enterprise-label">全部重点企业</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">73</div><div class="key-enterprise-label">上市公司</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">3</div><div class="key-enterprise-label">IPO辅导</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">52</div><div class="key-enterprise-label">央企及其子公司</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">22</div><div class="key-enterprise-label">国有大型企业</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">12</div><div class="key-enterprise-label">制造业单项冠军</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">5</div><div class="key-enterprise-label">世界500强及其子公司</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">24</div><div class="key-enterprise-label">中国500强及其子公司</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">36</div><div class="key-enterprise-label">专精特新小巨人</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">162</div><div class="key-enterprise-label">专精特新企业</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">321</div><div class="key-enterprise-label">高新技术企业</div></div>
+            <div class="key-enterprise-item"><div class="key-enterprise-value">3</div><div class="key-enterprise-label">独角兽企业</div></div>
+          </div>
+        </div>
+        <div class="key-enterprise-chart-row">
+          <div class="card key-enterprise-chart-card">
+            <div class="card-header"><div class="card-title">近五年企业数量变化趋势</div></div>
+            <div id="keyEnterpriseTrendChart" style="height:280px"></div>
+          </div>
+          <div class="card key-enterprise-chart-card">
+            <div class="card-header"><div class="card-title">近五年新增企业数量变化趋势</div></div>
+            <div id="keyEnterpriseNewChart" style="height:280px"></div>
+          </div>
+        </div>
+        <div class="key-enterprise-chart-row">
+          <div class="card key-enterprise-chart-card">
+            <div class="card-header"><div class="card-title">注册资本分布</div></div>
+            <div id="keyEnterpriseCapitalChart" style="height:280px"></div>
+          </div>
+          <div class="card key-enterprise-chart-card">
+            <div class="card-header"><div class="card-title">成立年限分布</div></div>
+            <div id="keyEnterpriseAgeChart" style="height:280px"></div>
+          </div>
+        </div>
+        <div class="key-enterprise-chart-row">
+          <div class="card key-enterprise-chart-card">
+            <div class="card-header"><div class="card-title">细分领域分布</div></div>
+            <div id="keyEnterpriseDomainChart" style="height:280px"></div>
+          </div>
+          <div class="card key-enterprise-chart-card">
+            <div class="card-header"><div class="card-title">环节分布TOP5</div></div>
+            <div id="keyEnterpriseLinkChart" style="height:280px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-  <div class="drawer-overlay" id="drawerOverlay" onclick="closeNodeDrawer()"></div>
-  <aside class="drawer" id="nodeDrawer">
-    <div class="drawer-header">
-      <span class="drawer-title" id="drawerTitle">环节详情</span>
-      <button class="drawer-close" onclick="closeNodeDrawer()">✕</button>
-    </div>
-    <div class="drawer-body" id="drawerBody"></div>
-    <div class="drawer-footer" id="drawerFooter"></div>
-  </aside>
-
-  <script src="js/chain-graph.js"></script>
+  <script src="js/chain-graph.js?v=12"></script>
 </body>
 </html>

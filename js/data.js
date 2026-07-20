@@ -22,6 +22,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 4,
     investment_completed: 3,
     growth_rate: 14.6,
+    sub_industry_count: 6,
+    regulated_enterprise_count: 268,
     key_gaps: [
       { name: '云计算基础设施', count: 2 },
       { name: '数据安全服务', count: 1 }
@@ -44,6 +46,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 2,
     investment_completed: 2,
     growth_rate: 8.9,
+    sub_industry_count: 8,
+    regulated_enterprise_count: 231,
     key_gaps: [
       { name: '跨境支付结算', count: 3 },
       { name: '绿色金融产品', count: 2 }
@@ -66,6 +70,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 3,
     investment_completed: 4,
     growth_rate: 11.2,
+    sub_industry_count: 7,
+    regulated_enterprise_count: 343,
     key_gaps: [
       { name: '海外仓网络', count: 1 },
       { name: '冷链物流装备', count: 2 }
@@ -88,6 +94,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 2,
     investment_completed: 1,
     growth_rate: 16.8,
+    sub_industry_count: 5,
+    regulated_enterprise_count: 174,
     key_gaps: [
       { name: '涉外法律服务', count: 0 },
       { name: '国际仲裁机构', count: 1 }
@@ -110,6 +118,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 3,
     investment_completed: 2,
     growth_rate: 18.5,
+    sub_industry_count: 6,
+    regulated_enterprise_count: 152,
     key_gaps: [
       { name: '检验检测认证', count: 2 },
       { name: '技术转移服务', count: 1 }
@@ -132,6 +142,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 2,
     investment_completed: 1,
     growth_rate: 12.4,
+    sub_industry_count: 8,
+    regulated_enterprise_count: 121,
     key_gaps: [
       { name: '高端演艺场馆', count: 0 },
       { name: '邮轮旅游服务', count: 1 }
@@ -155,6 +167,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 6,
     investment_completed: 3,
     growth_rate: 32.6,
+    sub_industry_count: 9,
+    regulated_enterprise_count: 251,
     key_gaps: [
       { name: '精密减速机', count: 0 },
       { name: '具身智能大模型', count: 1 }
@@ -177,6 +191,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 4,
     investment_completed: 2,
     growth_rate: 24.3,
+    sub_industry_count: 6,
+    regulated_enterprise_count: 92,
     key_gaps: [
       { name: '深海探测装备', count: 0 },
       { name: '海洋传感器', count: 1 }
@@ -199,6 +215,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 5,
     investment_completed: 3,
     growth_rate: 21.7,
+    sub_industry_count: 7,
+    regulated_enterprise_count: 203,
     key_gaps: [
       { name: '高端显示面板', count: 2 },
       { name: '射频前端芯片', count: 1 }
@@ -221,6 +239,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 5,
     investment_completed: 2,
     growth_rate: 38.9,
+    sub_industry_count: 5,
+    regulated_enterprise_count: 64,
     key_gaps: [
       { name: 'eVTOL整机', count: 0 },
       { name: '低空空域管理', count: 0 }
@@ -244,6 +264,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 3,
     investment_completed: 1,
     growth_rate: 28.6,
+    sub_industry_count: 4,
+    regulated_enterprise_count: 56,
     key_gaps: [
       { name: '基因测序设备', count: 0 },
       { name: '细胞治疗CDMO', count: 1 }
@@ -266,6 +288,8 @@ const MOCK_INDUSTRY_CHAINS = [
     projects_under_construction: 4,
     investment_completed: 2,
     growth_rate: 35.2,
+    sub_industry_count: 5,
+    regulated_enterprise_count: 81,
     key_gaps: [
       { name: '数据交易所', count: 1 },
       { name: '隐私计算', count: 0 }
