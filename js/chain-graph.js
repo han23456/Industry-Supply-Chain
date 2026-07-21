@@ -2477,62 +2477,16 @@ function findNodeInTree(nodes, nodeId) {
   return null;
 }
 
-// ==================== 产业概览Tab新增图表 ====================
-function renderEnterpriseLayerDashboard() {
-  const grid = document.getElementById('enterpriseLayerGrid');
-  if (!grid) return;
-  const data = [
-    { title: '全部重点企业', value: 433, ratio: '4.2%' },
-    { title: '上市公司', value: 73, ratio: '1.5%' },
-    { title: '央企及子公司', value: 52, ratio: '0.9%' },
-    { title: '国有大型企业', value: 22, ratio: '0.5%' },
-    { title: '制造业单项冠军', value: 12, ratio: '0.3%' },
-    { title: 'IPO辅导企业', value: 3, ratio: '0.1%' },
-    { title: '世界500强子公司', value: 5, ratio: '0.2%' },
-    { title: '中国500强子公司', value: 24, ratio: '0.5%' },
-    { title: '专精特新小巨人', value: 36, ratio: '0.8%' },
-    { title: '专精特新企业', value: 162, ratio: '2.1%' },
-    { title: '高新技术企业', value: 321, ratio: '3.5%' },
-    { title: '独角兽企业', value: 3, ratio: '0.1%' }
-  ];
-  grid.innerHTML = data.map(item => `
-    <div class="layer-card" title="全省占比 ${item.ratio}">
-      <span class="layer-more">更多</span>
-      <div class="layer-card-title">${item.title}</div>
-      <div class="layer-card-value">${formatNumber(item.value)}</div>
-      <div class="layer-card-hover">全省占比 ${item.ratio}</div>
-    </div>
-  `).join('');
-}
+// ==================== 产业概览驾驶舱图表 ====================
+function renderOverviewTab() {
+  if (!chainData) return;
 
-function renderNewEnterpriseGrowthChart() {
-  const chartDom = document.getElementById('newEnterpriseGrowthChart');
-  if (!chartDom) return;
-  const chart = echarts.init(chartDom);
-  const years = ['2021', '2022', '2023', '2024', '2025'];
-  const newCount = [42, 58, 47, 63, 51];
-  const szGrowth = [12.5, 18.3, 8.7, 15.2, 11.0];
-  const gdGrowth = [10.1, 14.6, 7.2, 12.8, 9.5];
-  const markData = [];
-  szGrowth.forEach((v, i) => { if (v < 0) markData.push({ xAxis: years[i], yAxis: v, value: v }); });
-  gdGrowth.forEach((v, i) => { if (v < 0) markData.push({ xAxis: years[i], yAxis: v, value: v }); });
-
-  chart.setOption({
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['新增企业数量', '深圳增速', '广东增速'], bottom: 0, textStyle: { color: '#646A73', fontSize: 12 } },
-    grid: { left: '3%', right: '4%', bottom: '12%', top: '12%', containLabel: true },
-    xAxis: { type: 'category', data: years, axisLabel: { color: '#8F959E' }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
-    yAxis: [
-      { type: 'value', name: '新增企业（家）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
-      { type: 'value', name: '增速（%）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E', formatter: '{value}%' }, splitLine: { show: false } }
-    ],
-    series: [
-      { name: '新增企业数量', type: 'bar', data: newCount, itemStyle: { color: '#165DFF', borderRadius: [4, 4, 0, 0] }, barWidth: '40%' },
-      { name: '深圳增速', type: 'line', yAxisIndex: 1, data: szGrowth, itemStyle: { color: '#FA8C16' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6, markPoint: { data: markData, itemStyle: { color: '#F5222D' } } },
-      { name: '广东增速', type: 'line', yAxisIndex: 1, data: gdGrowth, itemStyle: { color: '#52C41A' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6 }
-    ]
-  });
-  window.addEventListener('resize', () => chart && chart.resize());
+  renderProsperityIndexChart();
+  renderNewEnterpriseGrowthChart();
+  renderEmployeeScaleChart();
+  renderEnterpriseTotalTrendChart();
+  renderEmployeeTotalTrendChart();
+  renderPatentApplyTrendChart();
 }
 
 function renderProsperityIndexChart() {
@@ -2563,48 +2517,98 @@ function renderProsperityIndexChart() {
     xAxis: { type: 'category', data: quarters, axisLabel: { color: '#8F959E', rotate: 45 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
     yAxis: { type: 'value', min: 90, max: 105, name: '景气指数', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
     series: [
-      { name: '即时指数', type: 'line', data: immediate, itemStyle: { color: '#165DFF' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
-      { name: '累积指数', type: 'line', data: cumulative, itemStyle: { color: '#52C41A' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
-      { type: 'line', markLine: { data: [{ yAxis: 100, lineStyle: { color: '#9CA3AF', type: 'dashed' }, label: { formatter: '景气阈值100', position: 'end', color: '#646A73' } }], silent: true }, symbol: 'none' }
+      {
+        name: '即时指数',
+        type: 'line',
+        data: immediate,
+        itemStyle: { color: '#4080FF' },
+        lineStyle: { width: 2 },
+        symbol: 'circle',
+        symbolSize: 4,
+        areaStyle: { color: 'rgba(64, 128, 255, 0.08)' }
+      },
+      {
+        name: '累积指数',
+        type: 'line',
+        data: cumulative,
+        itemStyle: { color: '#72C960' },
+        lineStyle: { width: 2 },
+        symbol: 'circle',
+        symbolSize: 4,
+        areaStyle: { color: 'rgba(114, 201, 96, 0.2)' }
+      },
+      {
+        type: 'line',
+        markLine: {
+          data: [{ yAxis: 100, lineStyle: { color: '#9CA3AF', type: 'dashed' }, label: { formatter: '景气阈值100', position: 'end', color: '#646A73' } }],
+          silent: true
+        },
+        symbol: 'none'
+      }
     ]
   });
   window.addEventListener('resize', () => chart && chart.resize());
 }
 
-function renderMonthlyTrendCharts() {
-  const months = [];
-  const now = new Date();
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-  }
-  renderMonthlyChart('monthlyEnterpriseChart', '存量企业总量', '月度新注册', months,
-    [380, 382, 383, 384, 385, 385, 386, 385, 387, 388, 389, 390],
-    [5, 8, 6, 4, 7, 3, 6, 2, 8, 5, 7, 4], '#165DFF', '#165DFF');
-  renderMonthlyChart('monthlyEmploymentChart', '产业总就业人数', '月度新增用工', months,
-    [5900, 5950, 6000, 6020, 6050, 6080, 6100, 6120, 6140, 6150, 6170, 6180],
-    [80, 120, 90, 60, 100, 70, 50, 90, 40, 80, 60, 50], '#FA8C16', '#FA8C16');
-  renderMonthlyChart('monthlyPatentChart', '累计专利总量', '月度新增专利申请', months,
-    [15800, 16020, 16250, 16480, 16700, 16950, 17180, 17400, 17650, 17880, 18100, 18350],
-    [180, 210, 195, 170, 205, 190, 150, 185, 175, 160, 140, 155], '#722ED1', '#722ED1');
-}
-
-function renderMonthlyChart(domId, lineName, barName, months, lineData, barData, lineColor, barColor) {
-  const chartDom = document.getElementById(domId);
+function renderNewEnterpriseGrowthChart() {
+  const chartDom = document.getElementById('newEnterpriseGrowthChart');
   if (!chartDom) return;
   const chart = echarts.init(chartDom);
+  const years = ['2021', '2022', '2023', '2024', '2025', '2026'];
+  const newCount = [312, 356, 428, 389, 342, 286];
+  const szGrowth = [12.5, 14.1, 20.2, -9.1, -12.1, -16.4];
+  const gdGrowth = [10.1, 11.6, 15.3, -6.8, -8.5, -10.2];
+
   chart.setOption({
     tooltip: { trigger: 'axis' },
-    legend: { data: [lineName, barName], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
-    grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
-    xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    legend: {
+      data: ['增速小于0', '新增企业数量', '广东深圳增速', '广东省增速'],
+      bottom: 0,
+      textStyle: { color: '#646A73', fontSize: 11 }
+    },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: years, axisLabel: { color: '#8F959E' }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
     yAxis: [
-      { type: 'value', name: lineName, position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
-      { type: 'value', name: barName, position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+      { type: 'value', name: '新增企业（家）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '增速（%）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E', formatter: '{value}%' }, splitLine: { show: false } }
     ],
     series: [
-      { name: lineName, type: 'line', data: lineData, itemStyle: { color: lineColor }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
-      { name: barName, type: 'bar', yAxisIndex: 1, data: barData, itemStyle: { color: barColor, borderRadius: [4, 4, 0, 0] }, barWidth: '40%' }
+      {
+        name: '新增企业数量',
+        type: 'bar',
+        data: newCount,
+        itemStyle: { color: '#165DFF', borderRadius: [4, 4, 0, 0] },
+        barWidth: '35%'
+      },
+      {
+        name: '广东深圳增速',
+        type: 'line',
+        yAxisIndex: 1,
+        data: szGrowth,
+        itemStyle: { color: '#FA8C16' },
+        lineStyle: { width: 2 },
+        symbol: 'circle',
+        symbolSize: 6
+      },
+      {
+        name: '广东省增速',
+        type: 'line',
+        yAxisIndex: 1,
+        data: gdGrowth,
+        itemStyle: { color: '#00B42A' },
+        lineStyle: { width: 2 },
+        symbol: 'circle',
+        symbolSize: 6
+      },
+      {
+        name: '增速小于0',
+        type: 'scatter',
+        yAxisIndex: 1,
+        data: szGrowth.map((v, i) => v < 0 ? [years[i], v] : null).filter(Boolean),
+        itemStyle: { color: '#F53F3F' },
+        symbolSize: 10,
+        silent: true
+      }
     ]
   });
   window.addEventListener('resize', () => chart && chart.resize());
@@ -2614,14 +2618,104 @@ function renderEmployeeScaleChart() {
   const chartDom = document.getElementById('employeeScaleChart');
   if (!chartDom) return;
   const chart = echarts.init(chartDom);
-  const categories = ['50人以下', '50-99人', '100-299人', '300-499人', '500-999人', '1000人以上'];
-  const values = [120, 85, 95, 45, 25, 16];
+  const categories = ['1000人以上', '500-999人', '300-499人', '100-299人', '50-99人', '50人以下'];
+  const values = [16, 25, 45, 95, 85, 120];
   chart.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+    grid: { left: '3%', right: '10%', bottom: '3%', top: '3%', containLabel: true },
     xAxis: { type: 'value', name: '企业数（家）', nameTextStyle: { color: '#646A73', fontSize: 11 }, axisLabel: { color: '#8F959E' }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
     yAxis: { type: 'category', data: categories, inverse: true, axisLabel: { color: '#1D2129' }, axisLine: { lineStyle: { color: '#EBEEF5' } }, splitLine: { show: false } },
     series: [{ type: 'bar', data: values, itemStyle: { color: '#165DFF', borderRadius: [0, 4, 4, 0] }, barWidth: '50%', label: { show: true, position: 'right', color: '#165DFF', fontWeight: 600 } }]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderEnterpriseTotalTrendChart() {
+  const chartDom = document.getElementById('enterpriseTotalTrendChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const months = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const totalData = [265400, 265600, 265780, 265920, 266100, 266250, 266380, 266520, 266680, 266820, 266980, 267120];
+  const newData = [180, 220, 210, 160, 230, 190, 170, 210, 220, 180, 210, 195];
+
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['企业总数', '新增'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [
+      { type: 'value', name: '企业总数', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '新增', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+    ],
+    series: [
+      { name: '企业总数', type: 'line', data: totalData, itemStyle: { color: '#165DFF' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4, areaStyle: { color: 'rgba(22, 93, 255, 0.08)' } },
+      { name: '新增', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#165DFF', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderEmployeeTotalTrendChart() {
+  const chartDom = document.getElementById('employeeTotalTrendChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const months = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const totalData = [11844, 11862, 11878, 11895, 11908, 11920, 11932, 11948, 11960, 11974, 11984, 11996];
+  const newData = [18, 22, 19, 21, 16, 15, 17, 20, 14, 18, 12, 16];
+
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['用工总数', '新增用工'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [
+      { type: 'value', name: '用工总数', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '新增用工', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+    ],
+    series: [
+      { name: '用工总数', type: 'line', data: totalData, itemStyle: { color: '#FA8C16' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
+      { name: '新增用工', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#FA8C16', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
+function renderPatentApplyTrendChart() {
+  const chartDom = document.getElementById('patentApplyTrendChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const months = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const totalData = [68.2, 68.9, 69.5, 70.2, 70.8, 71.4, 72.0, 72.6, 73.2, 73.8, 74.3, 74.8];
+  const newData = [0.62, 0.68, 0.64, 0.70, 0.66, 0.60, 0.64, 0.58, 0.62, 0.55, 0.50, 0.52];
+
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['专利申请累计', '新增申请'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [
+      { type: 'value', name: '累计（万件）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '新增（万件）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+    ],
+    series: [
+      { name: '专利申请累计', type: 'line', data: totalData, itemStyle: { color: '#8653D9' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
+      { name: '新增申请', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#8653D9', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
   });
   window.addEventListener('resize', () => chart && chart.resize());
 }

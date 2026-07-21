@@ -2399,3 +2399,367 @@
   color: #646A73;
   margin-right: 4px;
 }
+
+/* ===== 产业概览驾驶舱线框原型 ===== */
+.overview-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 0;
+}
+
+.overview-section {
+  width: 100%;
+}
+
+/* 模块1：核心指标 12栅格均分6列 */
+.overview-section-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.overview-metric-card {
+  background: #FFFFFF;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-label {
+  font-size: 13px;
+  color: #646A73;
+  line-height: 1.4;
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1D2129;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.2;
+}
+
+.metric-unit {
+  font-size: 13px;
+  font-weight: 400;
+  color: #646A73;
+  margin-left: 4px;
+}
+
+.metric-trend {
+  font-size: 12px;
+  color: #8F959E;
+  line-height: 1.4;
+}
+
+.trend-up {
+  color: #00B42A;
+  font-weight: 500;
+  margin-right: 2px;
+}
+
+/* 模块2：重点企业分类 2行x6列 */
+.overview-section-keyenterprise .section-title,
+.overview-section-innovation .section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1D2129;
+  margin-bottom: 12px;
+  padding-left: 2px;
+}
+
+.keyenterprise-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.keyenterprise-card {
+  background: #FFFFFF;
+  border-radius: 8px;
+  padding: 14px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  min-height: 78px;
+}
+
+.keyenterprise-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #165DFF;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.2;
+}
+
+.keyenterprise-unit {
+  font-size: 12px;
+  font-weight: 400;
+  color: #646A73;
+  margin-left: 2px;
+}
+
+.keyenterprise-name {
+  font-size: 12px;
+  color: #1D2129;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.keyenterprise-meta {
+  font-size: 11px;
+  color: #8F959E;
+  margin-top: auto;
+  text-align: right;
+}
+
+/* 模块3：产业链景气指数 */
+.overview-section-prosperity {
+  background: #FFFFFF;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.prosperity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.prosperity-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1D2129;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prosperity-tag {
+  font-size: 13px;
+  font-weight: 500;
+  color: #165DFF;
+  background: #EEF4FF;
+  padding: 2px 10px;
+  border-radius: 4px;
+}
+
+.prosperity-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gov-select {
+  padding: 5px 12px;
+  border: 1px solid #D0D3D8;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #1D2129;
+  background: #FFFFFF;
+  cursor: pointer;
+  outline: none;
+}
+
+.gov-select:focus {
+  border-color: #165DFF;
+}
+
+.btn-text {
+  padding: 5px 12px;
+  font-size: 13px;
+  color: #165DFF;
+  background: transparent;
+  border: 1px solid #165DFF;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-text:hover {
+  background: #EEF4FF;
+}
+
+.prosperity-chart {
+  width: 100%;
+  height: 380px;
+}
+
+.prosperity-desc {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #F8FAFC;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #646A73;
+  line-height: 1.6;
+}
+
+/* 模块4/5：并列图表行 */
+.overview-section-charts-row,
+.overview-section-trends-row {
+  display: grid;
+  gap: 16px;
+}
+
+.overview-section-charts-row {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.overview-section-trends-row {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.overview-chart-card {
+  background: #FFFFFF;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+}
+
+.chart-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.chart-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1D2129;
+}
+
+.chart-more {
+  font-size: 12px;
+  color: #8F959E;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.chart-more:hover {
+  color: #165DFF;
+}
+
+.chart-card-body {
+  flex: 1;
+  min-height: 280px;
+  width: 100%;
+}
+
+/* 模块6：创新载体 4x4网格 */
+.innovation-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.innovation-card {
+  background: #FFFFFF;
+  border-radius: 8px;
+  padding: 14px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.innovation-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1D2129;
+}
+
+.innovation-cols {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.innovation-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.innovation-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: #165DFF;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.innovation-label {
+  font-size: 11px;
+  color: #8F959E;
+}
+
+/* 模块7：底部综合解读 */
+.overview-section-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #F5F7FA;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.summary-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #EEF4FF;
+  color: #165DFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.summary-text {
+  flex: 1;
+  font-size: 13px;
+  color: #646A73;
+  line-height: 1.8;
+}
+
+/* 响应式适配 */
+@media (max-width: 1400px) {
+  .overview-section-metrics { grid-template-columns: repeat(3, 1fr); }
+  .keyenterprise-grid { grid-template-columns: repeat(4, 1fr); }
+  .overview-section-trends-row { grid-template-columns: repeat(2, 1fr); }
+  .innovation-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .overview-section-metrics { grid-template-columns: repeat(2, 1fr); }
+  .keyenterprise-grid { grid-template-columns: repeat(3, 1fr); }
+  .overview-section-charts-row { grid-template-columns: 1fr; }
+  .overview-section-trends-row { grid-template-columns: 1fr; }
+  .innovation-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .overview-section-metrics { grid-template-columns: 1fr; }
+  .keyenterprise-grid { grid-template-columns: repeat(2, 1fr); }
+  .innovation-grid { grid-template-columns: 1fr; }
+}

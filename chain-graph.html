@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>产业链结构图谱 - 产业链/供应链图谱系统</title>
   <link rel="stylesheet" href="css/common.css?v=3">
-  <link rel="stylesheet" href="css/chain-graph.css?v=11">
+  <link rel="stylesheet" href="css/chain-graph.css?v=12">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script src="js/data.js"></script>
   <script src="js/common.js"></script>
@@ -45,11 +45,11 @@
     </section>
 
     <section class="main-tabs">
-      <div class="main-tab" data-tab="structure" onclick="switchMainTab('structure')">
-        <span class="main-tab-icon">🌳</span>结构视图
-      </div>
       <div class="main-tab active" data-tab="overview" onclick="switchMainTab('overview')">
         <span class="main-tab-icon">📊</span>产业概览
+      </div>
+      <div class="main-tab" data-tab="structure" onclick="switchMainTab('structure')">
+        <span class="main-tab-icon">🌳</span>产业图谱
       </div>
       <div class="main-tab" data-tab="news" onclick="switchMainTab('news')">
         <span class="main-tab-icon">📰</span>新闻产业
@@ -57,15 +57,137 @@
       <div class="main-tab" data-tab="gap-filling" onclick="switchMainTab('gap-filling')">
         <span class="main-tab-icon">🔧</span>强链补链
       </div>
+      <!--
       <div class="main-tab" data-tab="risk-monitor" onclick="switchMainTab('risk-monitor')">
         <span class="main-tab-icon">⚠️</span>产业风险监测
       </div>
       <div class="main-tab" data-tab="key-enterprise" onclick="switchMainTab('key-enterprise')">
         <span class="main-tab-icon">🏢</span>重点企业
       </div>
+      -->
     </section>
 
     <section class="tab-content" id="tabContent">
+      <!-- 产业概览驾驶舱 -->
+      <div class="tab-pane active" id="tab-overview">
+        <div class="overview-dashboard">
+          <!-- 模块1：核心指标 -->
+          <div class="overview-section overview-section-metrics">
+            <div class="overview-metric-card">
+              <div class="metric-label">产业企业总数</div>
+              <div class="metric-value">26.8<span class="metric-unit">万家</span></div>
+              <div class="metric-trend"><span class="trend-up">↑2.3%</span> 较上月新增0.62万</div>
+            </div>
+            <div class="overview-metric-card">
+              <div class="metric-label">上市公司</div>
+              <div class="metric-value">73<span class="metric-unit">家</span></div>
+              <div class="metric-trend"><span class="trend-up">↑2家</span> 省内占比2.2%</div>
+            </div>
+            <div class="overview-metric-card">
+              <div class="metric-label">国家级企业</div>
+              <div class="metric-value">52<span class="metric-unit">家</span></div>
+              <div class="metric-trend"><span class="trend-up">↑1家</span> 省内占比2.2%</div>
+            </div>
+            <div class="overview-metric-card">
+              <div class="metric-label">小巨人企业</div>
+              <div class="metric-value">36<span class="metric-unit">家</span></div>
+              <div class="metric-trend"><span class="trend-up">↑3家</span> 省内占比3.6%</div>
+            </div>
+            <div class="overview-metric-card">
+              <div class="metric-label">注册资本≥5000万</div>
+              <div class="metric-value">4,128<span class="metric-unit">家</span></div>
+              <div class="metric-trend"><span class="trend-up">↑1.62%</span> 占比1.54%</div>
+            </div>
+            <div class="overview-metric-card">
+              <div class="metric-label">带动就业</div>
+              <div class="metric-value">1,196<span class="metric-unit">万人</span></div>
+              <div class="metric-trend"><span class="trend-up">↑0.4%</span> 新增0.6万人</div>
+            </div>
+          </div>
+
+          <!-- 模块2：重点企业分类 -->
+          <div class="overview-section overview-section-keyenterprise">
+            <div class="section-title">重点企业分类</div>
+            <div class="keyenterprise-grid">
+              <div class="keyenterprise-card"><div class="keyenterprise-value">433<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">全部重点企业</div><div class="keyenterprise-meta">全省10 | 2.4%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">73<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">上市公司</div><div class="keyenterprise-meta">全省10 | 2.2%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">3<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">IPO储备</div><div class="keyenterprise-meta">全省9 | 1.5%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">52<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">央企及其子公司</div><div class="keyenterprise-meta">全省10 | 2.2%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">22<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">国有大型企业</div><div class="keyenterprise-meta">全省10 | 2.1%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">12<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">制造业单项冠军</div><div class="keyenterprise-meta">全省16 | 1.7%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">5<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">世界500强及其子公司</div><div class="keyenterprise-meta">全省9 | 1.8%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">24<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">中国500强及其子公司</div><div class="keyenterprise-meta">全省7 | 2.6%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">36<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">小巨人企业</div><div class="keyenterprise-meta">全省6 | 3.6%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">162<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">专精特新企业</div><div class="keyenterprise-meta">全省6 | 3.6%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">321<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">高新技术企业</div><div class="keyenterprise-meta">全省7 | 2.7%</div></div>
+              <div class="keyenterprise-card"><div class="keyenterprise-value">3<span class="keyenterprise-unit">家</span></div><div class="keyenterprise-name">独角兽企业</div><div class="keyenterprise-meta">全省4 | 13%</div></div>
+            </div>
+          </div>
+
+          <!-- 模块3：产业链景气指数 -->
+          <div class="overview-section overview-section-prosperity">
+            <div class="prosperity-header">
+              <div class="prosperity-title">产业链景气指数 <span class="prosperity-tag">2026Q2=98.40 偏景气</span></div>
+              <div class="prosperity-actions">
+                <select class="gov-select"><option>近8年</option><option>近5年</option><option>近3年</option></select>
+                <button class="btn btn-text">导出</button>
+              </div>
+            </div>
+            <div class="prosperity-chart" id="prosperityIndexChart"></div>
+            <div class="prosperity-desc">2026Q2产业即时指数为98.40，当期发展放缓；累积指数累计101.73，综合来看处于微量景气，呈现短期承压、长期向好态势。</div>
+          </div>
+
+          <!-- 模块4：上排并列图表 -->
+          <div class="overview-section overview-section-charts-row">
+            <div class="overview-chart-card overview-chart-card--6">
+              <div class="chart-card-header"><div class="chart-card-title">过去5年新增企业数据</div></div>
+              <div class="chart-card-body" id="newEnterpriseGrowthChart"></div>
+            </div>
+            <div class="overview-chart-card overview-chart-card--6">
+              <div class="chart-card-header"><div class="chart-card-title">用工规模结构</div></div>
+              <div class="chart-card-body" id="employeeScaleChart"></div>
+            </div>
+          </div>
+
+          <!-- 模块5：下排趋势图表 -->
+          <div class="overview-section overview-section-trends-row">
+            <div class="overview-chart-card overview-chart-card--4">
+              <div class="chart-card-header"><div class="chart-card-title">企业总数趋势</div><button class="chart-more">更多</button></div>
+              <div class="chart-card-body" id="enterpriseTotalTrendChart"></div>
+            </div>
+            <div class="overview-chart-card overview-chart-card--4">
+              <div class="chart-card-header"><div class="chart-card-title">用工总数趋势</div><button class="chart-more">更多</button></div>
+              <div class="chart-card-body" id="employeeTotalTrendChart"></div>
+            </div>
+            <div class="overview-chart-card overview-chart-card--4">
+              <div class="chart-card-header"><div class="chart-card-title">专利申请数量</div><button class="chart-more">更多</button></div>
+              <div class="chart-card-body" id="patentApplyTrendChart"></div>
+            </div>
+          </div>
+
+          <!-- 模块6：创新载体 -->
+          <div class="overview-section overview-section-innovation">
+            <div class="section-title">创新载体</div>
+            <div class="innovation-grid">
+              <div class="innovation-card"><div class="innovation-title">工程研究中心</div><div class="innovation-cols"><div class="innovation-col"><span class="innovation-num">4</span><span class="innovation-label">国家</span></div><div class="innovation-col"><span class="innovation-num">7</span><span class="innovation-label">市级</span></div><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">其他</span></div></div></div>
+              <div class="innovation-card"><div class="innovation-title">重点实验室</div><div class="innovation-cols"><div class="innovation-col"><span class="innovation-num">3</span><span class="innovation-label">国家</span></div><div class="innovation-col"><span class="innovation-num">71</span><span class="innovation-label">市级</span></div><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">其他</span></div></div></div>
+              <div class="innovation-card"><div class="innovation-title">工程实验室</div><div class="innovation-cols"><div class="innovation-col"><span class="innovation-num">3</span><span class="innovation-label">国家</span></div><div class="innovation-col"><span class="innovation-num">63</span><span class="innovation-label">市级</span></div><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">其他</span></div></div></div>
+              <div class="innovation-card"><div class="innovation-title">企业技术中心</div><div class="innovation-cols"><div class="innovation-col"><span class="innovation-num">1</span><span class="innovation-label">国家</span></div><div class="innovation-col"><span class="innovation-num">13</span><span class="innovation-label">市级</span></div><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">其他</span></div></div></div>
+              <div class="innovation-card"><div class="innovation-title">工程技术研究中心</div><div class="innovation-cols"><div class="innovation-col"><span class="innovation-num">19</span><span class="innovation-label">国家</span></div><div class="innovation-col"><span class="innovation-num">15</span><span class="innovation-label">市级</span></div><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">其他</span></div></div></div>
+              <div class="innovation-card"><div class="innovation-title">粤港澳联合实验室</div><div class="innovation-cols"><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">国家</span></div><div class="innovation-col"><span class="innovation-num">1</span><span class="innovation-label">市级</span></div><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">其他</span></div></div></div>
+              <div class="innovation-card"><div class="innovation-title">开放创新平台</div><div class="innovation-cols"><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">国家</span></div><div class="innovation-col"><span class="innovation-num">1</span><span class="innovation-label">市级</span></div><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">其他</span></div></div></div>
+              <div class="innovation-card"><div class="innovation-title">公共技术服务平台</div><div class="innovation-cols"><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">国家</span></div><div class="innovation-col"><span class="innovation-num">32</span><span class="innovation-label">市级</span></div><div class="innovation-col"><span class="innovation-num">0</span><span class="innovation-label">其他</span></div></div></div>
+            </div>
+          </div>
+
+          <!-- 模块7：底部综合解读 -->
+          <div class="overview-section overview-section-summary">
+            <div class="summary-icon">💬</div>
+            <div class="summary-text">综合来看，深圳产业产值呈稳中有进、结构优化发展态势；5年新增企业超2100家，2023年达到峰值428家，近两年受宏观环境影响增速放缓；用工规模稳步扩张，12个月内净增11.6万人；专利申请数量持续高速增长，12个月内新增7.4万件，行业创新动能强劲；专精特新小巨人达36家，注册资本5000万以上企业4128家，产业基础进一步夯实。</div>
+          </div>
+        </div>
+      </div>
+
       <!-- 结构视图：三栏布局 -->
       <div class="tab-pane" id="tab-structure">
         <div class="chain-legend">
@@ -86,189 +208,6 @@
           <div class="structure-column">
             <div class="column-header">下游(<span id="downCount">0</span>)</div>
             <div class="column-body" id="downColumn"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 产业概览 -->
-      <div class="tab-pane active" id="tab-overview">
-        <div class="overview-banner card">
-          <div class="banner-content">
-            <h2 id="overviewTitle">产业链简介</h2>
-            <p id="overviewDesc" class="banner-desc">暂无产业简介数据</p>
-          </div>
-        </div>
-
-        <div class="overview-grid">
-          <div class="card overview-metrics">
-            <div class="card-header">
-              <div class="card-title">核心指标</div>
-            </div>
-            <div class="metrics-grid">
-              <div class="metric-item">
-                <div class="metric-icon-wrap bg-blue">📈</div>
-                <div class="metric-info">
-                  <div class="metric-name">产业规模</div>
-                  <div class="metric-value-row">
-                    <div class="metric-num" id="metricScale">0</div>
-                    <div class="metric-unit">亿</div>
-                  </div>
-                </div>
-              </div>
-              <div class="metric-item">
-                <div class="metric-icon-wrap bg-green">🏢</div>
-                <div class="metric-info">
-                  <div class="metric-name">企业数量</div>
-                  <div class="metric-value-row">
-                    <div class="metric-num" id="metricCount">0</div>
-                    <div class="metric-unit">家</div>
-                  </div>
-                </div>
-              </div>
-              <div class="metric-item">
-                <div class="metric-icon-wrap bg-orange">💰</div>
-                <div class="metric-info">
-                  <div class="metric-name">税收贡献</div>
-                  <div class="metric-value-row">
-                    <div class="metric-num" id="metricTax">0</div>
-                    <div class="metric-unit">亿</div>
-                  </div>
-                </div>
-              </div>
-              <div class="metric-item">
-                <div class="metric-icon-wrap bg-purple">👥</div>
-                <div class="metric-info">
-                  <div class="metric-name">就业人数</div>
-                  <div class="metric-value-row">
-                    <div class="metric-num" id="metricEmployees">0</div>
-                    <div class="metric-unit">人</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card enterprise-layer-card">
-          <div class="card-header">
-            <div class="card-title">重点企业分层统计看板</div>
-          </div>
-          <div class="layer-grid" id="enterpriseLayerGrid">
-            <div class="layer-card"><div class="layer-card-title">全部重点企业</div><div class="layer-card-value">433</div></div>
-            <div class="layer-card"><div class="layer-card-title">上市公司</div><div class="layer-card-value">73</div></div>
-            <div class="layer-card"><div class="layer-card-title">央企及子公司</div><div class="layer-card-value">52</div></div>
-            <div class="layer-card"><div class="layer-card-title">国有大型企业</div><div class="layer-card-value">22</div></div>
-            <div class="layer-card"><div class="layer-card-title">制造业单项冠军</div><div class="layer-card-value">12</div></div>
-            <div class="layer-card"><div class="layer-card-title">IPO辅导企业</div><div class="layer-card-value">3</div></div>
-            <div class="layer-card"><div class="layer-card-title">世界500强子公司</div><div class="layer-card-value">5</div></div>
-            <div class="layer-card"><div class="layer-card-title">中国500强子公司</div><div class="layer-card-value">24</div></div>
-            <div class="layer-card"><div class="layer-card-title">专精特新小巨人</div><div class="layer-card-value">36</div></div>
-            <div class="layer-card"><div class="layer-card-title">专精特新企业</div><div class="layer-card-value">162</div></div>
-            <div class="layer-card"><div class="layer-card-title">高新技术企业</div><div class="layer-card-value">321</div></div>
-            <div class="layer-card"><div class="layer-card-title">独角兽企业</div><div class="layer-card-value">3</div></div>
-          </div>
-        </div>
-
-        <div class="card chart-card">
-          <div class="card-header">
-            <div class="card-title">过去五年新增企业增速对比图</div>
-          </div>
-          <div class="chart-subtitle">近五年新增企业数量及省、市增速对比，体现深圳产业带动效应</div>
-          <div id="newEnterpriseGrowthChart" style="height:360px;"></div>
-        </div>
-
-        <div class="card chart-card">
-          <div class="card-header">
-            <div class="card-title">产业景气度指数趋势图</div>
-          </div>
-          <div class="chart-subtitle">2026Q2产业即时指数98.40，当期发展放缓，累积指数101.73，微景气状态</div>
-          <div id="prosperityIndexChart" style="height:360px;"></div>
-        </div>
-
-        <div class="chart-row-three">
-          <div class="card chart-card">
-            <div class="card-header"><div class="card-title">企业总数趋势图</div></div>
-            <div id="monthlyEnterpriseChart" style="height:280px;"></div>
-          </div>
-          <div class="card chart-card">
-            <div class="card-header"><div class="card-title">用工总数趋势图</div></div>
-            <div id="monthlyEmploymentChart" style="height:280px;"></div>
-          </div>
-          <div class="card chart-card">
-            <div class="card-header"><div class="card-title">专利总数趋势图</div></div>
-            <div id="monthlyPatentChart" style="height:280px;"></div>
-          </div>
-        </div>
-
-        <div class="overview-split-row">
-          <div class="card innovation-card">
-            <div class="card-header"><div class="card-title">创新成果清单</div></div>
-            <div class="innovation-section">
-              <div class="innovation-section-title">创新主体</div>
-              <div class="innovation-subjects-grid">
-                <div class="innovation-subject-item">
-                  <div class="innovation-subject-icon">🔬</div>
-                  <div>
-                    <div class="innovation-subject-name">有发明专利企业</div>
-                    <div class="innovation-value-row"><div class="innovation-subject-value">644</div><div class="innovation-subject-unit">家</div></div>
-                  </div>
-                </div>
-                <div class="innovation-subject-item">
-                  <div class="innovation-subject-icon">🔥</div>
-                  <div>
-                    <div class="innovation-subject-name">高新技术企业</div>
-                    <div class="innovation-value-row"><div class="innovation-subject-value">321</div><div class="innovation-subject-unit">家</div></div>
-                  </div>
-                </div>
-                <div class="innovation-subject-item">
-                  <div class="innovation-subject-icon">💪</div>
-                  <div>
-                    <div class="innovation-subject-name">科技小巨人企业</div>
-                    <div class="innovation-value-row"><div class="innovation-subject-value">0</div><div class="innovation-subject-unit">家</div></div>
-                  </div>
-                </div>
-                <div class="innovation-subject-item">
-                  <div class="innovation-subject-icon">🏭</div>
-                  <div>
-                    <div class="innovation-subject-name">专精特新中小企业</div>
-                    <div class="innovation-value-row"><div class="innovation-subject-value">162</div><div class="innovation-subject-unit">家</div></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="innovation-section">
-              <div class="innovation-section-title">创新空间</div>
-              <div class="innovation-spaces-grid">
-                <div class="innovation-space-item">
-                  <div class="innovation-space-header"><div class="innovation-space-icon">📦</div><div class="innovation-space-name">众创空间</div></div>
-                  <div class="innovation-space-levels">
-                    <span class="space-level">国家级 <strong>0</strong></span>
-                    <span class="space-level">省级 <strong>0</strong></span>
-                  </div>
-                </div>
-                <div class="innovation-space-item">
-                  <div class="innovation-space-header"><div class="innovation-space-icon">🏢</div><div class="innovation-space-name">科技企业孵化器</div></div>
-                  <div class="innovation-space-levels">
-                    <span class="space-level">国家级 <strong>0</strong></span>
-                    <span class="space-level">省级 <strong>0</strong></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="innovation-section">
-              <div class="innovation-section-title">创新载体</div>
-              <div class="innovation-carriers-bar">
-                <span class="carrier-tag">国家级实验室 <strong>2</strong></span>
-                <span class="carrier-tag">省级实验室 <strong>5</strong></span>
-                <span class="carrier-tag">工程研究中心 <strong>8</strong></span>
-                <span class="carrier-tag">企业技术中心 <strong>12</strong></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="card chart-card">
-            <div class="card-header"><div class="card-title">用工规模结构横向条形图</div></div>
-            <div id="employeeScaleChart" style="height:360px;"></div>
           </div>
         </div>
       </div>
@@ -435,6 +374,6 @@
     </section>
   </main>
 
-  <script src="js/chain-graph.js?v=12"></script>
+  <script src="js/chain-graph.js?v=13"></script>
 </body>
 </html>
