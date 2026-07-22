@@ -30,6 +30,15 @@ function navigateToEnterpriseProfile(enterpriseId, enterpriseName, el) {
   window.location.href = `enterprise-profile.html?enterpriseId=${encodeURIComponent(enterpriseId)}`;
 }
 
+function navigateToChainGap(nodeId, from = 'structure') {
+  if (!nodeId) {
+    showToast('未找到节点信息', 'warning');
+    return;
+  }
+  const cid = chainId || 'chain-robot';
+  window.location.href = `chain-gap1.html?chainId=${encodeURIComponent(cid)}&nodeId=${encodeURIComponent(nodeId)}&from=${encodeURIComponent(from)}`;
+}
+
 function init() {
   if (document.getElementById('globalSearchContainer')) {
     document.getElementById('globalSearchContainer').innerHTML = renderGlobalSearch();
@@ -49,6 +58,7 @@ function init() {
 
   loadData();
   setupKeyboard();
+  initProsperityTooltip();
   window.addEventListener('resize', debounce(() => {
     if (myChart && myChart.resize) myChart.resize();
   }, 200));
@@ -2241,16 +2251,18 @@ function renderChainPanel(node) {
   const hasChildren = node.children && node.children.length;
   const cfg = classifyNode(node);
   const tag = `<span class="chain-status-tag ${cfg.key}">${cfg.label}</span>`;
-   const body = hasChildren
+  const gapBtn = `<button class="chain-node-link" onclick="event.stopPropagation();navigateToChainGap('${node.id}', 'structure-panel')">补链分析</button>`;
+  const body = hasChildren
     ? `<div class="chain-panel-body">${node.children.map(child => renderChainSubRow(child, 0)).join('')}</div>`
     : '';
   return `
-    <div class="chain-panel ${hasChildren ? '' : 'no-children'}" data-id="${node.id}">
+    <div class="chain-panel ${hasChildren ? '' : 'no-children'}" data-id="${node.id}" data-node-type="structure-panel">
       <div class="chain-panel-header" onclick="onChainPanelHeaderClick('${node.id}', ${hasChildren})">
         <span class="chain-panel-arrow">▼</span>
         <span class="chain-panel-title">${node.name}</span>
         ${tag}
         <span class="chain-panel-count">(本地企业数: ${localTotal}, 全国企业数: ${nationalTotal})</span>
+        ${gapBtn}
       </div>
       ${body}
     </div>
@@ -2264,15 +2276,17 @@ function renderChainSubRow(node, level = 0) {
   const nationalCount = hasChildren ? sumNational(node) : (node.nationalCount || 0);
   const countText = `(本地企业数: ${localCount}, 全国企业数: ${nationalCount})`;
   const indent = level * 20;
+  const gapBtn = `<button class="chain-node-link" onclick="event.stopPropagation();navigateToChainGap('${node.id}', 'structure-row')">补链分析</button>`;
 
   if (hasChildren) {
     return `
-      <div class="chain-sub-group" data-id="${node.id}">
+      <div class="chain-sub-group" data-id="${node.id}" data-node-type="structure-row">
         <div class="chain-sub-row" onclick="toggleChainSubGroup('${node.id}', event)" style="margin-left:${indent}px">
           <span class="chain-panel-arrow">▼</span>
           <span class="chain-sub-name">${node.name}</span>
           <span class="chain-status-tag ${cfg.key}">${cfg.label}</span>
           <span class="chain-sub-count">${countText}</span>
+          ${gapBtn}
         </div>
         <div class="chain-sub-children" id="chain-sub-children-${node.id}">
           ${node.children.map(c => renderChainSubRow(c, level + 1)).join('')}
@@ -2281,11 +2295,12 @@ function renderChainSubRow(node, level = 0) {
     `;
   }
   return `
-    <div class="chain-sub-row" onclick="openSegmentModal('${node.id}')" style="margin-left:${indent}px">
+    <div class="chain-sub-row" data-node-type="structure-row" data-id="${node.id}" onclick="openSegmentModal('${node.id}')" style="margin-left:${indent}px">
       <span class="chain-panel-arrow" style="visibility:hidden">▼</span>
       <span class="chain-sub-name">${node.name}</span>
       <span class="chain-status-tag ${cfg.key}">${cfg.label}</span>
       <span class="chain-sub-count">${countText}</span>
+      ${gapBtn}
     </div>
   `;
 }
@@ -2485,6 +2500,7 @@ function renderOverviewTab() {
   renderNewEnterpriseGrowthChart();
   renderEmployeeScaleChart();
   renderEnterpriseTotalTrendChart();
+  renderRegisteredCapitalTrendChart();
   renderEmployeeTotalTrendChart();
   renderPatentApplyTrendChart();
 }
@@ -2660,6 +2676,36 @@ function renderEnterpriseTotalTrendChart() {
   window.addEventListener('resize', () => chart && chart.resize());
 }
 
+function renderRegisteredCapitalTrendChart() {
+  const chartDom = document.getElementById('registeredCapitalTrendChart');
+  if (!chartDom) return;
+  const chart = echarts.init(chartDom);
+  const months = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const totalData = [52840, 52960, 53120, 53280, 53410, 53560, 53720, 53880, 54030, 54190, 54350, 54520];
+  const newData = [95, 128, 142, 118, 135, 152, 128, 145, 138, 162, 148, 155];
+
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['注册资本总额', '新增注册资本'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
+    yAxis: [
+      { type: 'value', name: '总额（亿元）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '新增（亿元）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+    ],
+    series: [
+      { name: '注册资本总额', type: 'line', data: totalData, itemStyle: { color: '#00B42A' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4, areaStyle: { color: 'rgba(0, 180, 42, 0.08)' } },
+      { name: '新增注册资本', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#00B42A', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+    ]
+  });
+  window.addEventListener('resize', () => chart && chart.resize());
+}
+
 function renderEmployeeTotalTrendChart() {
   const chartDom = document.getElementById('employeeTotalTrendChart');
   if (!chartDom) return;
@@ -2718,6 +2764,45 @@ function renderPatentApplyTrendChart() {
     ]
   });
   window.addEventListener('resize', () => chart && chart.resize());
+}
+
+// ==================== 产业链景气指数提示浮层（fixed 定位，避免被父容器裁剪） ====================
+function initProsperityTooltip() {
+  const helpIcon = document.querySelector('.prosperity-help-icon');
+  const tooltip = helpIcon ? helpIcon.querySelector('.prosperity-tooltip') : null;
+  if (!helpIcon || !tooltip) return;
+
+  function positionTooltip() {
+    const iconRect = helpIcon.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const gap = 8;
+    let left = iconRect.left + iconRect.width / 2 - tooltipRect.width / 2;
+    let top = iconRect.top - tooltipRect.height - gap;
+
+    // 防止超出视口左右边界
+    const padding = 12;
+    left = Math.max(padding, Math.min(left, window.innerWidth - tooltipRect.width - padding));
+    // 如果上方空间不足，则显示在图标下方
+    if (top < padding) {
+      top = iconRect.bottom + gap;
+    }
+
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  }
+
+  helpIcon.addEventListener('mouseenter', () => {
+    tooltip.style.visibility = 'visible';
+    tooltip.style.opacity = '1';
+    positionTooltip();
+  });
+
+  helpIcon.addEventListener('mouseleave', () => {
+    tooltip.style.visibility = 'hidden';
+    tooltip.style.opacity = '0';
+  });
+
+  window.addEventListener('resize', debounce(positionTooltip, 100));
 }
 
 document.addEventListener('DOMContentLoaded', init);
