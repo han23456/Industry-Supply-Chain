@@ -9,50 +9,16 @@
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/data.js"></script>
+  <!-- 加载顺序必须先配置、后组件，顺序不能颠倒 -->
+  <script src="js/config/menu-config.js"></script>
+  <script src="js/components/GovHeader.js"></script>
+  <script src="js/components/SideNav.js"></script>
 </head>
 <body>
-  <header class="gov-header">
-    <div class="gov-header-left">
-      <div class="gov-logo">🏭</div>
-      <div class="gov-title">产业链/供应链图谱系统</div>
-      <div class="gov-subtitle">产业治理智能中枢</div>
-    </div>
-    <div class="gov-header-right">
-      <div id="globalSearchContainer"></div>
-      <span>📅 2026年7月8日</span>
-      <div class="gov-user">
-        <div class="gov-avatar">政</div>
-        <span>区发改局 管理员</span>
-      </div>
-    </div>
-  </header>
+  <gov-header></gov-header>    
 
   <div class="page-layout">
-    <aside class="sidebar">
-      <div class="sidebar-title">功能导航</div>
-      <nav class="sidebar-menu">
-        <div class="sidebar-item" onclick="window.location.href='index.html'">
-          <span class="sidebar-icon">▦</span>
-          <span>产业全景看板</span>
-        </div>
-        <div class="sidebar-item active">
-          <span class="sidebar-icon">🕸</span>
-          <span>企业关系网络</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='risk-warning.html'">
-          <span class="sidebar-icon">⚠️</span>
-          <span>风险预警</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='chain-gap.html'">
-          <span class="sidebar-icon">🔧</span>
-          <span>强链补链</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='supply-demand.html'">
-          <span class="sidebar-icon">📊</span>
-          <span>供需对接</span>
-        </div>
-      </nav>
-    </aside>
+    <side-nav></side-nav>
 
     <main class="page-content">
       <section class="top-bar">
