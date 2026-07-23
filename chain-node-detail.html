@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>产业链环节详情 - 产业链/供应链图谱系统</title>
+  <link rel="stylesheet" href="css/common.css?v=3">
+  <link rel="stylesheet" href="css/chain-node-detail.css?v=4">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <!-- 加载顺序必须先配置、后组件，顺序不能颠倒 -->
+  <script src="js/config/menu-config.js"></script>
+  <script src="js/components/GovHeader.js"></script>
+  <script src="js/components/SideNav.js"></script>
+</head>
+<body>
+  <gov-header></gov-header>
+
+  <div class="page-layout">
+  <!--<side-nav></side-nav> --> 
+
+    <main class="page-content node-detail-page">
+      <section class="top-bar">
+        <div class="breadcrumb" id="breadcrumbContainer"></div>
+        <div class="top-actions">
+          <button class="btn btn-default" id="backBtn">← 返回产业链图谱</button>
+        </div>
+      </section>
+
+      <section class="card node-detail-header">
+        <div id="nodeDetailHead"></div>
+      </section>
+
+      <section class="card node-detail-modules" id="nodeDetailModules"></section>
+
+      <section class="card node-detail-actions" id="nodeDetailActions">
+        <button class="btn btn-default" id="bottomBackBtn">← 返回产业链图谱</button>
+        <button class="btn btn-primary" id="viewNetworkBtn">查看企业关系网络</button>
+      </section>
+    </main>
+  </div>
+
+  <div class="page-transition-overlay" id="pageTransitionOverlay"></div>
+
+  <script src="js/chain-node-common.js?v=2"></script>
+  <script src="js/chain-node-detail.js?v=3"></script>
+</body>
+</html>

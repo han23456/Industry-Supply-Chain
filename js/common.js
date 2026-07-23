@@ -200,7 +200,7 @@ function renderTrend(value) {
   return `<div class="metric-trend ${cls}">${arrow} ${Math.abs(value).toFixed(1)}%</div>`;
 }
 
-function openModal(title, content, footer = '') {
+function openModal(title, content, footer = '', modalClass = '') {
   let modal = document.getElementById('commonModal');
   if (!modal) {
     modal = document.createElement('div');
@@ -219,6 +219,8 @@ function openModal(title, content, footer = '') {
   modal.querySelector('.modal-title').textContent = title;
   modal.querySelector('.modal-body').innerHTML = content;
   modal.querySelector('.modal-footer').innerHTML = footer || '<button class="btn btn-primary" onclick="closeModal()">知道了</button>';
+  const modalBox = modal.querySelector('.modal');
+  modalBox.className = 'modal' + (modalClass ? ' ' + modalClass : '');
   modal.classList.add('open');
 }
 
@@ -353,7 +355,13 @@ const BREADCRUMB_CONFIG = {
   'enterprise-profile.html': [{ label: '首页', url: 'index.html' }, { label: '企业关系网络', url: 'enterprise-network.html' }, { label: '企业画像', url: '#', current: true }],
   'supply-demand.html': [{ label: '首页', url: 'index.html' }, { label: '供需对接', url: '#', current: true }],
   'chain-gap.html': [{ label: '首页', url: 'index.html' }, { label: '强链补链', url: '#', current: true }],
-  'risk-warning.html': [{ label: '首页', url: 'index.html' }, { label: '风险预警', url: '#', current: true }]
+  'risk-warning.html': [{ label: '首页', url: 'index.html' }, { label: '风险预警', url: '#', current: true }],
+  'chain-node-detail.html': [
+    { label: '首页', url: 'index.html' },
+    { label: '产业全景', url: 'index.html' },
+    { label: '产业链结构图谱', url: 'chain-graph.html' },
+    { label: '产业链环节详情', url: '#', current: true }
+  ]
 };
 
 function renderBreadcrumb(pageId) {

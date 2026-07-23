@@ -1878,6 +1878,20 @@ function enrichRecommendedEnterprises() {
 const ALL_RECOMMENDED_ENTERPRISES = enrichRecommendedEnterprises();
 ALL_ENTERPRISES.push(...ALL_RECOMMENDED_ENTERPRISES);
 
+// 将强链补链页上游供应商清单补充进企业池，使“查看档案”可跳转企业画像页
+if (typeof MockData !== 'undefined' && MockData.upstream && Array.isArray(MockData.upstream.suppliers)) {
+  MockData.upstream.suppliers.forEach(function (supplier) {
+    if (!supplier || !supplier.id) return;
+    ensureMockEnterpriseInPool({
+      id: supplier.id,
+      name: supplier.name,
+      annual_revenue: supplier.amount ? supplier.amount / 10000 : 1,
+      address: supplier.province,
+      tags: [supplier.category, '上游供应商']
+    });
+  });
+}
+
 // 把环节企业列表中的 mock/示例企业补充进企业池，确保点击名称能跳转到真实画像页
 function ensureMockEnterpriseInPool(mockItem) {
   if (!mockItem || mockItem.placeholder) return null;

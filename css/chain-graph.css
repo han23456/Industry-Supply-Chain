@@ -267,6 +267,8 @@
 }
 .tree-row:hover { background: #E6F7FF; }
 .tree-row.active { background: var(--primary-light); border-left: 3px solid var(--primary); padding-left: 5px; }
+.chain-sub-row.active { background: var(--primary-light); outline: 2px solid var(--primary); }
+.chain-panel.active > .chain-panel-header { background: var(--primary-light); outline: 2px solid var(--primary); }
 .tree-row.missing { background: #FFF1F0; color: var(--danger); }
 .tree-row.missing::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0;
@@ -2337,6 +2339,10 @@
 }
 
 /* ===== 产业链环节详情弹窗 ===== */
+.modal.modal-segment {
+  width: min(760px, 90vw);
+}
+
 .segment-modal {
   display: flex;
   flex-direction: column;
@@ -2352,17 +2358,18 @@
 }
 
 .segment-modal-name {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: #1D2129;
 }
 
 .segment-modal-tag {
-  padding: 2px 8px;
+  padding: 2px 10px;
   border-radius: 4px;
   color: #FFFFFF;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .segment-modal-grid {
@@ -2413,23 +2420,41 @@
 
 .segment-metric-value {
   color: #1D2129;
-  font-weight: 600;
+  font-weight: 700;
   text-align: right;
 }
 
-.segment-module-text {
-  gap: 6px;
+@media (max-width: 768px) {
+  .segment-modal {
+    gap: 12px;
+  }
+
+  .segment-modal-name {
+    font-size: 18px;
+  }
+
+  .segment-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .segment-module {
+    padding: 10px;
+  }
 }
 
-.segment-feature {
-  font-size: 13px;
-  color: #1D2129;
-  line-height: 1.5;
-}
+@media (max-width: 480px) {
+  .modal.modal-segment .modal-body {
+    padding: 16px;
+  }
 
-.segment-feature span {
-  color: #646A73;
-  margin-right: 4px;
+  .segment-module-title {
+    font-size: 13px;
+  }
+
+  .segment-metric {
+    font-size: 12px;
+    gap: 8px;
+  }
 }
 
 /* ===== 产业概览驾驶舱线框原型 ===== */

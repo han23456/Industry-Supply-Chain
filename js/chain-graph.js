@@ -157,6 +157,28 @@ async function loadData() {
   if (currentMainTab === 'overview') {
     renderOverviewTab();
   }
+
+  // 若 URL 携带 nodeId，自动定位到结构视图并高亮该节点（从详情页返回场景）
+  const params = getUrlParams();
+  if (params.nodeId && categoryTree) {
+    const targetNode = findNodeInTree(categoryTree.tree, params.nodeId);
+    if (targetNode) {
+      switchMainTab('structure');
+      selectedNodeId = params.nodeId;
+      setTimeout(() => {
+        document.querySelectorAll('.tree-row').forEach(r => r.classList.toggle('active', r.dataset.id === params.nodeId));
+        document.querySelectorAll('.chain-panel').forEach(p => p.classList.toggle('active', p.dataset.id === params.nodeId));
+        document.querySelectorAll('.chain-sub-row').forEach(r => r.classList.toggle('active', r.dataset.id === params.nodeId));
+        const panel = document.querySelector(`.chain-panel[data-id="${params.nodeId}"]`);
+        const subRow = document.querySelector(`.chain-sub-row[data-id="${params.nodeId}"]`);
+        if (subRow) {
+          subRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (panel) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }
 }
 
 function showLoading(show) {}
@@ -1132,7 +1154,7 @@ function renderGapFillingTab() {
       </div>
       <div class="priority-actions">
         <button class="btn btn-sm btn-primary" onclick="event.stopPropagation();window.location.href='chain-gap.html?chainId=${chainId}&nodeId=${gap.nodeId}'">查看补链方案</button>
-        <button class="btn btn-sm btn-default" onclick="event.stopPropagation();locateInGraph('${gap.nodeId}')">定位图谱</button>
+        <button class="btn btn-sm btn-default" onclick="event.stopPropagation();navigateToNodeDetail(chainId, '${gap.nodeId}', event, 'chain-graph')">定位图谱</button>
       </div>
     </div>
   `).join('');
@@ -1154,16 +1176,19 @@ function resetGapFilters() {
 
 
 function locateInGraph(nodeId) {
-  switchMainTab('structure');
-  setTimeout(() => {
-    const node = findNodeInTree(categoryTree.tree, nodeId);
-    if (!node) return;
-    if (node.isLeaf) {
-      openSegmentModal(nodeId);
-    } else {
+  const node = findNodeInTree(categoryTree.tree, nodeId);
+  if (!node) {
+    showToast('未找到产业链环节', 'warning');
+    return;
+  }
+  if (node.isLeaf) {
+    navigateToNodeDetail(chainId, nodeId, null, 'chain-graph');
+  } else {
+    switchMainTab('structure');
+    setTimeout(() => {
       showToast('已定位到产业链环节：' + node.name, 'success');
-    }
-  }, 200);
+    }, 200);
+  }
 }
 
 // ==================== 结构视图 ====================
@@ -1246,17 +1271,6 @@ function highlightStructureNode(nodeId) {
   if (data) {
     showToast('已定位：' + data.name, 'info');
   }
-}
-
-function findNodeInTree(nodes, nodeId) {
-  for (const node of nodes) {
-    if (node.id === nodeId) return node;
-    if (node.children) {
-      const found = findNodeInTree(node.children, nodeId);
-      if (found) return found;
-    }
-  }
-  return null;
 }
 
 // ==================== 关系视图 ====================
@@ -2202,23 +2216,6 @@ function sumNational(node) {
   return node.children.reduce((sum, child) => sum + sumNational(child), 0);
 }
 
-function classifyNode(node) {
-  if (!node) return { key: 'broken', label: '断', color: '#9CA3AF' };
-  const local = node.localCount || 0;
-  const national = node.nationalCount || 0;
-  if (local === 0 || node.status === 'missing') {
-    return { key: 'broken', label: '断', color: '#9CA3AF' };
-  }
-  if (node.status === 'advantage') {
-    return { key: 'advantage', label: '优', color: '#FA8C16' };
-  }
-  const ratio = national > 0 ? local / national : 1;
-  if (ratio >= 0.005 || local >= 30) {
-    return { key: 'core', label: '核', color: '#165DFF' };
-  }
-  return { key: 'weak', label: '弱', color: '#52C41A' };
-}
-
 function renderChainTag(node) {
   const cfg = classifyNode(node);
   return `<span class="chain-row-tag" style="background:${cfg.color}">${cfg.label}</span>`;
@@ -2295,7 +2292,7 @@ function renderChainSubRow(node, level = 0) {
     `;
   }
   return `
-    <div class="chain-sub-row" data-node-type="structure-row" data-id="${node.id}" onclick="openSegmentModal('${node.id}')" style="margin-left:${indent}px">
+    <div class="chain-sub-row" data-node-type="structure-row" data-id="${node.id}" onclick="navigateToNodeDetail(chainId, '${node.id}', event, 'chain-graph')" style="margin-left:${indent}px">
       <span class="chain-panel-arrow" style="visibility:hidden">▼</span>
       <span class="chain-sub-name">${node.name}</span>
       <span class="chain-status-tag ${cfg.key}">${cfg.label}</span>
@@ -2309,7 +2306,7 @@ function onChainPanelHeaderClick(nodeId, hasChildren) {
   if (hasChildren) {
     toggleChainPanel(nodeId);
   } else {
-    openSegmentModal(nodeId);
+    navigateToNodeDetail(chainId, nodeId, event, 'chain-graph');
   }
 }
 
@@ -2327,170 +2324,12 @@ function toggleChainSubGroup(nodeId, event) {
 }
 
 function openSegmentModal(nodeId) {
-  const node = findNodeInTree(categoryTree.tree, nodeId);
-  if (!node) return;
-  const stats = buildSegmentStats(node);
-  const cfg = classifyNode(node);
-  const content = `
-    <div class="segment-modal">
-      <div class="segment-modal-head">
-        <span class="segment-modal-name">${node.name}</span>
-        <span class="segment-modal-tag" style="background:${cfg.color}">${cfg.label}</span>
-      </div>
-      <div class="segment-modal-grid">
-        <div class="segment-module">
-          <div class="segment-module-title">① 产业产值</div>
-          <div class="segment-module-body">
-            <div class="segment-metric"><span class="segment-metric-label">本地总产值</span><span class="segment-metric-value">${stats.localOutput} 亿</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">全国总产值</span><span class="segment-metric-value">${stats.nationalOutput} 亿</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">本地占全国比重</span><span class="segment-metric-value">${stats.outputShare}%</span></div>
-          </div>
-        </div>
-        <div class="segment-module">
-          <div class="segment-module-title">② 专利科创</div>
-          <div class="segment-module-body">
-            <div class="segment-metric"><span class="segment-metric-label">发明专利</span><span class="segment-metric-value">${stats.inventionPatents} 件</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">实用新型</span><span class="segment-metric-value">${stats.utilityModels} 件</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">软著</span><span class="segment-metric-value">${stats.softwareCopyrights} 项</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">高价值专利</span><span class="segment-metric-value">${stats.highValuePatents} 件</span></div>
-          </div>
-        </div>
-        <div class="segment-module">
-          <div class="segment-module-title">③ 市场竞争力</div>
-          <div class="segment-module-body">
-            <div class="segment-metric"><span class="segment-metric-label">本地市占率</span><span class="segment-metric-value">${stats.marketShare}%</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">产业链完备度</span><span class="segment-metric-value">${stats.completeness}%</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">供需缺口指数</span><span class="segment-metric-value">${stats.gapIndex}</span></div>
-          </div>
-        </div>
-        <div class="segment-module">
-          <div class="segment-module-title">④ 龙头企业统计</div>
-          <div class="segment-module-body">
-            <div class="segment-metric"><span class="segment-metric-label">规上龙头</span><span class="segment-metric-value">${stats.leadingEnterprises} 家</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">专精特新</span><span class="segment-metric-value">${stats.specializedEnterprises} 家</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">单项冠军</span><span class="segment-metric-value">${stats.singleChampions} 家</span></div>
-          </div>
-        </div>
-        <div class="segment-module">
-          <div class="segment-module-title">⑤ 全国Top100分布</div>
-          <div class="segment-module-body">
-            <div class="segment-metric"><span class="segment-metric-label">本地落地数量</span><span class="segment-metric-value">${stats.top100Local} 家</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">全国Top100总部</span><span class="segment-metric-value">${stats.top100National} 家</span></div>
-          </div>
-        </div>
-        <div class="segment-module segment-module-wide">
-          <div class="segment-module-title">⑥ 本地产业特色</div>
-          <div class="segment-module-body segment-module-text">
-            <div class="segment-feature"><span>园区载体：</span>${stats.parks}</div>
-            <div class="segment-feature"><span>专项政策：</span>${stats.policies}</div>
-            <div class="segment-feature"><span>深港协同：</span>${stats.shenzhenHongKong}</div>
-          </div>
-        </div>
-        <div class="segment-module">
-          <div class="segment-module-title">⑦ 科创能力</div>
-          <div class="segment-module-body">
-            <div class="segment-metric"><span class="segment-metric-label">研发投入占比</span><span class="segment-metric-value">${stats.rdRatio}%</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">科研平台数量</span><span class="segment-metric-value">${stats.researchPlatforms} 个</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">产学研合作项目</span><span class="segment-metric-value">${stats.industryProjects} 项</span></div>
-          </div>
-        </div>
-        <div class="segment-module">
-          <div class="segment-module-title">⑧ 行业影响力</div>
-          <div class="segment-module-body">
-            <div class="segment-metric"><span class="segment-metric-label">全国赛道排名</span><span class="segment-metric-value">第 ${stats.nationalRank} 名</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">区域辐射范围</span><span class="segment-metric-value">${stats.radiation}</span></div>
-            <div class="segment-metric"><span class="segment-metric-label">产业链话语权</span><span class="segment-metric-value">${stats.discourseRating}</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  openModal(node.name, content);
-}
-
-function buildSegmentStats(node) {
-  const local = node.localCount || 0;
-  const national = node.nationalCount || 0;
-  const seed = hashCode(node.id || node.name);
-  const rand = seededRandom(seed);
-
-  const localAvgRevenue = 0.5 + rand() * 2.5; // 亿/家
-  const nationalAvgRevenue = 0.3 + rand() * 2.0;
-  const localOutput = (local * localAvgRevenue).toFixed(1);
-  const nationalOutput = (national * nationalAvgRevenue).toFixed(1);
-  const outputShare = national > 0 ? ((local / national) * 100).toFixed(1) : '0.0';
-
-  const marketShare = national > 0 ? ((local / national) * 100).toFixed(2) : '0.00';
-  const completeness = Math.min(100, Math.round(45 + rand() * 50));
-  const gapIndex = Math.min(100, Math.round(rand() * 100));
-
-  const leadingEnterprises = Math.round(local * (0.05 + rand() * 0.15));
-  const specializedEnterprises = Math.round(local * (0.08 + rand() * 0.20));
-  const singleChampions = Math.round(local * (0.01 + rand() * 0.06));
-
-  const top100Local = Math.min(20, Math.round(local * (0.005 + rand() * 0.03)));
-  const top100National = Math.min(100, Math.round(national * (0.02 + rand() * 0.08)));
-
-  const parks = ['前海智能制造产业园', '机器人产业园A区', '深港创新科技工业园'][seed % 3];
-  const policies = ['机器人产业高质量发展专项', '智能制造技改补贴', '深港科技合作计划'][seed % 3];
-  const shenzhenHongKong = '毗邻香港高校及研发机构，具备深港联合实验室与成果转化通道';
-
-  const rdRatio = (2.5 + rand() * 6.5).toFixed(2);
-  const researchPlatforms = Math.round(1 + rand() * 8);
-  const industryProjects = Math.round(rand() * 15);
-
-  const nationalRank = Math.max(1, Math.round(1 + rand() * 49));
-  const radiation = ['珠三角核心区', '粤港澳大湾区', '华南及东南亚'][seed % 3];
-  const discourseRating = ['A+ 强话语权', 'A 较强话语权', 'B 中等话语权', 'B+ 中强话语权'][seed % 4];
-
-  return {
-    localOutput, nationalOutput, outputShare,
-    inventionPatents: Math.round(local * (0.2 + rand() * 1.5)),
-    utilityModels: Math.round(local * (0.1 + rand() * 1.0)),
-    softwareCopyrights: Math.round(local * (0.05 + rand() * 0.8)),
-    highValuePatents: Math.round(local * (0.05 + rand() * 0.4)),
-    marketShare, completeness, gapIndex,
-    leadingEnterprises, specializedEnterprises, singleChampions,
-    top100Local, top100National,
-    parks, policies, shenzhenHongKong,
-    rdRatio, researchPlatforms, industryProjects,
-    nationalRank, radiation, discourseRating
-  };
-}
-
-function hashCode(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h) + str.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
-function seededRandom(seed) {
-  let s = seed % 2147483647;
-  if (s <= 0) s += 2147483646;
-  return function () {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
+  navigateToNodeDetail(chainId, nodeId, null, 'chain-graph');
 }
 
 function updateBottomBar() {}
 function updateNodeCount() {}
 function closeNodeDrawer() { closeModal(); }
-
-// 确保 findNodeInTree 可用
-function findNodeInTree(nodes, nodeId) {
-  for (const node of nodes) {
-    if (node.id === nodeId) return node;
-    if (node.children) {
-      const found = findNodeInTree(node.children, nodeId);
-      if (found) return found;
-    }
-  }
-  return null;
-}
 
 // ==================== 产业概览驾驶舱图表 ====================
 function renderOverviewTab() {

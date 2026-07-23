@@ -279,12 +279,16 @@
           });
         });
 
-        // 查看档案
+        // 查看档案 -> 跳转企业全息画像页
         $$('.btn-view-profile', body).forEach(function (btn) {
           btn.addEventListener('click', function () {
             var idx = parseInt(this.dataset.idx);
             var supplier = suppliers[idx];
-            toast('查看企业档案：' + supplier.name, 'info');
+            if (!supplier || !supplier.id) {
+              toast('该企业暂无档案信息', 'warning');
+              return;
+            }
+            window.location.href = 'enterprise-profile.html?enterpriseId=' + encodeURIComponent(supplier.id);
           });
         });
 
@@ -344,7 +348,7 @@
       bodyHTML: buildInvestModalHTML(targets, baseline),
       footerHTML:
         '<button class="btn btn--ghost" onclick="CommonUtil.closeModal()">关闭</button>' +
-        '<button class="btn btn--primary" id="btn-run-simulation">运行推演</button>',
+        '<button class="btn btn--primary" id="btn-run-simulation">确定招商方案</button>',
       onMount: function (body) {
         // 勾选事件 -> 实时更新推演结果
         var checkboxes = $$('.invest-checkbox', body);

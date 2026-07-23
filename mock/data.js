@@ -70,18 +70,18 @@ var MockData = {
     },
     // 供应商清单（下钻弹窗数据）
     suppliers: [
-      { name: '宁德时代新能源科技股份有限公司', province: '广东省', category: '动力电池电芯', amount: 58600, selected: false },
-      { name: '比亚迪弗迪电池有限公司', province: '广东省', category: '动力电池电芯', amount: 42300, selected: false },
-      { name: '天赐高新材料股份有限公司', province: '广东省', category: '电解液', amount: 31200, selected: false },
-      { name: '江苏国泰超威新材料有限公司', province: '江苏省', category: '电解液', amount: 28500, selected: false },
-      { name: '杉杉锂电材料科技有限公司', province: '浙江省', category: '正极材料', amount: 24800, selected: false },
-      { name: '上海恩捷新能源科技有限公司', province: '上海市', category: '隔膜', amount: 21300, selected: false },
-      { name: '璞泰来新能源技术有限公司', province: '上海市', category: '负极材料', amount: 18600, selected: false },
-      { name: '威海光威复合材料股份有限公司', province: '山东省', category: '结构件', amount: 14200, selected: false },
-      { name: '科达利新能源精密制造有限公司', province: '广东省', category: '结构件', amount: 12800, selected: false },
-      { name: '当升科技材料有限公司', province: '北京市', category: '正极材料', amount: 10500, selected: false },
-      { name: '新宙邦电子材料科技有限公司', province: '广东省', category: '电解液', amount: 9200, selected: false },
-      { name: '星源材质新材料有限公司', province: '广东省', category: '隔膜', amount: 8600, selected: false }
+      { id: 'sup-catl', name: '宁德时代新能源科技股份有限公司', province: '广东省', category: '动力电池电芯', amount: 58600, selected: false },
+      { id: 'sup-byd', name: '比亚迪弗迪电池有限公司', province: '广东省', category: '动力电池电芯', amount: 42300, selected: false },
+      { id: 'sup-tinci', name: '天赐高新材料股份有限公司', province: '广东省', category: '电解液', amount: 31200, selected: false },
+      { id: 'sup-guotai', name: '江苏国泰超威新材料有限公司', province: '江苏省', category: '电解液', amount: 28500, selected: false },
+      { id: 'sup-shanshan', name: '杉杉锂电材料科技有限公司', province: '浙江省', category: '正极材料', amount: 24800, selected: false },
+      { id: 'sup-enjie', name: '上海恩捷新能源科技有限公司', province: '上海市', category: '隔膜', amount: 21300, selected: false },
+      { id: 'sup-putailai', name: '璞泰来新能源技术有限公司', province: '上海市', category: '负极材料', amount: 18600, selected: false },
+      { id: 'sup-guangwei', name: '威海光威复合材料股份有限公司', province: '山东省', category: '结构件', amount: 14200, selected: false },
+      { id: 'sup-kedali', name: '科达利新能源精密制造有限公司', province: '广东省', category: '结构件', amount: 12800, selected: false },
+      { id: 'sup-dangsheng', name: '当升科技材料有限公司', province: '北京市', category: '正极材料', amount: 10500, selected: false },
+      { id: 'sup-capchem', name: '新宙邦电子材料科技有限公司', province: '广东省', category: '电解液', amount: 9200, selected: false },
+      { id: 'sup-xydm', name: '星源材质新材料有限公司', province: '广东省', category: '隔膜', amount: 8600, selected: false }
     ],
     // 招商模拟推演 - 可选招商企业
     investmentTargets: [
