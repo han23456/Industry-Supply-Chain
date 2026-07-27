@@ -2330,27 +2330,198 @@ Object.assign(MOCK_CATEGORY_TREES, {
   'chain-002': {
     chainId: 'chain-002',
     tree: [{
-      id: 'ne-l1-1', name: '新能源汽车', level: 1, isLeaf: false,
+      id: 'oc-root', name: '海洋产业', level: 1, isLeaf: false,
       children: [
-        { id: 'ne-l2-1', name: '整车制造', level: 2, isLeaf: false, children: [
-          { id: 'ne-l4-1', name: '乘用车', level: 4, isLeaf: true, nationalCount: 1560, localCount: 35, status: 'advantage' },
-          { id: 'ne-l4-2', name: '商用车', level: 4, isLeaf: true, nationalCount: 420, localCount: 8, status: 'normal' }
-        ]},
-        { id: 'ne-l2-2', name: '动力电池', level: 2, isLeaf: false, children: [
-          { id: 'ne-l4-3', name: '三元锂电池', level: 4, isLeaf: true, nationalCount: 320, localCount: 12, status: 'advantage' },
-          { id: 'ne-l4-4', name: '固态电池', level: 4, isLeaf: true, nationalCount: 45, localCount: 0, status: 'missing' }
-        ]},
-        { id: 'ne-l2-3', name: '驱动系统', level: 2, isLeaf: false, children: [
-          { id: 'ne-l4-5', name: '电机', level: 4, isLeaf: true, nationalCount: 580, localCount: 18, status: 'advantage' },
-          { id: 'ne-l4-6', name: '电控', level: 4, isLeaf: true, nationalCount: 410, localCount: 6, status: 'normal' }
-        ]},
-        { id: 'ne-l2-4', name: '智能网联', level: 2, isLeaf: false, children: [
-          { id: 'ne-l4-7', name: '车规级芯片', level: 4, isLeaf: true, nationalCount: 120, localCount: 2, status: 'missing' },
-          { id: 'ne-l4-8', name: '激光雷达', level: 4, isLeaf: true, nationalCount: 85, localCount: 1, status: 'missing' }
-        ]},
-        { id: 'ne-l2-5', name: '充电基础设施', level: 2, isLeaf: false, children: [
-          { id: 'ne-l4-9', name: '充电桩', level: 4, isLeaf: true, nationalCount: 2500, localCount: 120, status: 'advantage' }
-        ]}
+        {
+          id: 'oc-equip', name: '涉海设备制造', level: 2, isLeaf: false,
+          children: [
+            { id: 'oc-fish-equip', name: '海洋渔业和水产品加工设备制造', level: 3, isLeaf: true, nationalCount: 65, localCount: 65, status: 'normal' },
+            { id: 'oc-ship-aux', name: '海洋船舶辅助设备及配件制造', level: 3, isLeaf: true, nationalCount: 47, localCount: 47, status: 'normal' },
+            { id: 'oc-salt-equip', name: '海盐设备制造', level: 3, isLeaf: true, nationalCount: 74, localCount: 74, status: 'normal' },
+            { id: 'oc-chem-equip', name: '海洋化工设备及仪器制造', level: 3, isLeaf: true, nationalCount: 34, localCount: 34, status: 'normal' },
+            { id: 'oc-drug-equip', name: '海洋药物和生物制品设备及仪器制造', level: 3, isLeaf: true, nationalCount: 3, localCount: 3, status: 'normal' },
+            { id: 'oc-transport-equip', name: '海洋交通运输设备制造', level: 3, isLeaf: true, nationalCount: 515, localCount: 515, status: 'advantage' },
+            { id: 'oc-tour-equip', name: '海洋旅游娱乐设备制造', level: 3, isLeaf: true, nationalCount: 120, localCount: 120, status: 'normal' },
+            { id: 'oc-eco-equip', name: '海洋生态环境保护修复仪器设备制造', level: 3, isLeaf: true, nationalCount: 7, localCount: 7, status: 'normal' }
+          ]
+        },
+        {
+          id: 'oc-material', name: '涉海材料制造', level: 2, isLeaf: false,
+          children: [
+            { id: 'oc-aqua-feed', name: '海洋水产养殖饲料与药品制造', level: 3, isLeaf: true, nationalCount: 59, localCount: 59, status: 'normal' },
+            { id: 'oc-artificial-oil', name: '海洋人造原油加工制造', level: 3, isLeaf: true, nationalCount: 20, localCount: 0, status: 'missing' },
+            { id: 'oc-oilfield-chem', name: '海洋油田化学品制造', level: 3, isLeaf: true, nationalCount: 1000, localCount: 2, status: 'normal' },
+            { id: 'oc-tour-craft', name: '海洋旅游工艺品制造', level: 3, isLeaf: true, nationalCount: 25, localCount: 25, status: 'normal' },
+            { id: 'oc-eco-material', name: '海洋生态环境保护修复材料制造', level: 3, isLeaf: true, nationalCount: 1000, localCount: 9, status: 'normal' },
+            { id: 'oc-subsea-material', name: '海底运输材料制造', level: 3, isLeaf: true, nationalCount: 1000, localCount: 2, status: 'normal' },
+            { id: 'oc-protect-material', name: '海洋防护材料制造', level: 3, isLeaf: true, nationalCount: 1000, localCount: 10, status: 'normal' },
+            { id: 'oc-ship-material', name: '船舶及海洋工程装备材料制造', level: 3, isLeaf: true, nationalCount: 1000, localCount: 2, status: 'normal' }
+          ]
+        },
+        {
+          id: 'oc-industry', name: '海洋产业', level: 2, isLeaf: false,
+          children: [
+            {
+              id: 'oc-fishery', name: '海洋渔业', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-aquaculture', name: '海水养殖产品', level: 4, isLeaf: true, nationalCount: 83, localCount: 83, status: 'normal' },
+                { id: 'oc-catch', name: '海水捕捞产品', level: 4, isLeaf: true, nationalCount: 49, localCount: 49, status: 'normal' },
+                { id: 'oc-fry', name: '海洋鱼苗及鱼种场活动', level: 4, isLeaf: true, nationalCount: 1000, localCount: 11, status: 'normal' }
+              ]
+            },
+            {
+              id: 'oc-aquatic-process', name: '海洋水产品加工业', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-fish-paste', name: '海洋鱼糜制品及水产品干腌制加工', level: 4, isLeaf: true, nationalCount: 66, localCount: 66, status: 'normal' },
+                { id: 'oc-frozen', name: '海洋水产品冷冻加工', level: 4, isLeaf: true, nationalCount: 70, localCount: 70, status: 'normal' },
+                { id: 'oc-can', name: '海洋水产罐头制造', level: 4, isLeaf: true, nationalCount: 1000, localCount: 4, status: 'normal' },
+                { id: 'oc-pearl', name: '海水珍珠加工', level: 4, isLeaf: true, nationalCount: 1, localCount: 1, status: 'normal' },
+                { id: 'oc-fish-oil', name: '海洋鱼油提取及制品制造', level: 4, isLeaf: true, nationalCount: 17, localCount: 17, status: 'normal' },
+                { id: 'oc-aqua-feed-mfg', name: '海洋水产饲料制造', level: 4, isLeaf: true, nationalCount: 6, localCount: 6, status: 'normal' }
+              ]
+            },
+            {
+              id: 'oc-oil-gas', name: '海洋油气业', level: 3, isLeaf: false,
+              children: [
+                {
+                  id: 'oc-oil-gas-extract', name: '海洋石油和天然气开采', level: 4, isLeaf: false,
+                  children: [
+                    { id: 'oc-oil-extract', name: '海洋石油开采', level: 5, isLeaf: true, nationalCount: 30, localCount: 30, status: 'normal' },
+                    { id: 'oc-gas-extract', name: '海洋天然气及可燃冰开采', level: 5, isLeaf: true, nationalCount: 23, localCount: 23, status: 'normal' }
+                  ]
+                }
+              ]
+            },
+            { id: 'oc-mining', name: '海洋矿业', level: 3, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' },
+            { id: 'oc-salt', name: '海洋盐业', level: 3, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' },
+            { id: 'oc-ship-repair', name: '海洋船舶改装拆除与修理', level: 3, isLeaf: true, nationalCount: 10, localCount: 10, status: 'normal' },
+            { id: 'oc-ship-equip', name: '海洋船舶配套设备制造', level: 3, isLeaf: true, nationalCount: 50, localCount: 50, status: 'normal' },
+            { id: 'oc-nav-aid', name: '海洋航标器材与其他相关装置制造', level: 3, isLeaf: true, nationalCount: 49, localCount: 49, status: 'normal' },
+            {
+              id: 'oc-marine-equip', name: '海洋工程装备制造', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-mineral-equip', name: '海洋矿产资源勘探开发装备制造及修理', level: 4, isLeaf: true, nationalCount: 88, localCount: 88, status: 'advantage' },
+                { id: 'oc-oil-equip', name: '海洋油气资源勘探开发装备制造及修理', level: 4, isLeaf: true, nationalCount: 60, localCount: 60, status: 'normal' },
+                { id: 'oc-wind-equip', name: '海洋风能与可再生能源开发利用装备制造及修理', level: 4, isLeaf: true, nationalCount: 34, localCount: 34, status: 'normal' },
+                { id: 'oc-desal-equip', name: '海水淡化与综合利用装备制造及修理', level: 4, isLeaf: true, nationalCount: 200, localCount: 200, status: 'advantage' },
+                { id: 'oc-bio-equip', name: '海洋生物资源利用装备制造及修理', level: 4, isLeaf: true, nationalCount: 33, localCount: 33, status: 'normal' },
+                { id: 'oc-info-equip', name: '海洋信息装备制造及修理', level: 4, isLeaf: true, nationalCount: 31, localCount: 31, status: 'normal' },
+                { id: 'oc-general-equip', name: '海洋工程通用装备制造及修理', level: 4, isLeaf: true, nationalCount: 66, localCount: 66, status: 'normal' }
+              ]
+            },
+            {
+              id: 'oc-chem-industry', name: '海洋化工业', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-salt-chem', name: '海盐化工', level: 4, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' },
+                { id: 'oc-petrol-chem', name: '海洋石油化工', level: 4, isLeaf: true, nationalCount: 33, localCount: 33, status: 'normal' },
+                { id: 'oc-algae-chem', name: '海藻化工', level: 4, isLeaf: true, nationalCount: 4, localCount: 4, status: 'normal' }
+              ]
+            },
+            {
+              id: 'oc-bio-pharma', name: '海洋生物医药业', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-drug-mfg', name: '海洋药品制造', level: 4, isLeaf: true, nationalCount: 412, localCount: 412, status: 'normal' },
+                { id: 'oc-functional-food', name: '海洋功能性食品制造', level: 4, isLeaf: true, nationalCount: 36, localCount: 36, status: 'normal' },
+                { id: 'oc-bio-products', name: '海洋生物制品制造', level: 4, isLeaf: true, nationalCount: 184, localCount: 184, status: 'normal' }
+              ]
+            },
+            {
+              id: 'oc-marine-construction', name: '海洋工程建筑业', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-offshore-constr', name: '海上工程建筑', level: 4, isLeaf: true, nationalCount: 58, localCount: 58, status: 'normal' },
+                { id: 'oc-subsea-constr', name: '海底工程建筑', level: 4, isLeaf: true, nationalCount: 50, localCount: 0, status: 'missing' },
+                { id: 'oc-nearshore-constr', name: '近岸工程建筑', level: 4, isLeaf: true, nationalCount: 45, localCount: 45, status: 'normal' }
+              ]
+            },
+            {
+              id: 'oc-marine-power', name: '海洋电力业', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-wind-power', name: '海洋风力发电', level: 4, isLeaf: true, nationalCount: 10, localCount: 10, status: 'normal' },
+                { id: 'oc-ocean-energy', name: '海洋能发电', level: 4, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' }
+              ]
+            },
+            {
+              id: 'oc-desal-util', name: '海水淡化与综合利用业', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-desalination', name: '海水淡化', level: 4, isLeaf: true, nationalCount: 129, localCount: 129, status: 'normal' },
+                { id: 'oc-direct-use', name: '海水直接利用', level: 4, isLeaf: true, nationalCount: 7, localCount: 7, status: 'advantage' },
+                { id: 'oc-chem-use', name: '海水化学资源利用', level: 4, isLeaf: true, nationalCount: 3, localCount: 3, status: 'advantage' }
+              ]
+            },
+            {
+              id: 'oc-marine-transport', name: '海洋交通运输业', level: 3, isLeaf: false,
+              children: [
+                { id: 'oc-passenger', name: '海上旅客运输', level: 4, isLeaf: true, nationalCount: 51, localCount: 51, status: 'normal' },
+                {
+                  id: 'oc-cargo', name: '海洋货物运输', level: 4, isLeaf: false,
+                  children: [
+                    { id: 'oc-ocean-cargo', name: '远洋货物运输', level: 5, isLeaf: true, nationalCount: 769, localCount: 769, status: 'normal' },
+                    { id: 'oc-coastal-cargo', name: '沿海货物运输服务', level: 5, isLeaf: true, nationalCount: 174, localCount: 174, status: 'normal' }
+                  ]
+                },
+                { id: 'oc-port', name: '沿海港口', level: 4, isLeaf: true, nationalCount: 8, localCount: 8, status: 'normal' },
+                { id: 'oc-pipeline', name: '海底管道运输', level: 4, isLeaf: true, nationalCount: 74, localCount: 74, status: 'normal' },
+                { id: 'oc-transport-aux', name: '海洋运输辅助活动', level: 4, isLeaf: true, nationalCount: 13, localCount: 13, status: 'normal' }
+              ]
+            },
+            { id: 'oc-tour-service', name: '海洋旅游经营服务', level: 3, isLeaf: true, nationalCount: 61, localCount: 61, status: 'normal' },
+            {
+              id: 'oc-public-mgmt', name: '海洋公共管理服务', level: 3, isLeaf: false,
+              children: [
+                {
+                  id: 'oc-info-service', name: '海洋信息服务', level: 4, isLeaf: false,
+                  children: [
+                    { id: 'oc-info-collection', name: '海洋信息采集服务', level: 5, isLeaf: true, nationalCount: 8, localCount: 8, status: 'normal' },
+                    { id: 'oc-info-comm', name: '海洋通信传输服务', level: 5, isLeaf: true, nationalCount: 19, localCount: 19, status: 'normal' },
+                    { id: 'oc-info-storage', name: '海洋信息处理与存储', level: 5, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' },
+                    { id: 'oc-info-integration', name: '海洋信息系统开发集成', level: 5, isLeaf: true, nationalCount: 59, localCount: 59, status: 'normal' },
+                    { id: 'oc-info-sharing', name: '海洋信息共享应用服务', level: 5, isLeaf: true, nationalCount: 107, localCount: 107, status: 'normal' }
+                  ]
+                },
+                {
+                  id: 'oc-eco-restoration', name: '海洋生态环境保护修复', level: 4, isLeaf: false,
+                  children: [
+                    { id: 'oc-env-protection', name: '海洋环境保护服务', level: 5, isLeaf: true, nationalCount: 28, localCount: 28, status: 'normal' },
+                    { id: 'oc-eco-repair', name: '海洋生态修复', level: 5, isLeaf: true, nationalCount: 7, localCount: 7, status: 'normal' },
+                    { id: 'oc-env-governance', name: '海洋环境治理', level: 5, isLeaf: true, nationalCount: 23, localCount: 23, status: 'normal' }
+                  ]
+                },
+                {
+                  id: 'oc-geological', name: '海洋地质勘查', level: 4, isLeaf: false,
+                  children: [
+                    { id: 'oc-mineral-geo', name: '海洋矿产地质勘查', level: 5, isLeaf: true, nationalCount: 14, localCount: 14, status: 'normal' },
+                    { id: 'oc-basic-geo', name: '海洋基础地质勘查', level: 5, isLeaf: true, nationalCount: 5, localCount: 5, status: 'normal' },
+                    { id: 'oc-geo-tech', name: '海洋地质勘查技术服务', level: 5, isLeaf: true, nationalCount: 1, localCount: 1, status: 'normal' }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'oc-edu', name: '海洋科研教育', level: 2, isLeaf: false,
+          children: [
+            { id: 'oc-science', name: '海洋科学研究', level: 3, isLeaf: true, nationalCount: 17, localCount: 17, status: 'normal' },
+            { id: 'oc-education', name: '海洋教育', level: 3, isLeaf: true, nationalCount: 6, localCount: 6, status: 'normal' }
+          ]
+        },
+        {
+          id: 'oc-reprocess', name: '涉海产品再加工', level: 2, isLeaf: false,
+          children: [
+            { id: 'oc-aqua-deep', name: '海洋水产品深加工', level: 3, isLeaf: true, nationalCount: 168, localCount: 168, status: 'normal' },
+            { id: 'oc-chem-product', name: '海洋化工产品制造', level: 3, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' }
+          ]
+        },
+        { id: 'oc-retail', name: '海洋产品批发与零售', level: 2, isLeaf: true, nationalCount: 297, localCount: 297, status: 'normal' },
+        {
+          id: 'oc-service', name: '涉海经营服务', level: 2, isLeaf: false,
+          children: [
+            { id: 'oc-finance', name: '涉海金融服务', level: 3, isLeaf: true, nationalCount: 17, localCount: 17, status: 'normal' },
+            { id: 'oc-catering', name: '海洋餐饮服务', level: 3, isLeaf: true, nationalCount: 77, localCount: 77, status: 'normal' },
+            { id: 'oc-business', name: '涉海商务服务', level: 3, isLeaf: true, nationalCount: 1000, localCount: 3, status: 'normal' },
+            { id: 'oc-special', name: '涉海特色服务', level: 3, isLeaf: true, nationalCount: 1, localCount: 1, status: 'normal' }
+          ]
+        }
       ]
     }]
   },
@@ -2400,25 +2571,144 @@ Object.assign(MOCK_CATEGORY_TREES, {
   'chain-005': {
     chainId: 'chain-005',
     tree: [{
-      id: 'sc-l1-1', name: '半导体', level: 1, isLeaf: false,
+      id: 'la-root', name: '低空经济', level: 1, isLeaf: false,
       children: [
-        { id: 'sc-l2-1', name: '设计', level: 2, isLeaf: false, children: [
-          { id: 'sc-l4-1', name: 'EDA工具', level: 4, isLeaf: true, nationalCount: 35, localCount: 0, status: 'missing' },
-          { id: 'sc-l4-2', name: '芯片设计', level: 4, isLeaf: true, nationalCount: 1800, localCount: 45, status: 'advantage' }
-        ]},
-        { id: 'sc-l2-2', name: '制造', level: 2, isLeaf: false, children: [
-          { id: 'sc-l4-3', name: '晶圆制造', level: 4, isLeaf: true, nationalCount: 120, localCount: 2, status: 'missing' },
-          { id: 'sc-l4-4', name: '特色工艺', level: 4, isLeaf: true, nationalCount: 85, localCount: 8, status: 'normal' }
-        ]},
-        { id: 'sc-l2-3', name: '封测', level: 2, isLeaf: false, children: [
-          { id: 'sc-l4-5', name: '封装测试', level: 4, isLeaf: true, nationalCount: 420, localCount: 22, status: 'advantage' }
-        ]},
-        { id: 'sc-l2-4', name: '设备材料', level: 2, isLeaf: false, children: [
-          { id: 'sc-l4-6', name: '半导体材料', level: 4, isLeaf: true, nationalCount: 560, localCount: 16, status: 'normal' },
-          { id: 'sc-l4-7', name: '刻蚀设备', level: 4, isLeaf: true, nationalCount: 45, localCount: 2, status: 'normal' },
-          { id: 'sc-l4-8', name: '薄膜设备', level: 4, isLeaf: true, nationalCount: 38, localCount: 1, status: 'missing' },
-          { id: 'sc-l4-9', name: '光刻机', level: 4, isLeaf: true, nationalCount: 12, localCount: 0, status: 'missing' }
-        ]}
+        {
+          id: 'la-manu', name: '低空制造', level: 2, isLeaf: false,
+          children: [
+            {
+              id: 'la-raw', name: '关键原材料', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-plastic', name: '航空工程塑料', level: 4, isLeaf: true, nationalCount: 24, localCount: 24, status: 'normal' },
+                { id: 'la-alloy', name: '航空铝合金', level: 4, isLeaf: true, nationalCount: 11, localCount: 11, status: 'normal' },
+                { id: 'la-glass', name: '航空玻纤', level: 4, isLeaf: true, nationalCount: 3, localCount: 3, status: 'normal' },
+                { id: 'la-carbon', name: '航空碳纤维', level: 4, isLeaf: true, nationalCount: 7, localCount: 7, status: 'normal' },
+                { id: 'la-superalloy', name: '高温合金', level: 4, isLeaf: true, nationalCount: 55, localCount: 55, status: 'normal' }
+              ]
+            },
+            {
+              id: 'la-uav-parts', name: '无人机/eVTOL关键零部件', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-airframe', name: '无人机机身', level: 4, isLeaf: true, nationalCount: 13, localCount: 13, status: 'normal' },
+                { id: 'la-power', name: '动力系统', level: 4, isLeaf: true, nationalCount: 150, localCount: 150, status: 'normal' },
+                { id: 'la-fcs', name: '飞行控制系统', level: 4, isLeaf: true, nationalCount: 160, localCount: 160, status: 'normal' },
+                { id: 'la-nav', name: '无人机导航系统', level: 4, isLeaf: true, nationalCount: 150, localCount: 150, status: 'normal' },
+                { id: 'la-comm', name: '通信系统', level: 4, isLeaf: true, nationalCount: 25, localCount: 25, status: 'normal' },
+                { id: 'la-ground', name: '地面系统', level: 4, isLeaf: true, nationalCount: 20, localCount: 20, status: 'normal' },
+                { id: 'la-otherparts', name: '其他零部件', level: 4, isLeaf: true, nationalCount: 4, localCount: 4, status: 'normal' }
+              ]
+            },
+            {
+              id: 'la-uav-key', name: '无人机关键零部件', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-payload', name: '载荷系统', level: 4, isLeaf: true, nationalCount: 98, localCount: 98, status: 'normal' }
+              ]
+            },
+            {
+              id: 'la-evtol-parts', name: 'eVTOL关键零部件', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-evtol-cabin', name: 'eVTOL座舱系统', level: 4, isLeaf: true, nationalCount: 1, localCount: 1, status: 'normal' }
+              ]
+            },
+            {
+              id: 'la-ga-parts', name: '通用航空飞行器关键零部件', level: 3, isLeaf: false,
+              children: [
+                {
+                  id: 'la-engine', name: '航空发动机', level: 4, isLeaf: false,
+                  children: [
+                    { id: 'la-piston', name: '活塞式发动机', level: 5, isLeaf: true, nationalCount: 1, localCount: 1, status: 'normal' },
+                    { id: 'la-turbine', name: '涡轮发动机', level: 5, isLeaf: true, nationalCount: 6, localCount: 6, status: 'normal' }
+                  ]
+                },
+                { id: 'la-airframe-ga', name: '通航飞行器机体', level: 4, isLeaf: true, nationalCount: 60, localCount: 0, status: 'missing' },
+                { id: 'la-avionics', name: '航电系统', level: 4, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' },
+                { id: 'la-electromechanical', name: '机电系统', level: 4, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' }
+              ]
+            },
+            {
+              id: 'la-uav-whole', name: '无人机整机制造', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-military-uav', name: '军用无人机', level: 4, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' },
+                {
+                  id: 'la-civil-uav', name: '民用无人机', level: 4, isLeaf: false,
+                  children: [
+                    { id: 'la-industrial-uav', name: '工业无人机', level: 5, isLeaf: true, nationalCount: 70, localCount: 70, status: 'advantage' },
+                    { id: 'la-consumer-uav', name: '消费级无人机', level: 5, isLeaf: true, nationalCount: 804, localCount: 804, status: 'advantage' }
+                  ]
+                }
+              ]
+            },
+            { id: 'la-evtol-manu', name: '电动垂直起降飞行器（eVTOL）制造', level: 3, isLeaf: true, nationalCount: 9, localCount: 9, status: 'advantage' },
+            {
+              id: 'la-ga-manu', name: '低空通航飞行器制造', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-civil-heli', name: '民用直升机', level: 4, isLeaf: true, nationalCount: 15, localCount: 15, status: 'advantage' },
+                { id: 'la-light-ga', name: '轻型通用飞机', level: 4, isLeaf: true, nationalCount: 12, localCount: 12, status: 'normal' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'la-support', name: '低空保障', level: 2, isLeaf: false,
+          children: [
+            { id: 'la-airspace', name: '空域管理', level: 3, isLeaf: true, nationalCount: 2, localCount: 2, status: 'advantage' },
+            { id: 'la-airport', name: '通航机场建设与运营', level: 3, isLeaf: true, nationalCount: 29, localCount: 29, status: 'advantage' },
+            { id: 'la-takeoff', name: '起降平台建设与运营', level: 3, isLeaf: true, nationalCount: 120, localCount: 0, status: 'missing' },
+            { id: 'la-comm-infra', name: '通信基础设施建设与运营', level: 3, isLeaf: true, nationalCount: 2, localCount: 2, status: 'advantage' },
+            { id: 'la-fss', name: '飞行服务站建设与运营', level: 3, isLeaf: true, nationalCount: 80, localCount: 0, status: 'missing' },
+            { id: 'la-dispatch', name: '无人机调度与监管平台建设与运营', level: 3, isLeaf: true, nationalCount: 1000, localCount: 2, status: 'normal' },
+            {
+              id: 'la-maintenance', name: '低空飞行器检修', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-ga-maint', name: '通航飞行器检修', level: 4, isLeaf: true, nationalCount: 26, localCount: 26, status: 'normal' },
+                { id: 'la-uav-maint', name: '无人机检修', level: 4, isLeaf: true, nationalCount: 9, localCount: 9, status: 'advantage' },
+                { id: 'la-evtol-maint', name: '电动垂直起降飞行器（eVTOL）检修', level: 4, isLeaf: true, nationalCount: 45, localCount: 0, status: 'missing' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'la-activity', name: '低空飞行活动', level: 2, isLeaf: false,
+          children: [
+            {
+              id: 'la-ga-ops', name: '通航运营与飞行活动', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-commercial', name: '商业运输', level: 4, isLeaf: true, nationalCount: 10, localCount: 10, status: 'normal' },
+                { id: 'la-special', name: '特种作业', level: 4, isLeaf: true, nationalCount: 25, localCount: 25, status: 'normal' },
+                { id: 'la-tourism', name: '通航文旅活动', level: 4, isLeaf: true, nationalCount: 15, localCount: 15, status: 'advantage' }
+              ]
+            },
+            {
+              id: 'la-uav-ops', name: '无人机运营及飞行活动', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-military-ops', name: '军用无人机', level: 4, isLeaf: true, nationalCount: 4, localCount: 4, status: 'normal' },
+                { id: 'la-industrial-ops', name: '工业级无人机', level: 4, isLeaf: true, nationalCount: 82, localCount: 82, status: 'normal' },
+                { id: 'la-consumer-ops', name: '消费级无人机', level: 4, isLeaf: true, nationalCount: 102, localCount: 102, status: 'normal' }
+              ]
+            },
+            {
+              id: 'la-evtol-ops', name: '电动垂直起降飞行器（eVTOL）运营及飞行活动', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-uam', name: '城市空中交通（UAM）', level: 4, isLeaf: true, nationalCount: 16, localCount: 16, status: 'advantage' },
+                { id: 'la-evtol-cargo', name: '电动垂直起降飞行器（eVTOL）载货', level: 4, isLeaf: true, nationalCount: 25, localCount: 0, status: 'missing' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'la-service', name: '低空综合服务', level: 2, isLeaf: false,
+          children: [
+            {
+              id: 'la-training', name: '飞行员培训', level: 3, isLeaf: false,
+              children: [
+                { id: 'la-uav-pilot', name: '无人机飞手培训', level: 4, isLeaf: true, nationalCount: 161, localCount: 161, status: 'normal' },
+                { id: 'la-ga-pilot', name: '通航飞行员培训', level: 4, isLeaf: true, nationalCount: 16, localCount: 16, status: 'normal' },
+                { id: 'la-evtol-pilot', name: 'eVTOL驾驶员培训', level: 4, isLeaf: true, nationalCount: 30, localCount: 0, status: 'missing' }
+              ]
+            },
+            { id: 'la-finance', name: '通用航空金融与保险', level: 3, isLeaf: true, nationalCount: 2, localCount: 2, status: 'normal' }
+          ]
+        }
       ]
     }]
   }
@@ -2543,10 +2833,12 @@ Object.assign(MOCK_GAP_DATA, {
   },
   'chain-005': {
     gaps: [
-      { nodeId: 'sc-l4-9', name: '光刻机', nationalCount: 12, localCount: 0, gapType: '严重缺失', affectedDownstream: ['芯片设计公司A', '晶圆厂B'], affectedAmount: 12.5, recommended: ['上海微电子', '尼康', '佳能'], policy: '引进光刻机核心零部件及维护服务企业。' },
-      { nodeId: 'sc-l4-1', name: 'EDA工具', nationalCount: 35, localCount: 0, gapType: '严重缺失', affectedDownstream: ['芯片设计公司A', '设计公司H'], affectedAmount: 4.8, recommended: ['华大九天', '概伦电子', '广立微'], policy: '支持国产EDA工具在本区试点应用。' },
-      { nodeId: 'sc-l4-3', name: '晶圆制造', nationalCount: 120, localCount: 2, gapType: '严重缺失', affectedDownstream: ['芯片设计公司A', '设计公司H'], affectedAmount: 9.2, recommended: ['中芯国际', '华虹半导体', '士兰微'], policy: '引进晶圆制造产线，提供用地和能耗配套。' },
-      { nodeId: 'sc-l4-8', name: '薄膜设备', nationalCount: 38, localCount: 1, gapType: '轻度缺失', affectedDownstream: ['晶圆厂B'], affectedAmount: 2.1, recommended: ['北方华创', '拓荆科技', '盛美上海'], policy: '培育半导体设备配套企业。' }
+      { nodeId: 'la-takeoff', name: '起降平台建设与运营', nationalCount: 120, localCount: 0, gapType: '严重缺失', affectedDownstream: ['无人机物流', '城市空中交通'], affectedAmount: 6.5, recommended: ['峰飞航空', '亿航智能', '中信海直'], policy: '规划建设低空起降场网络，引入专业化运营企业。' },
+      { nodeId: 'la-fss', name: '飞行服务站建设与运营', nationalCount: 80, localCount: 0, gapType: '严重缺失', affectedDownstream: ['通航运营', '低空飞行活动'], affectedAmount: 4.2, recommended: ['中国航信', '中国飞龙', '华夏通航'], policy: '布局低空飞行服务站，提供航行情报与气象服务。' },
+      { nodeId: 'la-airframe-ga', name: '通航飞行器机体', nationalCount: 60, localCount: 0, gapType: '严重缺失', affectedDownstream: ['低空通航飞行器制造'], affectedAmount: 3.8, recommended: ['中航通飞', '钻石飞机', '西锐飞机'], policy: '引进通航整机制造及机体结构件企业。' },
+      { nodeId: 'la-evtol-maint', name: '电动垂直起降飞行器（eVTOL）检修', nationalCount: 45, localCount: 0, gapType: '轻度缺失', affectedDownstream: ['eVTOL制造', 'eVTOL运营'], affectedAmount: 2.1, recommended: ['亿航智能', '峰飞航空', '小鹏汇天'], policy: '培育eVTOL运维与检测认证能力。' },
+      { nodeId: 'la-evtol-pilot', name: 'eVTOL驾驶员培训', nationalCount: 30, localCount: 0, gapType: '轻度缺失', affectedDownstream: ['城市空中交通'], affectedAmount: 1.5, recommended: ['中国民航飞行学院', '亿航智能'], policy: '推动eVTOL驾驶员培训资质认证。' },
+      { nodeId: 'la-evtol-cargo', name: '电动垂直起降飞行器（eVTOL）载货', nationalCount: 25, localCount: 0, gapType: '轻度缺失', affectedDownstream: ['低空物流'], affectedAmount: 1.2, recommended: ['顺丰无人机', '美团无人机'], policy: '开放低空物流试点场景。' }
     ]
   }
 });
@@ -2591,14 +2883,22 @@ Object.assign(MOCK_SCENARIO_DATA, {
   },
   'chain-005': {
     scenarios: [
-      { id: 'sc-sc-1', name: '消费电子', nationalCount: 1200, localCount: 45, components: [
-        { name: '芯片设计', localCount: 45, nationalCount: 1800, status: 'local', impact: '本地设计公司A可覆盖' },
-        { name: '晶圆制造', localCount: 2, nationalCount: 120, status: 'missing', impact: '设计企业需外出流片' },
-        { name: '封测', localCount: 22, nationalCount: 420, status: 'local', impact: '本地封测厂C可覆盖' }
+      { id: 'la-sc-1', name: '城市空中交通（UAM）', nationalCount: 580, localCount: 48, components: [
+        { name: '电动垂直起降飞行器（eVTOL）制造', localCount: 9, nationalCount: 9, status: 'local', impact: '本地eVTOL整机制造可部分覆盖' },
+        { name: '起降平台建设与运营', localCount: 0, nationalCount: 120, status: 'missing', impact: '城市起降网络尚未形成' },
+        { name: '飞行服务站建设与运营', localCount: 0, nationalCount: 80, status: 'missing', impact: 'UAM运行服务保障能力不足' },
+        { name: '城市空中交通（UAM）', localCount: 16, nationalCount: 16, status: 'local', impact: '本地UAM运营企业已有布局' }
       ]},
-      { id: 'sc-sc-2', name: '汽车电子', nationalCount: 380, localCount: 18, components: [
-        { name: '车规级芯片', localCount: 2, nationalCount: 120, status: 'missing', impact: '汽车电子芯片依赖外地' },
-        { name: 'EDA工具', localCount: 0, nationalCount: 35, status: 'missing', impact: '设计工具受国外限制' }
+      { id: 'la-sc-2', name: '低空物流配送', nationalCount: 720, localCount: 120, components: [
+        { name: '无人机整机制造', localCount: 876, nationalCount: 876, status: 'local', impact: '本地无人机整机制造能力强' },
+        { name: '无人机运营及飞行活动', localCount: 193, nationalCount: 193, status: 'local', impact: '本地无人机运营企业可覆盖' },
+        { name: '通信基础设施建设与运营', localCount: 2, nationalCount: 2, status: 'local', impact: '通信链路具备基础保障' },
+        { name: '电动垂直起降飞行器（eVTOL）载货', localCount: 0, nationalCount: 25, status: 'missing', impact: '重型低空物流载具缺失' }
+      ]},
+      { id: 'la-sc-3', name: '低空文旅', nationalCount: 220, localCount: 48, components: [
+        { name: '通航运营与飞行活动', localCount: 50, nationalCount: 50, status: 'local', impact: '本地通航运营可支撑文旅航线' },
+        { name: '通航飞行员培训', localCount: 16, nationalCount: 16, status: 'local', impact: '本地飞行员培训可保障运营人才' },
+        { name: '通用航空金融与保险', localCount: 2, nationalCount: 2, status: 'local', impact: '金融保险服务初步具备' }
       ]}
     ]
   }
@@ -2647,3 +2947,158 @@ Object.assign(MOCK_RECOMMENDED_ENTERPRISES, {
     { id: 'rec-sc-6', enterprise_name: '华虹半导体', region: '上海市', annual_revenue: 220, match_score: 0.89, expansion_signal: '招聘增加', data_source: '企查查', status: '洽谈中' }
   ]
 });
+
+// 招商库（招商引资模拟推演）数据
+const MOCK_INVESTMENT_POOL = {
+  chainId: 'chain-robot',
+  chainName: '人工智能与具身智能机器人',
+  baseline: {
+    completeness: 42.8,           // 产业链完备度
+    leaderOutput: 1286.5,         // 龙头/链主合计产值（亿元）
+    localSupportingRate: 32.6     // 产业链本地配套率
+  },
+  // 默认选中前 10 家企业（与原型“已勾选 10 家”对齐）
+  defaultSelectedIds: [
+    'inv-001', 'inv-002', 'inv-003', 'inv-004', 'inv-005',
+    'inv-006', 'inv-007', 'inv-008', 'inv-009', 'inv-010'
+  ],
+  enterprises: [
+    {
+      id: 'inv-001',
+      name: '大疆创新科技股份有限公司',
+      relationSystem: '华为技术有限公司 / AI驱动控制系统',
+      province: '广东省',
+      provinceCode: 'gd',
+      productCategory: '电解液',
+      estimatedOutput: 38.5,
+      completenessImprovement: 6.2,
+      localRateImprovement: 5.2
+    },
+    {
+      id: 'inv-002',
+      name: '杉杉锂电材料科技有限公司',
+      relationSystem: '华为技术有限公司 / AI驱动控制系统',
+      province: '浙江省',
+      provinceCode: 'zj',
+      productCategory: '正极材料',
+      estimatedOutput: 46.8,
+      completenessImprovement: 7.8,
+      localRateImprovement: 6.8
+    },
+    {
+      id: 'inv-003',
+      name: '上海恩捷新能源科技有限公司',
+      relationSystem: '大疆创新科技有限公司 / 飞控云台系统',
+      province: '上海市',
+      provinceCode: 'sh',
+      productCategory: '隔膜',
+      estimatedOutput: 31.2,
+      completenessImprovement: 5.0,
+      localRateImprovement: 4.1
+    },
+    {
+      id: 'inv-004',
+      name: '璞泰来新能源技术有限公司',
+      relationSystem: '华为技术有限公司 / AI驱动控制系统',
+      province: '上海市',
+      provinceCode: 'sh',
+      productCategory: '负极材料',
+      estimatedOutput: 35.0,
+      completenessImprovement: 5.6,
+      localRateImprovement: 4.9
+    },
+    {
+      id: 'inv-005',
+      name: '当升科技材料有限公司',
+      relationSystem: '迈瑞生物医疗电子 / 手术机器人系统',
+      province: '北京市',
+      provinceCode: 'bj',
+      productCategory: '正极材料',
+      estimatedOutput: 28.9,
+      completenessImprovement: 4.3,
+      localRateImprovement: 3.5
+    },
+    {
+      id: 'inv-006',
+      name: '苏州汇川技术有限公司',
+      relationSystem: '本体厂C / 伺服驱动系统',
+      province: '江苏省',
+      provinceCode: 'js',
+      productCategory: '伺服电机',
+      estimatedOutput: 25.0,
+      completenessImprovement: 3.7,
+      localRateImprovement: 3.2
+    },
+    {
+      id: 'inv-007',
+      name: '南京埃斯顿自动化股份有限公司',
+      relationSystem: '汽车厂A / 工业机器人集成',
+      province: '江苏省',
+      provinceCode: 'js',
+      productCategory: '机器人本体',
+      estimatedOutput: 21.5,
+      completenessImprovement: 3.1,
+      localRateImprovement: 2.7
+    },
+    {
+      id: 'inv-008',
+      name: '宁波慈星股份有限公司',
+      relationSystem: '机器人集成商B / 针织机械系统',
+      province: '浙江省',
+      provinceCode: 'zj',
+      productCategory: '智能装备',
+      estimatedOutput: 15.6,
+      completenessImprovement: 2.3,
+      localRateImprovement: 2.0
+    },
+    {
+      id: 'inv-009',
+      name: '青岛海信电子元件厂',
+      relationSystem: '传感器厂G / 视觉传感模组',
+      province: '山东省',
+      provinceCode: 'sd',
+      productCategory: '电子元件',
+      estimatedOutput: 12.8,
+      completenessImprovement: 1.9,
+      localRateImprovement: 1.7
+    },
+    {
+      id: 'inv-010',
+      name: '无锡碳纤维复合材料有限公司',
+      relationSystem: '本体厂C / 机械臂结构件',
+      province: '江苏省',
+      provinceCode: 'js',
+      productCategory: '复合材料',
+      estimatedOutput: 14.2,
+      completenessImprovement: 2.0,
+      localRateImprovement: 3.9
+    },
+    {
+      id: 'inv-011',
+      name: '深圳奥比中光科技有限公司',
+      relationSystem: '集成商B / 3D视觉系统',
+      province: '广东省',
+      provinceCode: 'gd',
+      productCategory: '视觉传感器',
+      estimatedOutput: 8.5,
+      completenessImprovement: 1.2,
+      localRateImprovement: 0.9
+    },
+    {
+      id: 'inv-012',
+      name: '杭州海康机器人技术有限公司',
+      relationSystem: '汽车厂A / 移动机器人系统',
+      province: '浙江省',
+      provinceCode: 'zj',
+      productCategory: '移动机器人',
+      estimatedOutput: 7.3,
+      completenessImprovement: 1.0,
+      localRateImprovement: 0.8
+    }
+  ],
+  prediction: {
+    // 估算参数：每亿元新增产值约带动 0.0768 亿元税收、约 33.21 个岗位
+    taxPerOutput: 0.0768,
+    jobsPerOutput: 33.21
+  }
+};

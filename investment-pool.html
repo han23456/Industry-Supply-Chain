@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>招商引资模拟推演 - 产业链/供应链图谱系统</title>
+  <link rel="stylesheet" href="css/common.css?v=10">
+  <link rel="stylesheet" href="css/investment-pool.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/data.js"></script>
+  <!-- 加载顺序必须先配置、后组件，顺序不能颠倒 -->
+  <script src="js/config/menu-config.js"></script>
+  <script src="js/components/GovHeader.js"></script>
+  <script src="js/components/SideNav.js"></script>
+</head>
+<body>
+  <gov-header></gov-header>
+
+  <div class="page-layout">
+    <side-nav></side-nav>
+
+    <main class="page-content">
+
+      <!-- 模块一：招商引资模拟推演 -->
+      <section class="card ip-header-card fade-in">
+        <div class="ip-header-main">
+          <div class="card-title" style="--title-bar-color:#165DFF">招商引资模拟推演</div>
+          <div class="ip-header-desc">已从招商库中筛选意向企业。勾选意向招商企业，实时查看模拟产业链指标变化及预测。</div>
+        </div>
+        <div class="ip-header-actions">
+          <button class="btn btn-default" onclick="resetSelection()">
+            <span>↺</span> 重置选择
+          </button>
+          <button class="btn btn-primary" onclick="exportInvestmentReport()">
+            <span>📄</span> 导出报告
+          </button>
+        </div>
+      </section>
+
+      <!-- 模块二：意向招商企业清单 -->
+      <section class="card ip-table-card fade-in">
+        <div class="ip-table-header">
+          <div class="ip-table-title">
+            <div class="card-title" style="--title-bar-color:#722ED1">意向招商企业清单</div>
+            <span class="ip-table-subtitle">（勾选进行模拟推演）</span>
+          </div>
+          <div class="ip-table-stat">
+            招商库企业共 <strong id="totalCount">0</strong> 家，已勾选 <strong id="selectedCount">0</strong> 家
+          </div>
+        </div>
+
+        <div class="ip-table-toolbar">
+          <div class="ip-search-box">
+            <span class="ip-search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="搜索企业名称、关联系统..." aria-label="搜索企业">
+          </div>
+          <div class="ip-filter-group">
+            <select id="provinceFilter" class="gov-select" aria-label="省份筛选">
+              <option value="">全部省份</option>
+            </select>
+            <select id="categoryFilter" class="gov-select" aria-label="产品品类筛选">
+              <option value="">全部品类</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ip-table-wrap">
+          <table class="data-table ip-table" aria-label="意向招商企业清单">
+            <thead>
+              <tr>
+                <th class="ip-col-check">
+                  <input type="checkbox" id="selectAllCheckbox" aria-label="全选">
+                </th>
+                <th>企业名称</th>
+                <th>关联系统（链上企业）</th>
+                <th>所在省份</th>
+                <th>产品品类</th>
+                <th class="text-right">预估新增产值</th>
+                <th class="text-right">预估完整度提升</th>
+                <th class="text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="enterpriseTableBody">
+              <!-- JS 渲染 -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="ip-pagination" id="paginationContainer">
+          <div class="ip-pagination-info">
+            显示第 <span id="pageStart">0</span> 至 <span id="pageEnd">0</span> 条，共 <span id="filteredCount">0</span> 条企业记录
+          </div>
+          <div class="ip-pagination-size">
+            <span>每页显示</span>
+            <select id="pageSizeSelect" class="gov-select" aria-label="每页条数">
+              <option value="5">5 条</option>
+              <option value="10">10 条</option>
+              <option value="20">20 条</option>
+            </select>
+          </div>
+          <div class="ip-pagination-btns" id="paginationButtons">
+            <!-- JS 渲染 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 模块三：推演结果对比 -->
+      <section class="card ip-result-card fade-in">
+        <div class="ip-result-header">
+          <div class="card-title" style="--title-bar-color:#FA8C16">推演结果对比</div>
+          <div class="ip-result-note">
+            计算依据：全库所选 <strong id="resultSelectedCount">0</strong> 家意向企业测算数据与拟落户规模
+          </div>
+        </div>
+
+        <div class="ip-comparison-grid">
+          <div class="ip-comparison-card baseline">
+            <div class="ip-comparison-card-title">当前基线（实测数据）</div>
+            <div class="ip-comparison-card-badge">现状状态</div>
+            <div class="ip-metric-list" id="baselineMetrics">
+              <!-- JS 渲染 -->
+            </div>
+          </div>
+
+          <div class="ip-comparison-card forecast">
+            <div class="ip-comparison-card-title">
+              <span>📈 推演预测（招商落地后）</span>
+              <span class="ip-forecast-badge">动态测算</span>
+            </div>
+            <div class="ip-metric-list" id="forecastMetrics">
+              <!-- JS 渲染 -->
+            </div>
+          </div>
+        </div>
+
+        <div class="ip-extra-metrics" id="extraMetrics">
+          <!-- JS 渲染 -->
+        </div>
+
+        <div class="ip-bottom-actions">
+          <button class="btn btn-default" onclick="closeAndReset()">关闭 / 重置</button>
+          <button class="btn btn-primary" onclick="confirmInvestmentPlan()">✓ 确定招商方案</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/investment-pool.js"></script>
+</body>
+</html>

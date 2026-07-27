@@ -361,6 +361,11 @@ const BREADCRUMB_CONFIG = {
     { label: '产业全景', url: 'index.html' },
     { label: '产业链结构图谱', url: 'chain-graph.html' },
     { label: '产业链环节详情', url: '#', current: true }
+  ],
+  'investment-pool.html': [
+    { label: '首页', url: 'index.html' },
+    { label: '强链补链', url: 'chain-gap.html' },
+    { label: '招商引资模拟推演', url: '#', current: true }
   ]
 };
 

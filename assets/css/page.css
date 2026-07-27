@@ -349,82 +349,6 @@
   font-size: 15px;
 }
 
-/* 招商推演弹窗 */
-.invest-modal__section {
-  margin-bottom: 20px;
-}
-
-.invest-modal__section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 10px;
-  padding-left: 8px;
-  border-left: 3px solid var(--color-primary);
-}
-
-.invest-modal__compare {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.compare-card {
-  padding: 16px 20px;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-bg-page);
-}
-
-.compare-card--after {
-  background-color: var(--color-primary-light);
-  border: 1px solid rgba(22, 93, 255, 0.2);
-}
-
-.compare-card__label {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
-}
-
-.compare-card__items {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.compare-card__item {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.compare-card__item-label {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.compare-card__item-value {
-  font-size: 18px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-.compare-card--before .compare-card__item-value {
-  color: var(--color-text-primary);
-}
-
-.compare-card--after .compare-card__item-value {
-  color: var(--color-primary);
-}
-
-.compare-card__item-delta {
-  font-size: 12px;
-  margin-left: 6px;
-  color: var(--color-success);
-}
-
 /* 产品明细弹窗 */
 .product-modal__summary {
   display: flex;
@@ -513,4 +437,532 @@
 
 .back-btn:hover {
   background-color: var(--color-primary-light);
+}
+
+/* ============================================================
+ * 链主企业发票数据穿透详情
+ * ============================================================ */
+
+.enterprise-details-section {
+  margin-bottom: 24px;
+}
+
+.enterprise-details__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px;
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-border-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.enterprise-details__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  text-align: center;
+}
+
+.enterprise-details__empty-icon {
+  font-size: 40px;
+  opacity: 0.8;
+}
+
+.enterprise-details__empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.enterprise-details__empty-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  max-width: 480px;
+  line-height: 1.7;
+}
+
+.enterprise-details__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 单家企业详情卡片 */
+.enterprise-detail-card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.enterprise-detail-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.enterprise-detail-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  background-color: var(--color-bg-page);
+  border-bottom: 1px solid var(--color-border-light);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--transition-fast);
+}
+
+.enterprise-detail-card__header:hover,
+.enterprise-detail-card__header:focus-visible {
+  background-color: var(--color-primary-light);
+  outline: none;
+}
+
+.enterprise-detail-card__title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.enterprise-detail-card__order {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 14px;
+}
+
+.enterprise-detail-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.enterprise-detail-card__name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.enterprise-detail-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.meta-sep {
+  color: var(--color-border);
+}
+
+.enterprise-detail-card__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.enterprise-detail-card__header:hover .enterprise-detail-card__toggle {
+  color: var(--color-primary);
+}
+
+.enterprise-detail-card__toggle-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--transition-normal);
+}
+
+.enterprise-detail-card__toggle-icon.is-collapsed {
+  transform: rotate(-90deg);
+}
+
+.enterprise-detail-card__body {
+  padding: 20px 24px 24px;
+  animation: expand-in 0.25s ease;
+}
+
+@keyframes expand-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 发票核心指标 */
+.enterprise-invoice-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.enterprise-invoice-metric {
+  padding: 16px;
+  background-color: var(--color-bg-page);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+}
+
+.enterprise-invoice-metric__label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.enterprise-invoice-metric__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.enterprise-invoice-metric__value span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  margin-left: 2px;
+}
+
+.enterprise-invoice-metric:first-child .enterprise-invoice-metric__value {
+  color: var(--color-primary);
+}
+
+.enterprise-invoice-metric:nth-child(2) .enterprise-invoice-metric__value {
+  color: var(--color-success);
+}
+
+/* 详情子块 */
+.enterprise-detail-block {
+  margin-bottom: 20px;
+}
+
+.enterprise-detail-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.enterprise-detail-block__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding-left: 8px;
+  border-left: 3px solid var(--color-primary);
+}
+
+.enterprise-table-wrap {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.enterprise-empty-tip {
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-page);
+}
+
+.enterprise-detail-insight {
+  padding: 14px 16px;
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-primary);
+}
+
+.enterprise-detail-insight__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+}
+
+.enterprise-detail-insight__text {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+/* ============================================================
+ * 全产业综合分析与招商目标定位模块
+ * ============================================================ */
+
+.comprehensive-section {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.comprehensive-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--transition-fast);
+}
+
+.comprehensive-section__header:hover,
+.comprehensive-section__header:focus-visible {
+  background-color: var(--color-primary-light);
+  outline: none;
+}
+
+.comprehensive-section__title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comprehensive-section__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.comprehensive-section__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.comprehensive-section__subtitle {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.comprehensive-section__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.comprehensive-section__header:hover .comprehensive-section__toggle {
+  color: var(--color-primary);
+}
+
+.comprehensive-section__toggle .toggle-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--transition-normal);
+}
+
+.comprehensive-section__toggle .toggle-icon.is-collapsed {
+  transform: rotate(-90deg);
+}
+
+.comprehensive-section__body {
+  padding: 0 24px 24px;
+  animation: expand-in 0.25s ease;
+}
+
+/* ============================================================
+ * 弹窗内增强样式
+ * ============================================================ */
+
+.enterprise-modal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.enterprise-modal-count {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.enterprise-modal-count strong {
+  color: var(--color-primary);
+  font-size: 15px;
+}
+
+/* ============================================================
+ * 响应式适配
+ * ============================================================ */
+
+@media (max-width: 1280px) {
+  .dashboard {
+    min-width: auto;
+    padding: 0 20px 24px;
+  }
+
+  .metric-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sections {
+    grid-template-columns: 1fr;
+  }
+
+  .enterprise-invoice-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard__header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dashboard__title {
+    font-size: 20px;
+  }
+
+  .metric-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .enterprise-detail-card__header {
+    padding: 14px 16px;
+  }
+
+  .enterprise-detail-card__title-group {
+    gap: 10px;
+  }
+
+  .enterprise-detail-card__order {
+    height: 24px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .enterprise-detail-card__name {
+    font-size: 14px;
+  }
+
+  .enterprise-detail-card__meta {
+    font-size: 12px;
+  }
+
+  .enterprise-detail-card__toggle-text {
+    display: none;
+  }
+
+  .enterprise-detail-card__body {
+    padding: 16px;
+  }
+
+  .enterprise-invoice-metrics {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .enterprise-invoice-metric {
+    padding: 12px;
+  }
+
+  .enterprise-invoice-metric__value {
+    font-size: 18px;
+  }
+
+  .enterprise-detail-block__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .comprehensive-section__header {
+    padding: 14px 16px;
+  }
+
+  .comprehensive-section__meta {
+    gap: 10px;
+  }
+
+  .comprehensive-section__subtitle {
+    display: none;
+  }
+
+  .comprehensive-section__body {
+    padding: 0 16px 16px;
+  }
+
+  .section {
+    padding: 16px;
+  }
+
+  .section__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .section__actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .enterprise-invoice-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .enterprise-detail-card__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .meta-sep {
+    display: none;
+  }
 }

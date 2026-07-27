@@ -30,15 +30,6 @@ function navigateToEnterpriseProfile(enterpriseId, enterpriseName, el) {
   window.location.href = `enterprise-profile.html?enterpriseId=${encodeURIComponent(enterpriseId)}`;
 }
 
-function navigateToChainGap(nodeId, from = 'structure') {
-  if (!nodeId) {
-    showToast('未找到节点信息', 'warning');
-    return;
-  }
-  const cid = chainId || 'chain-robot';
-  window.location.href = `chain-gap1.html?chainId=${encodeURIComponent(cid)}&nodeId=${encodeURIComponent(nodeId)}&from=${encodeURIComponent(from)}`;
-}
-
 function init() {
   if (document.getElementById('globalSearchContainer')) {
     document.getElementById('globalSearchContainer').innerHTML = renderGlobalSearch();
@@ -2190,6 +2181,26 @@ function getChainSegments() {
     return segments;
   }
 
+  // 低空经济：保留三栏布局，将"低空保障"与"低空飞行活动"合并到中游栏展示
+  if (chainId === 'chain-005') {
+    root.children.forEach(child => {
+      if (child.name.includes('低空制造')) segments.upstream.push(child);
+      else if (child.name.includes('低空保障') || child.name.includes('低空飞行活动')) segments.midstream.push(child);
+      else if (child.name.includes('低空综合服务')) segments.downstream.push(child);
+    });
+    return segments;
+  }
+
+  // 海洋产业：按"设备/材料→核心产业→应用/服务"划分上中下游
+  if (chainId === 'chain-002') {
+    root.children.forEach(child => {
+      if (child.name.includes('涉海设备制造') || child.name.includes('涉海材料制造')) segments.upstream.push(child);
+      else if (child.name.includes('海洋产业')) segments.midstream.push(child);
+      else segments.downstream.push(child);
+    });
+    return segments;
+  }
+
   // 其他产业链按名称关键字自动映射
   root.children.forEach(child => {
     if (child.name.includes('上游')) segments.upstream.push(child);
@@ -2248,7 +2259,6 @@ function renderChainPanel(node) {
   const hasChildren = node.children && node.children.length;
   const cfg = classifyNode(node);
   const tag = `<span class="chain-status-tag ${cfg.key}">${cfg.label}</span>`;
-  const gapBtn = `<button class="chain-node-link" onclick="event.stopPropagation();navigateToChainGap('${node.id}', 'structure-panel')">补链分析</button>`;
   const body = hasChildren
     ? `<div class="chain-panel-body">${node.children.map(child => renderChainSubRow(child, 0)).join('')}</div>`
     : '';
@@ -2259,7 +2269,6 @@ function renderChainPanel(node) {
         <span class="chain-panel-title">${node.name}</span>
         ${tag}
         <span class="chain-panel-count">(本地企业数: ${localTotal}, 全国企业数: ${nationalTotal})</span>
-        ${gapBtn}
       </div>
       ${body}
     </div>
@@ -2273,7 +2282,6 @@ function renderChainSubRow(node, level = 0) {
   const nationalCount = hasChildren ? sumNational(node) : (node.nationalCount || 0);
   const countText = `(本地企业数: ${localCount}, 全国企业数: ${nationalCount})`;
   const indent = level * 20;
-  const gapBtn = `<button class="chain-node-link" onclick="event.stopPropagation();navigateToChainGap('${node.id}', 'structure-row')">补链分析</button>`;
 
   if (hasChildren) {
     return `
@@ -2283,7 +2291,6 @@ function renderChainSubRow(node, level = 0) {
           <span class="chain-sub-name">${node.name}</span>
           <span class="chain-status-tag ${cfg.key}">${cfg.label}</span>
           <span class="chain-sub-count">${countText}</span>
-          ${gapBtn}
         </div>
         <div class="chain-sub-children" id="chain-sub-children-${node.id}">
           ${node.children.map(c => renderChainSubRow(c, level + 1)).join('')}
@@ -2297,7 +2304,6 @@ function renderChainSubRow(node, level = 0) {
       <span class="chain-sub-name">${node.name}</span>
       <span class="chain-status-tag ${cfg.key}">${cfg.label}</span>
       <span class="chain-sub-count">${countText}</span>
-      ${gapBtn}
     </div>
   `;
 }

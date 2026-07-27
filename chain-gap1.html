@@ -2,12 +2,12 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1280, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>强链补链深度分析 - 主概览看板</title>
   <!-- 外部 CSS：全局基础样式 -->
   <link rel="stylesheet" href="assets/css/base.css">
   <!-- 外部 CSS：页面专属样式 -->
-  <link rel="stylesheet" href="assets/css/page.css">
+  <link rel="stylesheet" href="assets/css/page.css?v=4">
 </head>
 <body>
 
@@ -27,111 +27,137 @@
       <!-- JS 动态生成 4 张卡片 -->
     </section>
 
-    <!-- ========== 四大业务板块（2×2 网格布局） ========== -->
-    <div class="sections">
+    <!-- ========== 链主企业发票数据穿透详情 ========== -->
+    <section class="enterprise-details-section" id="enterpriseDetailsSection">
+      <div class="enterprise-details__loading" id="enterpriseDetailsLoading">
+        <div class="loading-spinner"></div>
+        <p>正在加载链主企业发票穿透数据…</p>
+      </div>
+      <div class="enterprise-details__content" id="enterpriseDetailsContent"></div>
+    </section>
 
-      <!-- ===== 板块一：上游供应链概况 ===== -->
-      <section class="section" id="section-upstream">
-        <div class="section__header">
-          <div class="section__title-group">
-            <span class="section__title-bar"></span>
-            <span class="section__title">上游供应链概况</span>
-          </div>
-          <span class="section__badge">板块一</span>
+    <!-- ========== 全产业综合分析与招商目标定位 ========== -->
+    <section class="comprehensive-section" id="comprehensiveSection">
+      <div class="comprehensive-section__header" id="comprehensiveSectionHeader" tabindex="0" role="button" aria-expanded="true" aria-controls="comprehensiveSectionBody">
+        <div class="comprehensive-section__title-group">
+          <span class="section__title-bar"></span>
+          <h2 class="comprehensive-section__title">全产业综合分析与招商目标定位</h2>
         </div>
-        <div class="section__body">
-          <!-- ECharts 图表容器 -->
-          <div class="chart-container" id="chart-upstream"></div>
-
-          <!-- 核心指标行（JS 填充） -->
-          <div class="metric-row"></div>
-
-          <!-- 风险提示框（JS 填充） -->
-          <div class="risk-box"></div>
-
-          <!-- 操作按钮 -->
-          <div class="section__actions">
-            <button class="btn btn--primary" data-action="view-suppliers">查看全部供应商清单</button>
-            <button class="btn btn--outline" data-action="invest-simulation">招商模拟推演</button>
-          </div>
+        <div class="comprehensive-section__meta">
+          <span class="comprehensive-section__subtitle">覆盖上游供应链、下游市场、本地协同与产品结构四大维度</span>
+          <span class="comprehensive-section__toggle" id="comprehensiveSectionToggle">
+            <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <span class="toggle-text">收起</span>
+          </span>
         </div>
-      </section>
+      </div>
+      <div class="comprehensive-section__body" id="comprehensiveSectionBody">
+        <div class="sections">
 
-      <!-- ===== 板块二：下游市场概况 ===== -->
-      <section class="section" id="section-downstream">
-        <div class="section__header">
-          <div class="section__title-group">
-            <span class="section__title-bar"></span>
-            <span class="section__title">下游市场概况</span>
-          </div>
-          <span class="section__badge">板块二</span>
+          <!-- ===== 板块一：上游供应链概况 ===== -->
+          <section class="section" id="section-upstream">
+            <div class="section__header">
+              <div class="section__title-group">
+                <span class="section__title-bar"></span>
+                <span class="section__title">上游供应链概况</span>
+              </div>
+              <span class="section__badge">板块一</span>
+            </div>
+            <div class="section__body">
+              <!-- ECharts 图表容器 -->
+              <div class="chart-container" id="chart-upstream"></div>
+
+              <!-- 核心指标行（JS 填充） -->
+              <div class="metric-row"></div>
+
+              <!-- 风险提示框（JS 填充） -->
+              <div class="risk-box"></div>
+
+              <!-- 操作按钮 -->
+              <div class="section__actions">
+                <button class="btn btn--primary" data-action="view-suppliers">查看全部供应商清单</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== 板块二：下游市场概况 ===== -->
+          <section class="section" id="section-downstream">
+            <div class="section__header">
+              <div class="section__title-group">
+                <span class="section__title-bar"></span>
+                <span class="section__title">下游市场概况</span>
+              </div>
+              <span class="section__badge">板块二</span>
+            </div>
+            <div class="section__body">
+              <!-- ECharts 图表容器 -->
+              <div class="chart-container" id="chart-downstream"></div>
+
+              <!-- 核心指标行（JS 填充） -->
+              <div class="metric-row"></div>
+
+              <!-- 市场解读文字（JS 填充） -->
+              <div class="interpretation-text"></div>
+
+              <!-- 操作按钮 + 占位说明 -->
+              <div class="section__actions">
+                <button class="btn btn--primary" data-action="view-customers">查看全部下游客户清单</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== 板块三：本地产业链协同概况 ===== -->
+          <section class="section" id="section-collaboration">
+            <div class="section__header">
+              <div class="section__title-group">
+                <span class="section__title-bar"></span>
+                <span class="section__title">本地产业链协同概况</span>
+              </div>
+              <span class="section__badge">板块三</span>
+            </div>
+            <div class="section__body">
+              <!-- ECharts 图表容器 -->
+              <div class="chart-container" id="chart-collaboration"></div>
+
+              <!-- 自动解读文案（JS 填充） -->
+              <div class="interpretation-text"></div>
+
+              <!-- 操作按钮 -->
+              <div class="section__actions">
+                <button class="btn btn--primary" data-action="view-internal-transactions">查看龙头内部交易明细</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== 板块四：产业链产品结构概况 ===== -->
+          <section class="section" id="section-product">
+            <div class="section__header">
+              <div class="section__title-group">
+                <span class="section__title-bar"></span>
+                <span class="section__title">产业链产品结构概况</span>
+              </div>
+              <span class="section__badge">板块四</span>
+            </div>
+            <div class="section__body">
+              <!-- ECharts 图表容器 -->
+              <div class="chart-container" id="chart-product"></div>
+
+              <!-- 核心汇总（JS 填充） -->
+              <div class="metric-row product-summary"></div>
+
+              <!-- 操作按钮 -->
+              <div class="section__actions">
+                <button class="btn btn--primary" data-action="view-product-detail">查看产品完整明细</button>
+              </div>
+            </div>
+          </section>
+
         </div>
-        <div class="section__body">
-          <!-- ECharts 图表容器 -->
-          <div class="chart-container" id="chart-downstream"></div>
-
-          <!-- 核心指标行（JS 填充） -->
-          <div class="metric-row"></div>
-
-          <!-- 市场解读文字（JS 填充） -->
-          <div class="interpretation-text"></div>
-
-          <!-- 操作按钮 + 占位说明 -->
-          <div class="section__actions">
-            <button class="btn btn--primary" data-action="view-customers">查看全部下游客户清单</button>
-            <button class="btn btn--outline" data-action="invest-simulation">招商模拟推演</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== 板块三：本地产业链协同概况 ===== -->
-      <section class="section" id="section-collaboration">
-        <div class="section__header">
-          <div class="section__title-group">
-            <span class="section__title-bar"></span>
-            <span class="section__title">本地产业链协同概况</span>
-          </div>
-          <span class="section__badge">板块三</span>
-        </div>
-        <div class="section__body">
-          <!-- ECharts 图表容器 -->
-          <div class="chart-container" id="chart-collaboration"></div>
-
-          <!-- 自动解读文案（JS 填充） -->
-          <div class="interpretation-text"></div>
-
-          <!-- 操作按钮 -->
-          <div class="section__actions">
-            <button class="btn btn--primary" data-action="view-internal-transactions">查看龙头内部交易明细</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== 板块四：产业链产品结构概况 ===== -->
-      <section class="section" id="section-product">
-        <div class="section__header">
-          <div class="section__title-group">
-            <span class="section__title-bar"></span>
-            <span class="section__title">产业链产品结构概况</span>
-          </div>
-          <span class="section__badge">板块四</span>
-        </div>
-        <div class="section__body">
-          <!-- ECharts 图表容器 -->
-          <div class="chart-container" id="chart-product"></div>
-
-          <!-- 核心汇总（JS 填充） -->
-          <div class="metric-row product-summary"></div>
-
-          <!-- 操作按钮 -->
-          <div class="section__actions">
-            <button class="btn btn--primary" data-action="view-product-detail">查看产品完整明细</button>
-          </div>
-        </div>
-      </section>
-
-    </div>
-    <!-- /.sections -->
+        <!-- /.sections -->
+      </div>
+      <!-- /.comprehensive-section__body -->
+    </section>
+    <!-- /.comprehensive-section -->
 
   </div>
   <!-- /.dashboard -->
@@ -142,12 +168,14 @@
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <!-- 模拟数据层 -->
   <script src="mock/data.js?v=2"></script>
+  <!-- 企业数据层：为链主企业发票穿透详情提供 ALL_ENTERPRISES / MOCK_ENTERPRISES -->
+  <script src="js/data.js?v=2"></script>
   <!-- 公共工具函数 -->
   <script src="assets/js/common.js"></script>
   <!-- ECharts 图表渲染 -->
   <script src="assets/js/chart.js"></script>
   <!-- 页面业务交互 -->
-  <script src="assets/js/page.js"></script>
+  <script src="assets/js/page.js?v=5"></script>
 
 </body>
 </html>

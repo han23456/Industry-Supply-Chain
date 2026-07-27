@@ -1,7 +1,8 @@
 /**
  * ============================================================
  * page.js - 页面业务交互逻辑
- * 包含：下拉切换、按钮事件、弹窗内容生成、招商推演逻辑
+ * 包含：URL 参数解析、链主企业发票穿透详情、下拉切换、按钮事件、
+ *       弹窗内容生成、招商推演逻辑、全产业综合分析模块折叠状态持久化
  * ============================================================
  */
 
@@ -20,12 +21,35 @@
   /* ===== 当前选中的样本级别 ===== */
   var currentLevel = MockData.sampleConfig.defaultLevel;
 
+  /* ===== 从 URL 获取的链主企业 ID 列表 ===== */
+  var selectedEnterpriseIds = [];
+
+  /* ===== 链主企业详情折叠状态 ===== */
+  var enterpriseCollapsedState = {};
+
+  /* ===== 全产业综合分析模块折叠状态 ===== */
+  var COMPREHENSIVE_STORAGE_KEY = 'chain_gap1_comprehensive_collapsed';
+  var comprehensiveCollapsed = false;
+
   /* ===== 页面初始化 ===== */
   function init() {
+    parseUrlParams();
+    loadComprehensiveCollapsedState();
+
     renderHeader();
     renderMetricCards();
+
+    // 渲染链主企业详情（带加载状态）
+    if (selectedEnterpriseIds.length > 0) {
+      renderEnterpriseDetails(selectedEnterpriseIds);
+    } else {
+      renderEnterpriseEmptyState();
+    }
+
     renderSections();
     bindEvents();
+    bindComprehensiveSectionToggle();
+    applyComprehensiveCollapsedState();
 
     // 渲染图表（等 ECharts 加载完成）
     if (typeof echarts !== 'undefined') {
@@ -37,10 +61,646 @@
     }
   }
 
+  /* ===== URL 参数解析 ===== */
+  function parseUrlParams() {
+    var params = new URLSearchParams(window.location.search);
+    var raw = params.get('enterprises');
+    if (raw) {
+      selectedEnterpriseIds = raw.split(',').map(function (s) {
+        return s.trim();
+      }).filter(function (s) {
+        return s;
+      });
+    }
+  }
+
+  /* ===== 确定性随机数（基于企业 ID 生成稳定数据） ===== */
+  function stringHash(str) {
+    var hash = 0;
+    if (!str) return hash;
+    for (var i = 0; i < str.length; i++) {
+      var chr = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function createSeededRandom(seed) {
+    var s = seed % 2147483647;
+    if (s <= 0) s += 2147483646;
+    return function () {
+      s = (s * 16807) % 2147483647;
+      return (s - 1) / 2147483646;
+    };
+  }
+
+  /* ===== 链主企业详情区域渲染 ===== */
+  function renderEnterpriseDetails(enterpriseIds) {
+    var container = document.getElementById('enterpriseDetailsContent');
+    var loading = document.getElementById('enterpriseDetailsLoading');
+    if (!container) return;
+
+    showEnterpriseLoading(true);
+
+    // 模拟异步加载，提升感知性能
+    setTimeout(function () {
+      var enterprises = [];
+      enterpriseIds.forEach(function (id) {
+        var ent = findEnterpriseById(id);
+        if (ent) {
+          enterprises.push(ent);
+        }
+      });
+
+      if (enterprises.length === 0) {
+        container.innerHTML = buildNoEnterpriseHTML();
+        showEnterpriseLoading(false);
+        bindEnterpriseDetailEvents();
+        return;
+      }
+
+      var html = '<div class="enterprise-details__list">' +
+        enterprises.map(function (ent, index) {
+          return buildEnterpriseDetailHTML(ent, index);
+        }).join('') +
+        '</div>';
+
+      container.innerHTML = html;
+      showEnterpriseLoading(false);
+      bindEnterpriseDetailEvents();
+
+      // 默认展开前两家，其余折叠
+      enterprises.forEach(function (ent, index) {
+        if (index > 1) {
+          collapseEnterpriseDetail(index, false);
+        }
+      });
+    }, 350);
+  }
+
+  function renderEnterpriseEmptyState() {
+    var container = document.getElementById('enterpriseDetailsContent');
+    var loading = document.getElementById('enterpriseDetailsLoading');
+    if (!container) return;
+    if (loading) loading.style.display = 'none';
+    container.innerHTML = buildNoEnterpriseHTML();
+  }
+
+  function showEnterpriseLoading(show) {
+    var loading = document.getElementById('enterpriseDetailsLoading');
+    var content = document.getElementById('enterpriseDetailsContent');
+    if (loading) loading.style.display = show ? 'flex' : 'none';
+    if (content) content.style.opacity = show ? '0.5' : '1';
+  }
+
+  function findEnterpriseById(id) {
+    if (typeof ALL_ENTERPRISES !== 'undefined' && ALL_ENTERPRISES.length > 0) {
+      var found = ALL_ENTERPRISES.find(function (e) {
+        return e.id === id;
+      });
+      if (found) return found;
+    }
+
+    // 从产业链环节企业映射中查找（chain-node-detail 页面勾选的企业来源）
+    if (typeof MOCK_ENTERPRISES !== 'undefined') {
+      for (var nodeId in MOCK_ENTERPRISES) {
+        if (!MOCK_ENTERPRISES.hasOwnProperty(nodeId)) continue;
+        var list = MOCK_ENTERPRISES[nodeId];
+        if (!Array.isArray(list)) continue;
+        var matched = list.find(function (e) {
+          return e && e.id === id;
+        });
+        if (matched) {
+          return createEnterpriseFromMock(matched);
+        }
+      }
+    }
+
+    // 兜底：使用 mock 数据中的供应商 id 反查名称
+    var supplier = MockData.upstream.suppliers.find(function (s) {
+      return s.id === id;
+    });
+    if (supplier) {
+      return {
+        id: supplier.id,
+        name: supplier.name,
+        annual_revenue: supplier.amount ? supplier.amount / 10000 : 1,
+        registered_capital: 5000,
+        establishment_date: '2015-06-18',
+        credit_code: '91440300' + String(Math.floor(Math.random() * 1e12)).padStart(12, '0'),
+        register_address: supplier.province,
+        industry_role_label: '上游供应商',
+        is_local: false
+      };
+    }
+    return null;
+  }
+
+  function createEnterpriseFromMock(ent) {
+    if (!ent || !ent.id) return null;
+    var seed = stringHash(ent.id);
+    var rand = createSeededRandom(seed);
+    var rnd = function (min, max) {
+      return min + rand() * (max - min);
+    };
+    var rndInt = function (min, max) {
+      return min + Math.floor(rand() * (max - min + 1));
+    };
+    return {
+      id: ent.id,
+      name: ent.name || ent.enterprise_name || '未知企业',
+      annual_revenue: ent.annual_revenue || rnd(0.5, 50.5),
+      registered_capital: ent.registered_capital || rndInt(500, 50500),
+      establishment_date: ent.establishment_date || ent.founded_date || (2000 + rndInt(0, 23)) + '-' + String(rndInt(1, 12)).padStart(2, '0') + '-' + String(rndInt(1, 28)).padStart(2, '0'),
+      credit_code: ent.credit_code || '91440300' + Math.floor(rand() * 1e12).toString().padStart(12, '0'),
+      register_address: ent.register_address || ent.address || '深圳市南山区高新技术产业区',
+      industry_role: ent.industry_role || 'parts_supplier',
+      industry_role_label: ent.industry_role_label || '零部件供应商',
+      is_local: ent.is_local !== false
+    };
+  }
+
+  function buildNoEnterpriseHTML() {
+    return '<div class="enterprise-details__empty">' +
+      '<div class="enterprise-details__empty-icon">🏭</div>' +
+      '<div class="enterprise-details__empty-title">未选择链主企业</div>' +
+      '<div class="enterprise-details__empty-desc">请从产业链环节详情页勾选企业后进入本页，查看发票数据穿透分析。</div>' +
+      '</div>';
+  }
+
+  function buildEnterpriseDetailHTML(enterprise, index) {
+    var orderLabel = getOrderLabel(index);
+    var invoiceData = buildEnterpriseInvoiceData(enterprise);
+    var isCollapsed = enterpriseCollapsedState[index] === true;
+
+    return '<div class="enterprise-detail-card" data-enterprise-index="' + index + '" data-enterprise-id="' + escapeHtml(enterprise.id) + '">' +
+      '<div class="enterprise-detail-card__header" role="button" tabindex="0" aria-expanded="' + (!isCollapsed) + '" aria-controls="enterprise-detail-body-' + index + '">' +
+      '<div class="enterprise-detail-card__title-group">' +
+      '<span class="enterprise-detail-card__order">' + orderLabel + '</span>' +
+      '<div class="enterprise-detail-card__info">' +
+      '<div class="enterprise-detail-card__name">' + escapeHtml(enterprise.name) + '</div>' +
+      '<div class="enterprise-detail-card__meta">' +
+      '<span>注册资本 ' + fmtNum(enterprise.registered_capital || 0) + ' 万人民币</span>' +
+      '<span class="meta-sep">·</span>' +
+      '<span>年营收 ' + fmtNum(enterprise.annual_revenue || 0) + ' 亿元</span>' +
+      '<span class="meta-sep">·</span>' +
+      '<span>成立 ' + escapeHtml(enterprise.establishment_date || '-') + '</span>' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '<div class="enterprise-detail-card__toggle">' +
+      '<svg class="enterprise-detail-card__toggle-icon ' + (isCollapsed ? 'is-collapsed' : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>' +
+      '<span class="enterprise-detail-card__toggle-text">' + (isCollapsed ? '展开' : '收起') + '</span>' +
+      '</div>' +
+      '</div>' +
+      '<div class="enterprise-detail-card__body" id="enterprise-detail-body-' + index + '" style="' + (isCollapsed ? 'display:none;' : '') + '">' +
+      // 发票核心指标
+      '<div class="enterprise-invoice-metrics">' +
+      '<div class="enterprise-invoice-metric">' +
+      '<div class="enterprise-invoice-metric__label">年度进项发票总额</div>' +
+      '<div class="enterprise-invoice-metric__value">' + fmtNum(invoiceData.inputAmount) + ' <span>万元</span></div>' +
+      '</div>' +
+      '<div class="enterprise-invoice-metric">' +
+      '<div class="enterprise-invoice-metric__label">年度销项发票总额</div>' +
+      '<div class="enterprise-invoice-metric__value">' + fmtNum(invoiceData.outputAmount) + ' <span>万元</span></div>' +
+      '</div>' +
+      '<div class="enterprise-invoice-metric">' +
+      '<div class="enterprise-invoice-metric__label">上游供应商数量</div>' +
+      '<div class="enterprise-invoice-metric__value">' + invoiceData.suppliers.length + ' <span>家</span></div>' +
+      '</div>' +
+      '<div class="enterprise-invoice-metric">' +
+      '<div class="enterprise-invoice-metric__label">下游客户数量</div>' +
+      '<div class="enterprise-invoice-metric__value">' + invoiceData.customers.length + ' <span>家</span></div>' +
+      '</div>' +
+      '</div>' +
+      // 供应商清单
+      '<div class="enterprise-detail-block">' +
+      '<div class="enterprise-detail-block__header">' +
+      '<span class="enterprise-detail-block__title">上游供应商清单（TOP5）</span>' +
+      '<button class="btn btn--outline btn--sm" data-action="view-enterprise-suppliers" data-enterprise-index="' + index + '">查看全部供应商</button>' +
+      '</div>' +
+      '<div class="enterprise-table-wrap">' + buildSupplierRowsHTML(invoiceData.suppliers.slice(0, 5), index, true) + '</div>' +
+      '</div>' +
+      // 客户清单
+      '<div class="enterprise-detail-block">' +
+      '<div class="enterprise-detail-block__header">' +
+      '<span class="enterprise-detail-block__title">下游客户清单（TOP5）</span>' +
+      '<button class="btn btn--outline btn--sm" data-action="view-enterprise-customers" data-enterprise-index="' + index + '">查看全部客户</button>' +
+      '</div>' +
+      '<div class="enterprise-table-wrap">' + buildCustomerRowsHTML(invoiceData.customers.slice(0, 5), index, true) + '</div>' +
+      '</div>' +
+      // AI 解读
+      '<div class="enterprise-detail-insight">' +
+      '<div class="enterprise-detail-insight__label">🤖 AI 发票穿透解读</div>' +
+      '<div class="enterprise-detail-insight__text">' + escapeHtml(invoiceData.insight) + '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  function getOrderLabel(index) {
+    var labels = ['第一家', '第二家', '第三家', '第四家', '第五家', '第六家', '第七家', '第八家', '第九家', '第十家'];
+    return labels[index] || ('第' + (index + 1) + '家');
+  }
+
+  function escapeHtml(text) {
+    if (text == null) return '';
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  /* ===== 基于企业 ID 生成稳定的发票穿透数据 ===== */
+  function buildEnterpriseInvoiceData(enterprise) {
+    var seed = stringHash(enterprise.id);
+    var rand = createSeededRandom(seed);
+    var rnd = function (min, max) {
+      return min + rand() * (max - min);
+    };
+    var rndInt = function (min, max) {
+      return min + Math.floor(rand() * (max - min + 1));
+    };
+
+    var baseRevenue = enterprise.annual_revenue || 1;
+    var inputAmount = Math.round(baseRevenue * 10000 * rnd(0.45, 0.85));
+    var outputAmount = Math.round(baseRevenue * 10000 * rnd(0.55, 0.95));
+
+    // 供应商：基于全局供应商数据，按企业种子扰动顺序与金额
+    var suppliers = generateEnterpriseSuppliers(seed, rnd, rndInt, inputAmount);
+    // 客户：基于全局客户数据，按企业种子扰动顺序与金额
+    var customers = generateEnterpriseCustomers(seed, rnd, rndInt, outputAmount);
+
+    var localSupplierCount = suppliers.filter(function (s) {
+      return s.province && s.province.indexOf('广东') > -1;
+    }).length;
+    var localCustomerCount = customers.filter(function (c) {
+      return c.province && c.province.indexOf('广东') > -1;
+    }).length;
+
+    var insight = enterprise.name + ' 年度进项发票 ' + fmtNum(inputAmount) + ' 万元，销项发票 ' + fmtNum(outputAmount) + ' 万元。' +
+      '上游供应商中本地（广东省）占比 ' + Math.round(localSupplierCount / Math.max(suppliers.length, 1) * 100) + '%，' +
+      '下游客户中本地占比 ' + Math.round(localCustomerCount / Math.max(customers.length, 1) * 100) + '%。' +
+      '建议优先围绕 ' + (suppliers[0] ? suppliers[0].category : '核心原材料') + ' 环节开展补链招商，降低外地采购依赖。';
+
+    return {
+      inputAmount: inputAmount,
+      outputAmount: outputAmount,
+      suppliers: suppliers,
+      customers: customers,
+      insight: insight
+    };
+  }
+
+  function generateEnterpriseSuppliers(seed, rnd, rndInt, totalAmount) {
+    var all = MockData.upstream.suppliers.slice();
+    // Fisher-Yates 洗牌（基于种子）
+    for (var i = all.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd(0, i + 1));
+      var temp = all[i];
+      all[i] = all[j];
+      all[j] = temp;
+    }
+
+    var count = Math.min(all.length, rndInt(6, 12));
+    var selected = all.slice(0, count);
+    var weights = selected.map(function () {
+      return rnd(0.5, 1.5);
+    });
+    var weightSum = weights.reduce(function (sum, w) {
+      return sum + w;
+    }, 0);
+
+    return selected.map(function (s, i) {
+      var amount = Math.round(totalAmount * (weights[i] / weightSum) * rnd(0.85, 1.15));
+      return {
+        id: s.id || ('sup-' + i),
+        name: s.name,
+        province: s.province,
+        category: s.category,
+        amount: amount
+      };
+    }).sort(function (a, b) {
+      return b.amount - a.amount;
+    });
+  }
+
+  function generateEnterpriseCustomers(seed, rnd, rndInt, totalAmount) {
+    var all = MockData.downstream.customers.slice();
+    for (var i = all.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd(0, i + 1));
+      var temp = all[i];
+      all[i] = all[j];
+      all[j] = temp;
+    }
+
+    var count = Math.min(all.length, rndInt(5, 10));
+    var selected = all.slice(0, count);
+    var weights = selected.map(function () {
+      return rnd(0.5, 1.5);
+    });
+    var weightSum = weights.reduce(function (sum, w) {
+      return sum + w;
+    }, 0);
+
+    return selected.map(function (c, i) {
+      var amount = Math.round(totalAmount * (weights[i] / weightSum) * rnd(0.85, 1.15));
+      return {
+        name: c.name,
+        province: c.province,
+        category: c.category,
+        amount: amount
+      };
+    }).sort(function (a, b) {
+      return b.amount - a.amount;
+    });
+  }
+
+  function buildSupplierRowsHTML(suppliers, enterpriseIndex, showAddButton) {
+    if (!suppliers || suppliers.length === 0) {
+      return '<div class="enterprise-empty-tip">暂无供应商数据</div>';
+    }
+    var rows = suppliers.map(function (s, i) {
+      return '<tr>' +
+        '<td>' + escapeHtml(s.name) + '</td>' +
+        '<td>' + escapeHtml(s.province) + '</td>' +
+        '<td>' + escapeHtml(s.category) + '</td>' +
+        '<td class="font-num text-primary">' + fmtNum(s.amount) + ' 万元</td>' +
+        (showAddButton ? '<td><button class="btn btn--primary btn--sm btn-add-leads" data-type="supplier" data-enterprise-index="' + enterpriseIndex + '" data-item-index="' + i + '">加入招商库</button></td>' : '') +
+        '</tr>';
+    }).join('');
+
+    return '<table class="data-table">' +
+      '<thead><tr>' +
+      '<th>供应商名称</th>' +
+      '<th>所在省份</th>' +
+      '<th>采购品类</th>' +
+      '<th>年采购额</th>' +
+      (showAddButton ? '<th style="width:110px">操作</th>' : '') +
+      '</tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table>';
+  }
+
+  function buildCustomerRowsHTML(customers, enterpriseIndex, showAddButton) {
+    if (!customers || customers.length === 0) {
+      return '<div class="enterprise-empty-tip">暂无客户数据</div>';
+    }
+    var rows = customers.map(function (c, i) {
+      return '<tr>' +
+        '<td>' + escapeHtml(c.name) + '</td>' +
+        '<td>' + escapeHtml(c.province) + '</td>' +
+        '<td>' + escapeHtml(c.category) + '</td>' +
+        '<td class="font-num text-primary">' + fmtNum(c.amount) + ' 万元</td>' +
+        (showAddButton ? '<td><button class="btn btn--primary btn--sm btn-add-leads" data-type="customer" data-enterprise-index="' + enterpriseIndex + '" data-item-index="' + i + '">加入招商库</button></td>' : '') +
+        '</tr>';
+    }).join('');
+
+    return '<table class="data-table">' +
+      '<thead><tr>' +
+      '<th>客户名称</th>' +
+      '<th>所在省份</th>' +
+      '<th>销售品类</th>' +
+      '<th>年销售额</th>' +
+      (showAddButton ? '<th style="width:110px">操作</th>' : '') +
+      '</tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table>';
+  }
+
+  /* ===== 链主企业详情交互事件 ===== */
+  function bindEnterpriseDetailEvents() {
+    // 展开/折叠
+    $$('.enterprise-detail-card__header').forEach(function (header) {
+      header.addEventListener('click', function () {
+        var card = header.closest('.enterprise-detail-card');
+        var index = parseInt(card.dataset.enterpriseIndex, 10);
+        toggleEnterpriseDetail(index);
+      });
+      header.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          var card = header.closest('.enterprise-detail-card');
+          var index = parseInt(card.dataset.enterpriseIndex, 10);
+          toggleEnterpriseDetail(index);
+        }
+      });
+    });
+
+    // 加入招商库
+    $$('.btn-add-leads').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        addToLeads(btn);
+      });
+    });
+
+    // 查看全部供应商 / 客户
+    $$('[data-action="view-enterprise-suppliers"]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var index = parseInt(btn.dataset.enterpriseIndex, 10);
+        showEnterpriseSupplierModal(index);
+      });
+    });
+
+    $$('[data-action="view-enterprise-customers"]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var index = parseInt(btn.dataset.enterpriseIndex, 10);
+        showEnterpriseCustomerModal(index);
+      });
+    });
+  }
+
+  function toggleEnterpriseDetail(index) {
+    var card = $('.enterprise-detail-card[data-enterprise-index="' + index + '"]');
+    if (!card) return;
+    var body = card.querySelector('.enterprise-detail-card__body');
+    var icon = card.querySelector('.enterprise-detail-card__toggle-icon');
+    var text = card.querySelector('.enterprise-detail-card__toggle-text');
+    var header = card.querySelector('.enterprise-detail-card__header');
+    var isVisible = body.style.display !== 'none';
+
+    if (isVisible) {
+      body.style.display = 'none';
+      if (icon) icon.classList.add('is-collapsed');
+      if (text) text.textContent = '展开';
+      enterpriseCollapsedState[index] = true;
+      if (header) header.setAttribute('aria-expanded', 'false');
+    } else {
+      body.style.display = 'block';
+      if (icon) icon.classList.remove('is-collapsed');
+      if (text) text.textContent = '收起';
+      enterpriseCollapsedState[index] = false;
+      if (header) header.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function collapseEnterpriseDetail(index, animate) {
+    var card = $('.enterprise-detail-card[data-enterprise-index="' + index + '"]');
+    if (!card) return;
+    var body = card.querySelector('.enterprise-detail-card__body');
+    var icon = card.querySelector('.enterprise-detail-card__toggle-icon');
+    var text = card.querySelector('.enterprise-detail-card__toggle-text');
+    var header = card.querySelector('.enterprise-detail-card__header');
+    if (body) body.style.display = 'none';
+    if (icon) icon.classList.add('is-collapsed');
+    if (text) text.textContent = '展开';
+    enterpriseCollapsedState[index] = true;
+    if (header) header.setAttribute('aria-expanded', 'false');
+  }
+
+  function addToLeads(btn) {
+    var type = btn.dataset.type;
+    var enterpriseIndex = btn.dataset.enterpriseIndex;
+    var itemIndex = parseInt(btn.dataset.itemIndex, 10);
+    var card = $('.enterprise-detail-card[data-enterprise-index="' + enterpriseIndex + '"]');
+    if (!card) return;
+
+    var enterpriseName = card.querySelector('.enterprise-detail-card__name').textContent;
+    var row = btn.closest('tr');
+    var cells = row.querySelectorAll('td');
+    var targetName = cells[0] ? cells[0].textContent : '';
+
+    // 模拟异步加入招商库
+    btn.disabled = true;
+    btn.textContent = '加入中…';
+
+    setTimeout(function () {
+      btn.disabled = false;
+      btn.textContent = '已加入';
+      btn.classList.remove('btn--primary');
+      btn.classList.add('btn--ghost');
+      toast('已将 “' + targetName + '” 加入招商库', 'success');
+    }, 400);
+  }
+
+  function showEnterpriseSupplierModal(index) {
+    var card = $('.enterprise-detail-card[data-enterprise-index="' + index + '"]');
+    if (!card) return;
+    var enterpriseId = card.dataset.enterpriseId;
+    var enterpriseName = card.querySelector('.enterprise-detail-card__name').textContent;
+    var enterprise = findEnterpriseById(enterpriseId);
+    if (!enterprise) return;
+    var invoiceData = buildEnterpriseInvoiceData(enterprise);
+
+    openModal({
+      title: enterpriseName + ' - 全部上游供应商清单',
+      subtitle: '共 ' + invoiceData.suppliers.length + ' 家供应商 | 可一键加入招商库',
+      size: 'large',
+      bodyHTML: '<div class="enterprise-modal-toolbar">' +
+        '<span class="enterprise-modal-count">供应商数量：<strong>' + invoiceData.suppliers.length + '</strong> 家</span>' +
+        '</div>' +
+        '<div class="modal-table-wrap">' + buildSupplierRowsHTML(invoiceData.suppliers, index, true) + '</div>',
+      footerHTML: '<button class="btn btn--ghost" onclick="CommonUtil.closeModal()">关闭</button>',
+      onMount: function (body) {
+        bindAddLeadsButtons(body, index);
+      }
+    });
+  }
+
+  function showEnterpriseCustomerModal(index) {
+    var card = $('.enterprise-detail-card[data-enterprise-index="' + index + '"]');
+    if (!card) return;
+    var enterpriseId = card.dataset.enterpriseId;
+    var enterpriseName = card.querySelector('.enterprise-detail-card__name').textContent;
+    var enterprise = findEnterpriseById(enterpriseId);
+    if (!enterprise) return;
+    var invoiceData = buildEnterpriseInvoiceData(enterprise);
+
+    openModal({
+      title: enterpriseName + ' - 全部下游客户清单',
+      subtitle: '共 ' + invoiceData.customers.length + ' 家客户 | 可一键加入招商库',
+      size: 'large',
+      bodyHTML: '<div class="enterprise-modal-toolbar">' +
+        '<span class="enterprise-modal-count">客户数量：<strong>' + invoiceData.customers.length + '</strong> 家</span>' +
+        '</div>' +
+        '<div class="modal-table-wrap">' + buildCustomerRowsHTML(invoiceData.customers, index, true) + '</div>',
+      footerHTML: '<button class="btn btn--ghost" onclick="CommonUtil.closeModal()">关闭</button>',
+      onMount: function (body) {
+        bindAddLeadsButtons(body, index);
+      }
+    });
+  }
+
+  function bindAddLeadsButtons(container, enterpriseIndex) {
+    $$('.btn-add-leads', container).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        addToLeads(btn);
+      });
+    });
+  }
+
+  /* ===== 全产业综合分析模块折叠状态 ===== */
+  function bindComprehensiveSectionToggle() {
+    var header = document.getElementById('comprehensiveSectionHeader');
+    if (!header) return;
+    header.addEventListener('click', toggleComprehensiveSection);
+    header.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleComprehensiveSection();
+      }
+    });
+  }
+
+  function toggleComprehensiveSection() {
+    comprehensiveCollapsed = !comprehensiveCollapsed;
+    saveComprehensiveCollapsedState();
+    applyComprehensiveCollapsedState();
+  }
+
+  function applyComprehensiveCollapsedState() {
+    var body = document.getElementById('comprehensiveSectionBody');
+    var header = document.getElementById('comprehensiveSectionHeader');
+    var toggle = document.getElementById('comprehensiveSectionToggle');
+    var icon = toggle ? toggle.querySelector('.toggle-icon') : null;
+    var text = toggle ? toggle.querySelector('.toggle-text') : null;
+
+    if (!body) return;
+    if (comprehensiveCollapsed) {
+      body.style.display = 'none';
+      if (icon) icon.classList.add('is-collapsed');
+      if (text) text.textContent = '展开';
+      if (header) header.setAttribute('aria-expanded', 'false');
+    } else {
+      body.style.display = 'block';
+      if (icon) icon.classList.remove('is-collapsed');
+      if (text) text.textContent = '收起';
+      if (header) header.setAttribute('aria-expanded', 'true');
+      // 重新触发图表 resize，防止折叠后尺寸异常
+      setTimeout(function () {
+        if (typeof ChartRenderer !== 'undefined' && typeof ChartRenderer.resize === 'function') {
+          ChartRenderer.resize();
+        }
+      }, 50);
+    }
+  }
+
+  function saveComprehensiveCollapsedState() {
+    try {
+      localStorage.setItem(COMPREHENSIVE_STORAGE_KEY, comprehensiveCollapsed ? '1' : '0');
+    } catch (e) {
+      // 忽略隐私模式下的 localStorage 异常
+    }
+  }
+
+  function loadComprehensiveCollapsedState() {
+    try {
+      var stored = localStorage.getItem(COMPREHENSIVE_STORAGE_KEY);
+      comprehensiveCollapsed = stored === '1';
+    } catch (e) {
+      comprehensiveCollapsed = false;
+    }
+  }
+
   /* ===== 渲染头部 ===== */
   function renderHeader() {
     var chain = MockData.industryChain;
-
     var headerLeft = $('.dashboard__header-left');
     headerLeft.innerHTML = '';
 
@@ -226,9 +886,6 @@
         case 'view-suppliers':
           showSupplierModal();
           break;
-        case 'invest-simulation':
-          showInvestModal();
-          break;
         case 'view-customers':
           showCustomerModal();
           break;
@@ -250,7 +907,7 @@
     var suppliers = MockData.upstream.suppliers;
     var selectedSet = {};
 
-    var tableHTML = buildSupplierTableHTML(suppliers);
+    var tableHTML = buildSupplierTableHTML(suppliers, selectedSet);
 
     openModal({
       title: '上游供应商清单',
@@ -306,6 +963,9 @@
             toast('已将 ' + selected.length + ' 家企业加入招商线索库', 'success');
           });
         }
+
+        // 行内“加入招商库”按钮
+        bindModalAddLeads(body);
       }
     });
   }
@@ -318,6 +978,7 @@
         '<td>' + s.province + '</td>' +
         '<td>' + s.category + '</td>' +
         '<td class="font-num text-primary">' + fmtNum(s.amount) + ' 万元</td>' +
+        '<td><button class="btn btn-add-leads btn--primary btn--sm" data-type="supplier" data-modal-idx="' + i + '">加入招商库</button></td>' +
         '<td><button class="btn btn--ghost btn--sm btn-view-profile" data-idx="' + i + '">查看档案</button></td>' +
         '</tr>';
     }).join('');
@@ -329,156 +990,24 @@
       '<th>所在省份</th>' +
       '<th>采购品类</th>' +
       '<th>年采购额</th>' +
+      '<th style="width:110px">招商</th>' +
       '<th style="width:100px">操作</th>' +
       '</tr></thead>' +
       '<tbody>' + rows + '</tbody>' +
       '</table>';
   }
 
-  /* ===== 弹窗2：招商模拟推演 ===== */
-  function showInvestModal() {
-    var targets = MockData.upstream.investmentTargets;
-    var baseline = MockData.upstream.baseline;
-    var selectedSet = {};
-
-    openModal({
-      title: '招商模拟推演',
-      subtitle: '勾选意向招商企业，查看落地后产业链指标变化预估',
-      size: 'large',
-      bodyHTML: buildInvestModalHTML(targets, baseline),
-      footerHTML:
-        '<button class="btn btn--ghost" onclick="CommonUtil.closeModal()">关闭</button>' +
-        '<button class="btn btn--primary" id="btn-run-simulation">确定招商方案</button>',
-      onMount: function (body) {
-        // 勾选事件 -> 实时更新推演结果
-        var checkboxes = $$('.invest-checkbox', body);
-        checkboxes.forEach(function (cb) {
-          cb.addEventListener('change', function () {
-            var idx = parseInt(this.dataset.idx);
-            selectedSet[idx] = this.checked;
-            updateSimulationResult(body, targets, baseline, selectedSet);
-          });
-        });
-
-        // 运行推演按钮
-        var runBtn = $('#btn-run-simulation', body);
-        if (runBtn) {
-          runBtn.addEventListener('click', function () {
-            var selected = Object.keys(selectedSet).filter(function (k) {
-              return selectedSet[k];
-            });
-            if (selected.length === 0) {
-              toast('请先勾选意向招商企业', 'warning');
-              return;
-            }
-            toast('推演完成：预计新增产值 ' + calcNewOutput(targets, selectedSet).toFixed(1) + ' 亿元', 'success');
-          });
-        }
-      }
-    });
-  }
-
-  function buildInvestModalHTML(targets, baseline) {
-    // 目标企业列表
-    var targetRows = targets.map(function (t, i) {
-      return '<tr>' +
-        '<td style="text-align:center"><input type="checkbox" class="custom-checkbox invest-checkbox" data-idx="' + i + '"></td>' +
-        '<td>' + t.name + '</td>' +
-        '<td>' + t.province + '</td>' +
-        '<td>' + t.category + '</td>' +
-        '<td class="font-num text-primary-color">' + t.estOutput + ' 亿元</td>' +
-        '<td class="font-num text-primary-color">+' + t.estCompleteness + '%</td>' +
-        '</tr>';
-    }).join('');
-
-    return '<div class="invest-modal__section">' +
-      '<div class="invest-modal__section-title">意向招商企业清单（勾选进行模拟）</div>' +
-      '<div class="modal-table-wrap">' +
-      '<table class="data-table">' +
-      '<thead><tr>' +
-      '<th style="width:50px;text-align:center">勾选</th>' +
-      '<th>企业名称</th>' +
-      '<th>所在省份</th>' +
-      '<th>产品品类</th>' +
-      '<th>预估新增产值</th>' +
-      '<th>预估完备度提升</th>' +
-      '</tr></thead>' +
-      '<tbody>' + targetRows + '</tbody>' +
-      '</table>' +
-      '</div>' +
-      '</div>' +
-      '<div class="invest-modal__section">' +
-      '<div class="invest-modal__section-title">推演结果对比</div>' +
-      '<div class="invest-modal__compare">' +
-      '  <div class="compare-card compare-card--before">' +
-      '    <div class="compare-card__label">当前基线（实测数据）</div>' +
-      '    <div class="compare-card__items">' +
-      '      <div class="compare-card__item"><span class="compare-card__item-label">产业链完备度</span><span class="compare-card__item-value" id="before-completeness">' + baseline.completeness + '%</span></div>' +
-      '      <div class="compare-card__item"><span class="compare-card__item-label">龙头合计产值</span><span class="compare-card__item-value" id="before-output">' + baseline.totalOutput + ' 亿元</span></div>' +
-      '      <div class="compare-card__item"><span class="compare-card__item-label">外地采购依赖度</span><span class="compare-card__item-value" id="before-dependency">' + baseline.externalDependency + '%</span></div>' +
-      '    </div>' +
-      '  </div>' +
-      '  <div class="compare-card compare-card--after">' +
-      '    <div class="compare-card__label">推演预测（招商落地后）</div>' +
-      '    <div class="compare-card__items">' +
-      '      <div class="compare-card__item"><span class="compare-card__item-label">产业链完备度</span><span class="compare-card__item-value" id="after-completeness">' + baseline.completeness + '%<span class="compare-card__item-delta" id="delta-completeness"></span></span></div>' +
-      '      <div class="compare-card__item"><span class="compare-card__item-label">龙头合计产值</span><span class="compare-card__item-value" id="after-output">' + baseline.totalOutput + ' 亿元<span class="compare-card__item-delta" id="delta-output"></span></span></div>' +
-      '      <div class="compare-card__item"><span class="compare-card__item-label">外地采购依赖度</span><span class="compare-card__item-value" id="after-dependency">' + baseline.externalDependency + '%<span class="compare-card__item-delta" id="delta-dependency"></span></span></div>' +
-      '    </div>' +
-      '  </div>' +
-      '</div>' +
-      '<div style="font-size:12px;color:#86909C;padding:8px 0;">* 推演预测数据为理想化模型测算结果，仅供决策参考</div>' +
-      '</div>';
-  }
-
-  function calcNewOutput(targets, selectedSet) {
-    var total = 0;
-    for (var k in selectedSet) {
-      if (selectedSet[k]) {
-        total += targets[parseInt(k)].estOutput;
-      }
-    }
-    return total;
-  }
-
-  function calcCompletenessGain(targets, selectedSet) {
-    var total = 0;
-    for (var k in selectedSet) {
-      if (selectedSet[k]) {
-        total += targets[parseInt(k)].estCompleteness;
-      }
-    }
-    return total;
-  }
-
-  function updateSimulationResult(body, targets, baseline, selectedSet) {
-    var newOutput = calcNewOutput(targets, selectedSet);
-    var completenessGain = calcCompletenessGain(targets, selectedSet);
-    var dependencyReduction = completenessGain * 0.4; // 依赖度下降系数
-
-    var afterCompleteness = (baseline.completeness + completenessGain).toFixed(1);
-    var afterOutput = (baseline.totalOutput + newOutput).toFixed(1);
-    var afterDependency = Math.max(0, baseline.externalDependency - dependencyReduction).toFixed(1);
-
-    var elAfterC = $('#after-completeness', body);
-    var elAfterO = $('#after-output', body);
-    var elAfterD = $('#after-dependency', body);
-
-    if (elAfterC) elAfterC.innerHTML = afterCompleteness + '%<span class="compare-card__item-delta">+' + completenessGain.toFixed(1) + '%</span>';
-    if (elAfterO) elAfterO.innerHTML = afterOutput + ' 亿元<span class="compare-card__item-delta">+' + newOutput.toFixed(1) + '</span>';
-    if (elAfterD) elAfterD.innerHTML = afterDependency + '%<span class="compare-card__item-delta">-' + dependencyReduction.toFixed(1) + '%</span>';
-  }
-
   /* ===== 弹窗3：下游客户清单 ===== */
   function showCustomerModal() {
     var customers = MockData.downstream.customers;
 
-    var rows = customers.map(function (c) {
+    var rows = customers.map(function (c, i) {
       return '<tr>' +
         '<td>' + c.name + '</td>' +
         '<td>' + c.province + '</td>' +
         '<td>' + c.category + '</td>' +
         '<td class="font-num text-primary">' + fmtNum(c.amount) + ' 万元</td>' +
+        '<td><button class="btn btn-add-leads btn--primary btn--sm" data-type="customer" data-modal-idx="' + i + '">加入招商库</button></td>' +
         '</tr>';
     }).join('');
 
@@ -494,12 +1023,16 @@
         '<th>所在省份</th>' +
         '<th>销售品类</th>' +
         '<th>年销售额</th>' +
+        '<th style="width:110px">操作</th>' +
         '</tr></thead>' +
         '<tbody>' + rows + '</tbody>' +
         '</table>' +
         '</div>',
       footerHTML:
-        '<button class="btn btn--ghost" onclick="CommonUtil.closeModal()">关闭</button>'
+        '<button class="btn btn--ghost" onclick="CommonUtil.closeModal()">关闭</button>',
+      onMount: function (body) {
+        bindModalAddLeads(body);
+      }
     });
   }
 
@@ -572,6 +1105,25 @@
         '</div>',
       footerHTML:
         '<button class="btn btn--ghost" onclick="CommonUtil.closeModal()">关闭</button>'
+    });
+  }
+
+  /* ===== 弹窗内“加入招商库”统一反馈 ===== */
+  function bindModalAddLeads(container) {
+    $$('.btn-add-leads', container).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var row = btn.closest('tr');
+        var targetName = row ? row.querySelector('td').textContent : '';
+        btn.disabled = true;
+        btn.textContent = '加入中…';
+        setTimeout(function () {
+          btn.disabled = false;
+          btn.textContent = '已加入';
+          btn.classList.remove('btn--primary');
+          btn.classList.add('btn--ghost');
+          toast('已将 “' + targetName + '” 加入招商库', 'success');
+        }, 400);
+      });
     });
   }
 

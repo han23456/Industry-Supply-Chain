@@ -6,27 +6,10 @@ window.menuList = [
     icon: "🖥️"
   },
   {
-    name: "企业关系网络",
-    pagePath: "enterprise-network.html",
+    name: "招商库",
+    pagePath: "investment-pool.html",
     icon: "🏢"
   },
-  {
-    name: "风险预警",
-    pagePath: "risk-warning.html",
-    icon: "⚠️"
-  },
-  {
-    name: "强链补链",
-    pagePath: "chain-gap.html",
-    icon: "🔧"
-  }
-  /** 
-  {
-    name: "供需对接",
-    pagePath: "supply-demand.html",
-    icon: "🤝"
-  }
-   */,
 ];
 
 window.headerConfig = {

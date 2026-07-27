@@ -40,7 +40,7 @@ async function loadData() {
     }
 
     document.title = `${currentNode.name} - 产业链环节详情 - 产业链/供应链图谱系统`;
-    renderPage();
+    await renderPage();
     bindActions();
   } catch (err) {
     showLoading(false);
@@ -49,11 +49,28 @@ async function loadData() {
   }
 }
 
-function renderPage() {
+async function renderPage() {
   renderBreadcrumbWithNode(currentNode);
   document.getElementById('nodeDetailHead').innerHTML = renderSegmentHeadHTML(currentNode);
   document.getElementById('nodeDetailModules').innerHTML = renderNodeModulesHTML(currentNode);
   initModuleTooltips();
+
+  const enterprisesContainer = document.getElementById('nodeDetailEnterprises');
+  if (!enterprisesContainer) return;
+
+  // 显示加载状态，优化感知性能
+  enterprisesContainer.innerHTML = renderEnterpriseLoadingHTML();
+
+  try {
+    // 使用 requestAnimationFrame 让 loading 先渲染，避免大数据阻塞主线程
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    const enterprises = await getTopEnterprises(currentNode);
+    enterprisesContainer.innerHTML = renderTopEnterprisesHTML(enterprises);
+    bindEnterpriseActions();
+  } catch (err) {
+    console.error('加载企业列表失败', err);
+    enterprisesContainer.innerHTML = renderEnterpriseErrorHTML(err && err.message ? err.message : '企业列表加载失败，请稍后重试');
+  }
 }
 
 function initModuleTooltips() {
@@ -106,7 +123,7 @@ function renderNodeModulesHTML(node) {
   const stats = buildNodeDetailStats(node);
   const localBarWidth = Math.min(100, parseFloat(stats.localGrossMargin)).toFixed(0);
   const nationalBarWidth = Math.min(100, parseFloat(stats.nationalGrossMargin)).toFixed(0);
-  const parkName = getMainParkName(node);
+  const spatial = getStreetDistribution(node);
   const localCount = node.localCount || 0;
 
   return `
@@ -326,56 +343,368 @@ function renderNodeModulesHTML(node) {
       </div>
 
       <!-- 模块六：空间布局与载体 -->
-      <div class="node-module-card">
+      <div class="node-module-card module-spatial">
         <div class="node-module-header">
           <div class="node-module-title-wrap">
             <span class="node-module-bar"></span>
             <h2 class="node-module-title">模块六：空间布局与载体</h2>
           </div>
           ${renderModuleHelpHTML([
-            '园区数据：基于各区产业园入驻企业登记信息汇总。',
-            '企业分布：按工商注册地址与园区边界进行空间匹配。'
+            '街道企业分布：基于工商注册地址与辖区行政区划边界进行空间匹配。',
+            '集聚度计算：Top1/Top3街道企业数占辖区该产业总企业数比例。',
+            '数据来源：企业工商登记注册地址、国家统计局行政区划数据。'
           ])}
         </div>
         <div class="node-module-body">
-          <div class="node-park-card">
-            <div>
-              <p class="node-park-name">核心集聚园区</p>
-              <p class="node-park-value">${parkName}</p>
+          <div class="spatial-ranking-section">
+            <div class="spatial-ranking-header">
+              <div class="spatial-ranking-title">
+                <span>辖区街道企业分布 TOP 3 榜单</span>
+              </div>
+              <div class="spatial-ranking-total">辖区该产业总企业数：${spatial.total} 家</div>
             </div>
-            <span class="node-park-tag">主阵地</span>
-          </div>
-          <div class="node-metrics-grid cols-2">
-            <div class="node-metric-item">
-              <span class="node-metric-label">园区落户企业数</span>
-              <span class="node-metric-value block">${stats.parkEnterprises} 家</span>
-            </div>
-            <div class="node-metric-item">
-              <span class="node-metric-label">辖区企业占比</span>
-              <span class="node-metric-value block primary">${stats.parkEnterpriseRatio}%</span>
+            <div class="spatial-ranking-list">
+              ${spatial.ranking.map((item, index) => `
+                <div class="spatial-ranking-item">
+                  <div class="spatial-rank-badge rank-${index + 1}">${index + 1}</div>
+                  <div class="spatial-rank-info">
+                    <div class="spatial-rank-name">${item.name}</div>
+                    <div class="spatial-rank-district">${item.district}</div>
+                  </div>
+                  <div class="spatial-rank-density">
+                    <div class="spatial-density-header">
+                      <span class="spatial-density-label">分布密度</span>
+                      <span class="spatial-density-percent">${item.ratio}%</span>
+                    </div>
+                    <div class="spatial-density-bar">
+                      <div class="spatial-density-fill" style="width:${item.ratio}%"></div>
+                    </div>
+                  </div>
+                  <div class="spatial-rank-percent">${item.ratio}%</div>
+                  <div class="spatial-rank-count">${item.count} <span>家</span></div>
+                </div>
+              `).join('')}
             </div>
           </div>
         </div>
-        <div class="node-module-footer gray">
-          <p class="node-ai-label">🤖 AI 汇报解读：</p>
-          <p class="node-ai-text">产业企业主要集聚于${parkName}，集聚度高达${stats.parkEnterpriseRatio}%，空间物理分布高度集中，形成明显的板块联动。</p>
+        <div class="node-module-footer gray spatial-footer">
+          <div class="spatial-ai-header">
+            <span class="node-ai-label">🤖 AI 智能智能分析解读</span>
+            <span class="spatial-ai-source">基于工商注册地址聚合生成</span>
+          </div>
+          <p class="node-ai-text">产业企业在空间分布上呈现明显的集中态势。其中，<strong>${spatial.top1Street.name}</strong>为核心集聚主阵地，共集中企业 <strong>${spatial.top1Street.count} 家</strong>，集聚度达 <strong>${spatial.top1Ratio}%</strong>。Top 3 街道（${spatial.ranking.map(i => i.name).join('、')}）合计占比 <strong>${spatial.top3Ratio}%</strong>，形成良好的区域板块联动效应。</p>
         </div>
       </div>
     </div>
   `;
 }
 
-function getMainParkName(node) {
-  const parks = [
-    '前海深港现代服务业合作区',
-    '高新园区',
-    '经济技术开发区',
-    '智能制造产业园',
-    '科技创新孵化基地',
-    '数字经济产业园'
+function getStreetDistribution(node) {
+  const streets = [
+    { name: '粤海街道', district: '辖区行政区划' },
+    { name: '南山街道', district: '辖区行政区划' },
+    { name: '西丽街道', district: '辖区行政区划' },
+    { name: '桃源街道', district: '辖区行政区划' },
+    { name: '蛇口街道', district: '辖区行政区划' },
+    { name: '招商街道', district: '辖区行政区划' },
+    { name: '沙河街道', district: '辖区行政区划' },
+    { name: '南头街道', district: '辖区行政区划' }
   ];
-  const seed = hashCode(node.id || node.name);
-  return parks[seed % parks.length];
+
+  const total = Math.max(node.localCount || 20, 6);
+  const seed = Math.abs(hashCode(node.id || node.name));
+
+  // 基于节点特征生成前三街道分布：Top1 占 35-55%，Top2 占 15-28%，Top3 占 8-18%
+  const top1RatioSeed = 35 + (seed % 21);
+  const top2RatioSeed = 15 + ((seed >> 4) % 14);
+  const top3RatioSeed = 8 + ((seed >> 8) % 11);
+
+  let top1Count = Math.max(1, Math.round(total * top1RatioSeed / 100));
+  let top2Count = Math.max(1, Math.round(total * top2RatioSeed / 100));
+  let top3Count = Math.max(1, Math.round(total * top3RatioSeed / 100));
+
+  // 防止前三企业数超过辖区总数
+  if (top1Count + top2Count + top3Count > total) {
+    top3Count = Math.max(1, total - top1Count - top2Count);
+  }
+
+  const ranking = [
+    { ...streets[0], count: top1Count },
+    { ...streets[1], count: top2Count },
+    { ...streets[2], count: top3Count }
+  ];
+
+  ranking.forEach(item => {
+    item.ratio = total > 0 ? Math.round(item.count / total * 100) : 0;
+  });
+
+  return {
+    total,
+    top1Street: ranking[0],
+    top1Ratio: ranking[0].ratio,
+    top3Ratio: ranking.reduce((sum, item) => sum + item.ratio, 0),
+    ranking
+  };
+}
+
+async function getTopEnterprises(node) {
+  if (!node) {
+    throw new Error('节点数据缺失，无法生成企业列表');
+  }
+
+  // 模拟异步数据获取，便于后续接入真实接口
+  await new Promise(resolve => setTimeout(resolve, 120));
+
+  try {
+    // 优先取节点关联企业，不足时从 ALL_ENTERPRISES 补充
+    let sourceList = [];
+    const nodeEnterprises = (typeof MOCK_ENTERPRISES !== 'undefined' && MOCK_ENTERPRISES[node.id]) || [];
+
+    if (nodeEnterprises.length > 0) {
+      sourceList = nodeEnterprises.filter(e => !e.placeholder).map(e => {
+        const real = (typeof ALL_ENTERPRISES !== 'undefined' && ALL_ENTERPRISES.find(ent => ent.id === e.id)) || {};
+        return buildEnterpriseListItem(real, e);
+      }).filter(Boolean);
+    }
+
+    // 补充至 10 家
+    if (sourceList.length < 10 && typeof ALL_ENTERPRISES !== 'undefined' && ALL_ENTERPRISES.length > 0) {
+      const seed = Math.abs(hashCode(node.id || node.name));
+      const pool = ALL_ENTERPRISES.filter(e => !sourceList.some(s => s.id === e.id));
+      const needed = 10 - sourceList.length;
+      for (let i = 0; i < needed; i++) {
+        const idx = (seed + i * 7) % Math.max(pool.length, 1);
+        const ent = pool[idx];
+        if (!ent) continue;
+        const item = buildEnterpriseListItem(ent);
+        if (item && !sourceList.some(s => s.id === item.id)) {
+          sourceList.push(item);
+        }
+      }
+    }
+
+    // 按产值规模降序，产值相同则按 ID 字典序升序，确保排序稳定
+    sourceList.sort((a, b) => {
+      const diff = b.annual_revenue - a.annual_revenue;
+      if (Math.abs(diff) > 1e-6) return diff;
+      return String(a.id).localeCompare(String(b.id));
+    });
+    return sourceList.slice(0, 10);
+  } catch (err) {
+    console.error('生成 Top10 企业列表失败', err);
+    throw new Error('生成企业列表时发生错误');
+  }
+}
+
+function buildEnterpriseListItem(ent, fallback = {}) {
+  if (!ent || !ent.id) return null;
+  // 使用企业 ID 生成确定性种子，确保每次刷新数据一致（复用公共 seededRandom）
+  const seed = hashCode(ent.id);
+  const rand = typeof seededRandom === 'function' ? seededRandom(seed) : () => 0.5;
+  const rnd = (min = 0, max = 1) => min + rand() * (max - min);
+  const rndInt = (min, max) => min + Math.floor(rand() * (max - min + 1));
+
+  const revenue = ent.annual_revenue || fallback.annual_revenue || rnd(0.5, 50.5);
+  const registeredCapital = ent.registered_capital || rndInt(500, 50500);
+  const establishDate = ent.establishment_date || `${2000 + rndInt(0, 23)}-${String(rndInt(1, 12)).padStart(2, '0')}-${String(rndInt(1, 28)).padStart(2, '0')}`;
+  const creditCode = ent.credit_code || `91440300${Math.floor(rand() * 1e12).toString().padStart(12, '0')}`;
+  const address = ent.register_address || fallback.address || '深圳市南山区高新技术产业区';
+
+  return {
+    id: ent.id,
+    name: ent.name || fallback.name || '未知企业',
+    annual_revenue: parseFloat(revenue),
+    registered_capital: registeredCapital,
+    establishment_date: establishDate,
+    credit_code: creditCode,
+    register_address: address
+  };
+}
+
+function renderTopEnterprisesHTML(enterprises) {
+  if (!Array.isArray(enterprises) || enterprises.length === 0) {
+    return renderEnterpriseEmptyHTML();
+  }
+
+  const rows = enterprises.map((e, index) => `
+    <tr class="enterprise-row">
+      <td class="cell-checkbox"><input type="checkbox" class="enterprise-checkbox" value="${escapeHtml(e.id)}" ${index === 0 ? 'checked' : ''} aria-label="选择 ${escapeHtml(e.name)}"></td>
+      <td class="cell-rank"><span class="enterprise-rank rank-${index < 3 ? index + 1 : 'other'}" aria-label="第 ${index + 1} 名">${index + 1}</span></td>
+      <td class="cell-name">
+        <div class="enterprise-name">${escapeHtml(e.name)}</div>
+        <div class="enterprise-code">${escapeHtml(e.credit_code)}</div>
+      </td>
+      <td class="cell-date">${escapeHtml(e.establishment_date)}</td>
+      <td class="cell-capital"><strong>${formatNumber(e.registered_capital)}万人民币</strong></td>
+      <td class="cell-address">${escapeHtml(e.register_address)}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="node-enterprise-header">
+      <div class="node-enterprise-title-wrap">
+        <span class="node-module-bar"></span>
+        <div>
+          <h2 class="node-enterprise-title">辖区核心链主企业列表 (Top 10)</h2>
+          <p class="node-enterprise-subtitle">按辖区产值规模排序</p>
+        </div>
+      </div>
+      <div class="node-enterprise-actions">
+        <span class="node-enterprise-selected" id="enterpriseSelectedCount" aria-live="polite" aria-atomic="true">已选中 <strong>1</strong> / ${enterprises.length} 家企业</span>
+        <button class="btn-chain-analysis" id="chainGapBtn" type="button" aria-label="对选中企业进行强链补链分析">强链补链分析</button>
+      </div>
+    </div>
+    <p class="node-enterprise-desc">自动筛选该子产业产值最高的前10家企业，作为强链补链分析的主角</p>
+    <div class="node-enterprise-table-wrap" role="region" aria-label="核心链主企业列表，可横向滚动" tabindex="0">
+      <table class="node-enterprise-table">
+        <thead>
+          <tr>
+            <th scope="col" class="cell-checkbox"><input type="checkbox" id="selectAllEnterprises" aria-label="全选企业"></th>
+            <th scope="col" class="cell-rank">排名</th>
+            <th scope="col" class="cell-name">企业名称 / 统一社会信用代码</th>
+            <th scope="col" class="cell-date">成立日期</th>
+            <th scope="col" class="cell-capital">注册资本</th>
+            <th scope="col" class="cell-address">注册地址</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderEnterpriseLoadingHTML() {
+  return `
+    <div class="node-enterprise-header">
+      <div class="node-enterprise-title-wrap">
+        <span class="node-module-bar"></span>
+        <div>
+          <h2 class="node-enterprise-title">辖区核心链主企业列表 (Top 10)</h2>
+          <p class="node-enterprise-subtitle">按辖区产值规模排序</p>
+        </div>
+      </div>
+    </div>
+    <div class="node-enterprise-loading" role="status" aria-live="polite" aria-label="企业列表加载中">
+      正在加载企业数据，请稍候…
+    </div>
+  `;
+}
+
+function renderEnterpriseErrorHTML(message) {
+  return `
+    <div class="node-enterprise-header">
+      <div class="node-enterprise-title-wrap">
+        <span class="node-module-bar"></span>
+        <div>
+          <h2 class="node-enterprise-title">辖区核心链主企业列表 (Top 10)</h2>
+          <p class="node-enterprise-subtitle">按辖区产值规模排序</p>
+        </div>
+      </div>
+    </div>
+    <div class="node-enterprise-error" role="alert" aria-live="assertive">
+      <div>⚠️ ${escapeHtml(message)}</div>
+      <button class="btn btn-primary" id="retryEnterpriseBtn" type="button">重新加载</button>
+    </div>
+  `;
+}
+
+function renderEnterpriseEmptyHTML() {
+  return `
+    <div class="node-enterprise-header">
+      <div class="node-enterprise-title-wrap">
+        <span class="node-module-bar"></span>
+        <div>
+          <h2 class="node-enterprise-title">辖区核心链主企业列表 (Top 10)</h2>
+          <p class="node-enterprise-subtitle">按辖区产值规模排序</p>
+        </div>
+      </div>
+    </div>
+    <div class="node-enterprise-empty" role="status" aria-live="polite">
+      暂无相关企业数据
+    </div>
+  `;
+}
+
+function bindEnterpriseActions() {
+  const section = document.getElementById('nodeDetailEnterprises');
+  if (!section) return;
+
+  const selectAll = section.querySelector('#selectAllEnterprises');
+  let checkboxes = section.querySelectorAll('.enterprise-checkbox');
+  const selectedCountEl = section.querySelector('#enterpriseSelectedCount strong');
+  const chainGapBtn = section.querySelector('#chainGapBtn');
+  const retryBtn = section.querySelector('#retryEnterpriseBtn');
+
+  function getCheckboxes() {
+    checkboxes = section.querySelectorAll('.enterprise-checkbox');
+    return checkboxes;
+  }
+
+  function updateSelectedCount() {
+    const checked = section.querySelectorAll('.enterprise-checkbox:checked').length;
+    if (selectedCountEl) selectedCountEl.textContent = checked;
+  }
+
+  function notifyNoSelection() {
+    if (typeof showToast === 'function') {
+      showToast('请至少选择一家企业', 'warning');
+    } else {
+      alert('请至少选择一家企业');
+    }
+  }
+
+  function getSelectedIds() {
+    return Array.from(section.querySelectorAll('.enterprise-checkbox:checked')).map(cb => cb.value);
+  }
+
+  function navigateToChainGap() {
+    const selected = getSelectedIds();
+    if (selected.length === 0) {
+      notifyNoSelection();
+      return;
+    }
+    const url = `chain-gap1.html?chainId=${encodeURIComponent(currentChainId)}&nodeId=${encodeURIComponent(currentNodeId)}&enterprises=${encodeURIComponent(selected.join(','))}`;
+    // 保持与页面其它跳转一致的过渡体验
+    window.location.href = url;
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', () => {
+      getCheckboxes().forEach(cb => { cb.checked = selectAll.checked; });
+      updateSelectedCount();
+    });
+  }
+
+  function onCheckboxChange() {
+    const all = getCheckboxes();
+    const allChecked = all.length > 0 && Array.from(all).every(c => c.checked);
+    if (selectAll) selectAll.checked = allChecked;
+    updateSelectedCount();
+  }
+
+  getCheckboxes().forEach(cb => {
+    cb.addEventListener('change', onCheckboxChange);
+  });
+
+  if (chainGapBtn) {
+    chainGapBtn.addEventListener('click', navigateToChainGap);
+    chainGapBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        navigateToChainGap();
+      }
+    });
+  }
+
+  if (retryBtn) {
+    retryBtn.addEventListener('click', () => {
+      renderPage();
+    });
+  }
+
+  updateSelectedCount();
 }
 
 function renderBreadcrumbWithNode(node) {
@@ -389,7 +718,7 @@ function renderBreadcrumbWithNode(node) {
     <span class="sep">/</span>
     <a href="${graphUrl}">产业链结构图谱</a>
     <span class="sep">/</span>
-    <span class="current">${node ? node.name : '产业链环节详情'}</span>
+    <span class="current">${node ? escapeHtml(node.name) : '产业链环节详情'}</span>
   `;
 }
 
@@ -409,15 +738,19 @@ function bindActions() {
       window.location.href = `enterprise-network.html?chainId=${encodeURIComponent(currentChainId)}&nodeId=${encodeURIComponent(currentNodeId)}`;
     });
   }
+
+  bindEnterpriseActions();
 }
 
 function renderError(message) {
   document.title = '加载失败 - 产业链环节详情';
   const head = document.getElementById('nodeDetailHead');
   const modules = document.getElementById('nodeDetailModules');
+  const enterprises = document.getElementById('nodeDetailEnterprises');
   const actions = document.getElementById('nodeDetailActions');
-  if (head) head.innerHTML = `<div class="node-detail-error">${message}</div>`;
+  if (head) head.innerHTML = `<div class="node-detail-error">${escapeHtml(message)}</div>`;
   if (modules) modules.innerHTML = '';
+  if (enterprises) enterprises.innerHTML = '';
   if (actions) actions.style.display = 'none';
 
   const container = document.getElementById('breadcrumbContainer');

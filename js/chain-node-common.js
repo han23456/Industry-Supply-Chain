@@ -39,7 +39,17 @@ function hashCode(str) {
     h = ((h << 5) - h) + s.charCodeAt(i);
     h |= 0;
   }
-  return Math.abs(h);
+  return h;
+}
+
+function escapeHtml(text) {
+  if (text == null) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function seededRandom(seed) {

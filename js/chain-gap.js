@@ -167,6 +167,13 @@ function renderPlan(node, recommended) {
         技术引进后需关注知识产权保护与人才稳定性。
       </div>
     </div>
+    <div class="plan-section" style="display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:center;text-align:center;background:var(--primary-light)">
+      <div style="font-size:15px;font-weight:600;color:var(--text)">招商引资模拟推演</div>
+      <div style="font-size:13px;color:var(--text-secondary)">从招商库中勾选意向企业，实时测算招商落地后的产业链指标变化</div>
+      <button class="btn btn-primary" onclick="window.location.href='investment-pool.html?chainId=${currentChainId}&nodeId=${node.node_id}'">
+        🚀 进入招商库模拟推演
+      </button>
+    </div>
   `;
   planCard.scrollIntoView({ behavior: 'smooth' });
 }
