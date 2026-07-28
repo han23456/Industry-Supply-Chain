@@ -105,11 +105,17 @@ function buildSegmentStats(node) {
   const seed = hashCode(node.id || node.name);
   const rand = seededRandom(seed);
 
-  const localAvgRevenue = 0.5 + rand() * 2.5; // 亿/家
-  const nationalAvgRevenue = 0.3 + rand() * 2.0;
+  let localAvgRevenue = 0.5 + rand() * 2.5; // 亿/家
+  let nationalAvgRevenue = 0.3 + rand() * 2.0;
+  // 本地企业是全国企业的子集，单企平均产值不应高于全国平均
+  if (localAvgRevenue > nationalAvgRevenue) {
+    localAvgRevenue = nationalAvgRevenue;
+  }
   const localOutput = (local * localAvgRevenue).toFixed(1);
   const nationalOutput = (national * nationalAvgRevenue).toFixed(1);
-  const outputShare = national > 0 ? ((local / national) * 100).toFixed(1) : '0.0';
+  const outputShare = nationalOutput > 0
+    ? (parseFloat(localOutput) / parseFloat(nationalOutput) * 100).toFixed(1)
+    : '0.0';
 
   const marketShare = national > 0 ? ((local / national) * 100).toFixed(2) : '0.00';
   const completeness = Math.min(100, Math.round(45 + rand() * 50));
@@ -260,11 +266,18 @@ function buildNodeDetailStats(node) {
   const rand = seededRandom(seed);
 
   // 模块一：产业规模
-  const localAvgRevenue = 0.1 + rand() * 0.4; // 亿元/家
-  const nationalAvgRevenue = 0.15 + rand() * 0.5;
+  let localAvgRevenue = 0.1 + rand() * 0.4; // 亿元/家
+  let nationalAvgRevenue = 0.15 + rand() * 0.5;
+  // 本地企业是全国企业的子集，单企平均产值不应高于全国平均
+  if (localAvgRevenue > nationalAvgRevenue) {
+    localAvgRevenue = nationalAvgRevenue;
+  }
   const localOutput = local > 0 ? (local * localAvgRevenue).toFixed(1) : '0.0';
   const nationalOutput = national > 0 ? (national * nationalAvgRevenue).toFixed(1) : '0.0';
-  const outputShare = national > 0 ? (local / national * 100).toFixed(1) : '0.0';
+  // 全国产值占比必须基于产值计算，而非企业数量
+  const outputShare = nationalOutput > 0
+    ? (parseFloat(localOutput) / parseFloat(nationalOutput) * 100).toFixed(1)
+    : '0.0';
 
   // 模块二：产业效益
   const totalProfit = localOutput > 0 ? (parseFloat(localOutput) * (0.15 + rand() * 0.25)).toFixed(1) : '0.0';
