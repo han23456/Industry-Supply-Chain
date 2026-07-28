@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>产业链结构图谱 - 产业链/供应链图谱系统</title>
-  <link rel="stylesheet" href="css/common.css?v=3">
-  <link rel="stylesheet" href="css/chain-graph.css?v=14">
+  <link rel="stylesheet" href="css/common.css?v=11">
+  <link rel="stylesheet" href="css/chain-graph.css?v=15">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/common.js"></script>
+  <script src="js/data.js?v=3"></script>
+  <script src="js/common.js?v=2"></script>
   <!-- 加载顺序必须先配置、后组件，顺序不能颠倒 -->
-  <script src="js/config/menu-config.js"></script>
-  <script src="js/components/GovHeader.js"></script>
-  <script src="js/components/SideNav.js"></script>
+  <script src="js/config/menu-config.js?v=2"></script>
+  <script src="js/components/GovHeader.js?v=2"></script>
+  <script src="js/components/SideNav.js?v=2"></script>
 </head>
 <body>
    <gov-header></gov-header>
@@ -71,7 +71,6 @@
             <div class="overview-metric-card">
               <div class="metric-label">规上企业</div>
               <div class="metric-value">236<span class="metric-unit">家</span></div>
-              <div class="metric-trend"><span class="trend-up">↑4家</span> 省内占比2.2%</div>
             </div>
             <div class="overview-metric-card">
               <div class="metric-label">上市公司</div>
@@ -85,7 +84,7 @@
             </div>
             <div class="overview-metric-card">
               <div class="metric-label">带动就业</div>
-              <div class="metric-value">1,196<span class="metric-unit">万人</span></div>
+              <div class="metric-value">175.6<span class="metric-unit">万人</span></div>
               <div class="metric-trend"><span class="trend-up">↑0.4%</span> 新增0.6万人</div>
             </div>
           </div>
@@ -152,7 +151,7 @@
               <div class="chart-card-body" id="employeeTotalTrendChart"></div>
             </div>
               <div class="overview-chart-card overview-chart-card--6">
-              <div class="chart-card-header"><div class="chart-card-title">专利申请数量</div><button class="chart-more">更多</button></div>
+              <div class="chart-card-header"><div class="chart-card-title">专利数量趋势</div><button class="chart-more">更多</button></div>
               <div class="chart-card-body" id="patentApplyTrendChart"></div>
             </div>
           </div>
@@ -236,7 +235,7 @@
     </section>
   </main>
 
-  <script src="js/chain-node-common.js?v=1"></script>
-  <script src="js/chain-graph.js?v=18"></script>
+  <script src="js/chain-node-common.js?v=4"></script>
+  <script src="js/chain-graph.js?v=21"></script>
 </body>
 </html>

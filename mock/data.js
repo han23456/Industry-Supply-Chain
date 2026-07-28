@@ -12,14 +12,14 @@ var MockData = {
   industryChain: {
     mainName: '人工智能与具身智能机器人产业链',
     subName: '核心零部件',
-    disclaimer: '【数据说明】进销项发票为增值采购数据；基于本地营收龙头企业抽样分析；招商推演为理想化模型测算，仅供决策参考'
+    disclaimer: '【数据说明】进销项发票为增值采购数据；基于本地营收龙头企业抽样分析；'
   },
 
   /* -------- 顶部指标卡片（4张） -------- */
   metrics: {
     // TOP5龙头合计年产值（亿元）
     totalOutput: {
-      label: 'TOP5龙头合计年产值',
+      label: 'TOP10龙头合计年产值',
       value: 1286.5,
       unit: '亿元',
       trend: '+12.3%',

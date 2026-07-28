@@ -143,6 +143,11 @@ async function loadData() {
     return;
   }
 
+  // 方案3：加载分类树后统一聚合非叶子节点的企业数与状态
+  if (categoryTree && Array.isArray(categoryTree.tree)) {
+    aggregateTreeNodes(categoryTree.tree);
+  }
+
   renderTopInfo();
   renderChainColumns();
   if (currentMainTab === 'overview') {
@@ -2501,21 +2506,21 @@ function renderEnterpriseTotalTrendChart() {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   }
-  const totalData = [265400, 265600, 265780, 265920, 266100, 266250, 266380, 266520, 266680, 266820, 266980, 267120];
-  const newData = [180, 220, 210, 160, 230, 190, 170, 210, 220, 180, 210, 195];
+  const newData = [265400, 265600, 265780, 265920, 266100, 266250, 266380, 266520, 266680, 266820, 266980, 267120];
+  const totalData = [180, 220, 210, 160, 230, 190, 170, 210, 220, 180, 210, 195];
 
   chart.setOption({
     tooltip: { trigger: 'axis' },
-    legend: { data: ['企业总数', '新增'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    legend: { data: ['新增', '企业总数'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
     grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
     xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
     yAxis: [
-      { type: 'value', name: '企业总数', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
-      { type: 'value', name: '新增', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+      { type: 'value', name: '新增', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '企业总数', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
     ],
     series: [
-      { name: '企业总数', type: 'line', data: totalData, itemStyle: { color: '#165DFF' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4, areaStyle: { color: 'rgba(22, 93, 255, 0.08)' } },
-      { name: '新增', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#165DFF', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+      { name: '新增', type: 'line', data: totalData, itemStyle: { color: '#165DFF' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4, areaStyle: { color: 'rgba(22, 93, 255, 0.08)' } },
+      { name: '企业总数', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#165DFF', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
     ]
   });
   window.addEventListener('resize', () => chart && chart.resize());
@@ -2531,21 +2536,21 @@ function renderRegisteredCapitalTrendChart() {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   }
-  const totalData = [52840, 52960, 53120, 53280, 53410, 53560, 53720, 53880, 54030, 54190, 54350, 54520];
-  const newData = [95, 128, 142, 118, 135, 152, 128, 145, 138, 162, 148, 155];
+  const  newData= [52840, 52960, 53120, 53280, 53410, 53560, 53720, 53880, 54030, 54190, 54350, 54520];
+  const totalData = [95, 128, 142, 118, 135, 152, 128, 145, 138, 162, 148, 155];
 
   chart.setOption({
     tooltip: { trigger: 'axis' },
-    legend: { data: ['注册资本总额', '新增注册资本'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    legend: { data: ['新增注册资本', '注册资本总额'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
     grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
     xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
     yAxis: [
-      { type: 'value', name: '总额（亿元）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
-      { type: 'value', name: '新增（亿元）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+      { type: 'value', name: '新增（亿元）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '总额（亿元）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
     ],
     series: [
-      { name: '注册资本总额', type: 'line', data: totalData, itemStyle: { color: '#00B42A' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4, areaStyle: { color: 'rgba(0, 180, 42, 0.08)' } },
-      { name: '新增注册资本', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#00B42A', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+      { name: '新增注册资本', type: 'line', data: totalData, itemStyle: { color: '#00B42A' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4, areaStyle: { color: 'rgba(0, 180, 42, 0.08)' } },
+      { name: '注册资本总额', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#00B42A', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
     ]
   });
   window.addEventListener('resize', () => chart && chart.resize());
@@ -2566,16 +2571,16 @@ function renderEmployeeTotalTrendChart() {
 
   chart.setOption({
     tooltip: { trigger: 'axis' },
-    legend: { data: ['用工总数', '新增用工'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    legend: { data: ['新增用工', '用工总数'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
     grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
     xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
     yAxis: [
-      { type: 'value', name: '用工总数', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
-      { type: 'value', name: '新增用工', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+      { type: 'value', name: '新增用工', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '用工总数', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
     ],
     series: [
-      { name: '用工总数', type: 'line', data: totalData, itemStyle: { color: '#FA8C16' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
-      { name: '新增用工', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#FA8C16', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+      { name: '新增用工', type: 'line', data: newData, itemStyle: { color: '#FA8C16' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
+      { name: '用工总数', type: 'bar', yAxisIndex: 1, data: totalData, itemStyle: { color: '#FA8C16', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
     ]
   });
   window.addEventListener('resize', () => chart && chart.resize());
@@ -2596,16 +2601,16 @@ function renderPatentApplyTrendChart() {
 
   chart.setOption({
     tooltip: { trigger: 'axis' },
-    legend: { data: ['专利申请累计', '新增申请'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
+    legend: { data: ['新增申请', '专利申请累计'], bottom: 0, textStyle: { color: '#646A73', fontSize: 11 } },
     grid: { left: '3%', right: '4%', bottom: '15%', top: '12%', containLabel: true },
     xAxis: { type: 'category', data: months, axisLabel: { color: '#8F959E', fontSize: 10 }, axisLine: { lineStyle: { color: '#EBEEF5' } } },
     yAxis: [
-      { type: 'value', name: '累计（万件）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
-      { type: 'value', name: '新增（万件）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
+      { type: 'value', name: '新增（万件）', position: 'left', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { lineStyle: { color: '#F2F3F5' } } },
+      { type: 'value', name: '累计（万件）', position: 'right', nameTextStyle: { color: '#646A73', fontSize: 10 }, axisLabel: { color: '#8F959E', fontSize: 10 }, splitLine: { show: false } }
     ],
     series: [
-      { name: '专利申请累计', type: 'line', data: totalData, itemStyle: { color: '#8653D9' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
-      { name: '新增申请', type: 'bar', yAxisIndex: 1, data: newData, itemStyle: { color: '#8653D9', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
+      { name: '新增申请', type: 'line', data: newData, itemStyle: { color: '#8653D9' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 4 },
+      { name: '专利申请累计', type: 'bar', yAxisIndex: 1, data: totalData, itemStyle: { color: '#8653D9', borderRadius: [4, 4, 0, 0] }, barWidth: '35%' }
     ]
   });
   window.addEventListener('resize', () => chart && chart.resize());

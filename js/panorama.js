@@ -271,7 +271,10 @@ function renderIndustryCard(item, index) {
 
 function goToChainGraph(chainId) {
   const params = new URLSearchParams(window.location.search);
-  window.location.href = `chain-graph.html?chainId=${chainId}&${params.toString()}`;
+  // 始终使用 chainId 作为唯一主键，避免重复或空尾部 & 导致部分浏览器/缓存产生无扩展名请求
+  params.set('chainId', chainId);
+  const query = params.toString();
+  window.location.href = `chain-graph.html${query ? '?' + query : ''}`;
 }
 
 function showIndustryDetail(chainId) {

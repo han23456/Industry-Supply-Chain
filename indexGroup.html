@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>集团系挖潜</title>
+<link rel="stylesheet" href="css/common.css?v=10">
+<link rel="stylesheet" href="css/style.css?v=20">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-title">集团系挖潜</div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" data-page="overview">总体情况</div>
+    <div class="nav-tab" data-page="weinadong">在地未纳统</div>
+    <div class="nav-tab" data-page="chanmao">产贸一体化</div>
+    <div class="nav-tab" data-page="gongchan">全国产值统筹</div>
+    <div class="nav-tab" data-page="top500">500强未投资</div>
+  </div>
+</div>
+
+<div class="main-content">
+
+<!-- 总体情况 -->
+<div id="page-overview" class="page-section active">
+  <div class="overview-cards" id="overview-modules"></div>
+</div>
+
+<!-- 在地未纳统 -->
+<div id="page-weinadong" class="page-section">
+  <div class="detail-kpis">
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="total-enterprises">-</div><div class="kpi-label">企业总数（家）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="non-nation">-</div><div class="kpi-label">未有纳统企业集团（个）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="nation-groups">-</div><div class="kpi-label">已有纳统企业集团（个）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="non-nation-revenue">-</div><div class="kpi-label">未纳统企业营收（万元）</div></div>
+  </div>
+  <div class="detail-charts">
+    <div class="card"><div class="card-title">企业数量分布</div><div id="chart-wnd-category" class="chart-container"></div></div>
+    <div class="card"><div class="card-title">注册资本分布</div><div id="chart-wnd-industry" class="chart-container"></div></div>
+  </div>
+  <div class="card table-section">
+    <div class="card-title">企业清单</div>
+    <div class="sheet-tabs" id="wnd-sheet-tabs"></div>
+    <div id="wnd-tables-container"></div>
+  </div>
+</div>
+
+<!-- 产贸一体化 -->
+<div id="page-chanmao" class="page-section">
+  <div class="detail-kpis">
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="total-enterprises">-</div><div class="kpi-label">四上制造业（家）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="group-count">-</div><div class="kpi-label">涉及集团（个）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="qianhai-no">-</div><div class="kpi-label">前海无商贸制造业（家）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="has-commerce">-</div><div class="kpi-label">前海有商贸制造业（家）</div></div>
+  </div>
+  <div class="detail-charts">
+    <div class="card"><div class="card-title">企业数量分布</div><div id="chart-cm-category" class="chart-container"></div></div>
+    <div class="card"><div class="card-title">注册资本分布</div><div id="chart-cm-industry" class="chart-container"></div></div>
+  </div>
+  <div class="card table-section">
+    <div class="card-title">企业清单</div>
+    <div class="sheet-tabs" id="cm-sheet-tabs"></div>
+    <div id="cm-tables-container"></div>
+  </div>
+</div>
+
+<!-- 全国产值统筹归集 -->
+<div id="page-gongchan" class="page-section">
+  <div class="detail-kpis">
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="group-count">-</div><div class="kpi-label">集团数量（个）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="qianhai">-</div><div class="kpi-label">前海企业（家）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="ent-count">-</div><div class="kpi-label">异地企业（家）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="revenue">-</div><div class="kpi-label">集团总营收(万元)</div></div>
+  </div>
+  <div class="detail-charts">
+    <div class="card"><div class="card-title">省份分布 TOP10</div><div id="chart-gc-province" class="chart-container"></div></div>
+    <div class="card"><div class="card-title">注册资本分布</div><div id="chart-gc-industry" class="chart-container"></div></div>
+  </div>
+  <div class="card table-section">
+    <div class="card-title">企业清单</div>
+    <table id="table-gongchan" class="display" style="width:100%"></table>
+  </div>
+</div>
+
+<!-- 500强 -->
+<div id="page-top500" class="page-section">
+  <div class="detail-kpis">
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="total">-</div><div class="kpi-label">企业数量（家）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="china-500">-</div><div class="kpi-label">中国500强（家）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="private-500">-</div><div class="kpi-label">民营500强（家）</div></div>
+    <div class="card detail-kpi-item"><div class="kpi-value" data-kpi="revenue">-</div><div class="kpi-label">总营收(万元)</div></div>
+  </div>
+  <div class="detail-charts">
+    <div class="card"><div class="card-title">省份分布 TOP10</div><div id="chart-t5-province" class="chart-container"></div></div>
+    <div class="card"><div class="card-title">企业营收 TOP10</div><div id="chart-t5-top10" class="chart-container"></div></div>
+  </div>
+  <div class="card table-section">
+    <div class="card-title">企业清单</div>
+    <table id="table-top500" class="display" style="width:100%"></table>
+  </div>
+</div>
+
+</div>
+
+<script src="js/app.js?v=41"></script>
+</body>
+</html>

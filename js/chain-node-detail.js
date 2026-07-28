@@ -33,6 +33,9 @@ async function loadData() {
       return;
     }
 
+    // 方案3：详情页同样复用聚合逻辑，保证非叶子节点的状态与统计准确
+    aggregateTreeNodes(categoryTree.tree);
+
     currentNode = findNodeInTree(categoryTree.tree, currentNodeId);
     if (!currentNode) {
       renderError(`未找到节点：${currentNodeId}`);

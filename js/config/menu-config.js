@@ -10,6 +10,11 @@ window.menuList = [
     pagePath: "investment-pool.html",
     icon: "🏢"
   },
+  {
+    name: "集团系挖潜",
+    pagePath: "indexGroup.html",
+    icon: "🤝"
+  },
 ];
 
 window.headerConfig = {

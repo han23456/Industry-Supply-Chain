@@ -1,0 +1,47 @@
+{
+  "total_groups": 47,
+  "total_enterprises": 1840,
+  "qianhai_enterprises": 53,
+  "yidi_enterprises": 94,
+  "top500_count": 367,
+  "modules": [
+    {
+      "name": "全国产值统筹归集",
+      "short_name": "全国产值统筹",
+      "key": "gongchan",
+      "enterprise_count": 147,
+      "group_count": 47,
+      "qianhai_count": 53,
+      "yidi_count": 94,
+      "desc": "覆盖 47 个集团，94 家异地企业"
+    },
+    {
+      "name": "在地企业产贸一体化",
+      "short_name": "产贸一体化",
+      "key": "chanmao",
+      "enterprise_count": 822,
+      "group_count": 54,
+      "non_group_count": 767,
+      "qianhai_no_commerce": 793,
+      "desc": "集团 54 个，非集团企业 767 家"
+    },
+    {
+      "name": "在地未纳统企业筛查",
+      "short_name": "在地未纳统",
+      "key": "weinadong",
+      "enterprise_count": 504,
+      "group_count": 186,
+      "non_nation_groups": 14,
+      "desc": "筛查集团 186 个，涉及企业 504 家"
+    },
+    {
+      "name": "未在前海投资的500强",
+      "short_name": "500强未投资",
+      "key": "top500",
+      "enterprise_count": 367,
+      "group_count": 0,
+      "total_revenue": 2503820416.0,
+      "desc": "367 家企业，总营收 250382 亿元"
+    }
+  ]
+}

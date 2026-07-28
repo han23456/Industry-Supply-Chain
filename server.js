@@ -19,6 +19,17 @@ const server = http.createServer((req, res) => {
   let filePath = '.' + req.url.split('?')[0];
   if (filePath === './') filePath = './index.html';
 
+  // 容错：无扩展名路径尝试补全 .html（兼容部分浏览器/旧缓存产生的 extensionless 请求）
+  if (!path.extname(filePath)) {
+    try {
+      if (fs.existsSync(filePath + '.html')) {
+        filePath += '.html';
+      }
+    } catch (e) {
+      // 忽略权限等异常，让后续 404 处理
+    }
+  }
+
   const ext = path.extname(filePath).toLowerCase();
   const contentType = mimeTypes[ext] || 'text/plain';
 

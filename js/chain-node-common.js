@@ -32,6 +32,44 @@ function classifyNode(node) {
   return { key: 'weak', label: '弱', color: '#52C41A' };
 }
 
+/**
+ * 递归聚合产业链分类树中所有非叶子节点的本地/全国企业数及状态。
+ * 方案3核心规则：
+ *   1. 叶子节点保持原数据，缺失字段补 0 / normal。
+ *   2. 非叶子节点 localCount/nationalCount 取所有子节点之和。
+ *   3. 非叶子节点 status 按子节点状态推导：
+ *      - 所有子节点 missing  → missing（断）
+ *      - 所有子节点 advantage → advantage（优）
+ *      - 其余情况            → normal（再由 classifyNode 按覆盖率判定核/弱）
+ */
+function aggregateTreeNodes(nodes) {
+  if (!Array.isArray(nodes)) return;
+  nodes.forEach(node => {
+    if (!node) return;
+    if (node.children && node.children.length) {
+      aggregateTreeNodes(node.children);
+      node.localCount = node.children.reduce((sum, c) => sum + (c.localCount || 0), 0);
+      node.nationalCount = node.children.reduce((sum, c) => sum + (c.nationalCount || 0), 0);
+      const childStatuses = node.children.map(c => c.status || 'normal');
+      const total = childStatuses.length;
+      const missingCount = childStatuses.filter(s => s === 'missing').length;
+      const advantageCount = childStatuses.filter(s => s === 'advantage').length;
+      if (missingCount === total) {
+        node.status = 'missing';
+      } else if (advantageCount === total) {
+        node.status = 'advantage';
+      } else {
+        node.status = 'normal';
+      }
+    } else {
+      node.isLeaf = true;
+      if (node.localCount === undefined || node.localCount === null) node.localCount = 0;
+      if (node.nationalCount === undefined || node.nationalCount === null) node.nationalCount = 0;
+      if (!node.status) node.status = 'normal';
+    }
+  });
+}
+
 function hashCode(str) {
   let h = 0;
   const s = String(str || '');
