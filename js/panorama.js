@@ -274,6 +274,8 @@ function goToChainGraph(chainId) {
   // 始终使用 chainId 作为唯一主键，避免重复或空尾部 & 导致部分浏览器/缓存产生无扩展名请求
   params.set('chainId', chainId);
   const query = params.toString();
+  // 兜底：部分预览环境/重写规则可能丢失 query string，跳转前把 chainId 写入 sessionStorage
+  sessionStorage.setItem('pendingChainId', chainId);
   window.location.href = `chain-graph.html${query ? '?' + query : ''}`;
 }
 

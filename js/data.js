@@ -2711,6 +2711,29 @@ Object.assign(MOCK_CATEGORY_TREES, {
         }
       ]
     }]
+  },
+
+  'chain-007': {
+    chainId: 'chain-007',
+    tree: [{
+      id: 'is-root', name: '信息服务', level: 1, isLeaf: false,
+      children: [
+        { id: 'is-upstream', name: '上游基础设施', level: 2, isLeaf: false, children: [
+          { id: 'is-cloud', name: '云计算基础设施', level: 3, isLeaf: true, nationalCount: 300, localCount: 30, status: 'advantage' },
+          { id: 'is-dc', name: '数据中心与网络', level: 3, isLeaf: true, nationalCount: 180, localCount: 18, status: 'normal' }
+        ]},
+        { id: 'is-midstream', name: '中游平台与技术', level: 2, isLeaf: false, children: [
+          { id: 'is-bigdata', name: '大数据服务', level: 3, isLeaf: true, nationalCount: 260, localCount: 28, status: 'advantage' },
+          { id: 'is-ai', name: '人工智能平台', level: 3, isLeaf: true, nationalCount: 150, localCount: 15, status: 'normal' },
+          { id: 'is-software', name: '软件开发与集成', level: 3, isLeaf: true, nationalCount: 480, localCount: 45, status: 'advantage' }
+        ]},
+        { id: 'is-downstream', name: '下游应用场景', level: 2, isLeaf: false, children: [
+          { id: 'is-smartcity', name: '智慧城市', level: 3, isLeaf: true, nationalCount: 220, localCount: 22, status: 'advantage' },
+          { id: 'is-iiot', name: '工业互联网', level: 3, isLeaf: true, nationalCount: 140, localCount: 14, status: 'normal' },
+          { id: 'is-gov', name: '数字政务', level: 3, isLeaf: true, nationalCount: 90, localCount: 9, status: 'normal' }
+        ]}
+      ]
+    }]
   }
 });
 

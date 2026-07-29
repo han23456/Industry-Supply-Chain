@@ -38,6 +38,19 @@ function init() {
   const params = getUrlParams();
   chainId = params.chainId;
 
+  // 兼容部分预览环境/重写规则丢失 query string 的情况
+  if (!chainId) {
+    const pendingChainId = sessionStorage.getItem('pendingChainId');
+    if (pendingChainId) {
+      chainId = pendingChainId;
+      sessionStorage.removeItem('pendingChainId');
+      // 将 chainId 同步回 URL，便于刷新后仍可正常解析
+      const url = new URL(window.location.href);
+      url.searchParams.set('chainId', chainId);
+      window.history.replaceState({}, '', url.toString());
+    }
+  }
+
   if (!chainId) {
     showChainSelection();
     return;
@@ -65,7 +78,7 @@ function showChainSelection() {
       </div>
       <div class="chain-grid">
         ${MOCK_INDUSTRY_CHAINS.map(chain => `
-          <div class="chain-card" onclick="window.location.href='chain-graph.html?chainId=${chain.id}'">
+          <div class="chain-card" onclick="sessionStorage.setItem('pendingChainId', '${chain.id}'); window.location.href='chain-graph.html?chainId=${chain.id}'">
             <div class="chain-card-icon">${getChainIcon(chain.strategic_orientation)}</div>
             <div class="chain-card-name">${chain.name}</div>
             <div class="chain-card-desc">${getChainDescription(chain)}</div>
@@ -2202,6 +2215,39 @@ function getChainSegments() {
       if (child.name.includes('涉海设备制造') || child.name.includes('涉海材料制造')) segments.upstream.push(child);
       else if (child.name.includes('海洋产业')) segments.midstream.push(child);
       else segments.downstream.push(child);
+    });
+    return segments;
+  }
+
+  // 细胞与基因：原料药→上游，创新药/医疗器械→中游，医疗服务→下游
+  if (chainId === 'chain-003') {
+    root.children.forEach(child => {
+      if (child.name.includes('原料药')) segments.upstream.push(child);
+      else if (child.name.includes('创新药') || child.name.includes('医疗器械')) segments.midstream.push(child);
+      else if (child.name.includes('医疗服务')) segments.downstream.push(child);
+      else segments.midstream.push(child);
+    });
+    return segments;
+  }
+
+  // 智能终端：基础层→上游，技术层→中游，应用层→下游
+  if (chainId === 'chain-004') {
+    root.children.forEach(child => {
+      if (child.name.includes('基础层')) segments.upstream.push(child);
+      else if (child.name.includes('技术层')) segments.midstream.push(child);
+      else if (child.name.includes('应用层')) segments.downstream.push(child);
+      else segments.midstream.push(child);
+    });
+    return segments;
+  }
+
+  // 信息服务：上游基础设施 / 中游平台与技术 / 下游应用场景
+  if (chainId === 'chain-007') {
+    root.children.forEach(child => {
+      if (child.name.includes('上游') || child.name.includes('基础设施')) segments.upstream.push(child);
+      else if (child.name.includes('中游') || child.name.includes('平台') || child.name.includes('技术')) segments.midstream.push(child);
+      else if (child.name.includes('下游') || child.name.includes('应用') || child.name.includes('场景')) segments.downstream.push(child);
+      else segments.midstream.push(child);
     });
     return segments;
   }
