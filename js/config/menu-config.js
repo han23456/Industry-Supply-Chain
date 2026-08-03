@@ -15,6 +15,11 @@ window.menuList = [
     pagePath: "indexGroup.html",
     icon: "🤝"
   },
+  {
+    name: "政策分析",
+    pagePath: "policy-analysis.html",
+    icon: "📋"
+  }
 ];
 
 window.headerConfig = {
