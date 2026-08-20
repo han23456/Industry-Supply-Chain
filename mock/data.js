@@ -12,7 +12,7 @@ var MockData = {
   industryChain: {
     mainName: '人工智能与具身智能机器人产业链',
     subName: '核心零部件',
-    disclaimer: '【数据说明】进销项发票为增值采购数据；基于本地营收龙头企业抽样分析；'
+    disclaimer: '【数据说明】本分析基于本地营收龙头增值税进项、销项发票数据，对企业采购、销售及上下游经营关联情况进行分析；'
   },
 
   /* -------- 顶部指标卡片（4张） -------- */
@@ -27,11 +27,19 @@ var MockData = {
     },
     // 上游整体外地采购依赖度
     externalDependency: {
-      label: '上游整体外地采购依赖度',
+      label: '上游外地客户占比',
       value: 67.3,
       unit: '%',
       trend: '-3.2%',
       trendType: 'down'
+    },
+    // 下流外地
+    avgGrossMargin: {
+      label: '下游外地客户占比',
+      value: 18.6,
+      unit: '%',
+      trend: '+1.8%',
+      trendType: 'up'
     },
     // 本地产业协同粘性
     collaborationIndex: {
@@ -39,14 +47,6 @@ var MockData = {
       value: 42.8,
       unit: '%',
       trend: '+5.6%',
-      trendType: 'up'
-    },
-    // 产业链平均产品毛利率
-    avgGrossMargin: {
-      label: '产业链平均产品毛利率',
-      value: 18.6,
-      unit: '%',
-      trend: '+1.8%',
       trendType: 'up'
     }
   },
@@ -179,20 +179,20 @@ var MockData = {
       TOP3: {
         totalOutput: { value: 986.2, trend: '+10.8%' },
         externalDependency: { value: 71.5, trend: '-2.1%' },
-        collaborationIndex: { value: 38.2, trend: '+4.3%' },
-        avgGrossMargin: { value: 20.1, trend: '+2.2%' }
+        avgGrossMargin: { value: 20.1, trend: '+2.2%' },
+        collaborationIndex: { value: 38.2, trend: '+4.3%' }
       },
       TOP5: {
         totalOutput: { value: 1286.5, trend: '+12.3%' },
         externalDependency: { value: 67.3, trend: '-3.2%' },
-        collaborationIndex: { value: 42.8, trend: '+5.6%' },
-        avgGrossMargin: { value: 18.6, trend: '+1.8%' }
+        avgGrossMargin: { value: 18.6, trend: '+1.8%' },
+        collaborationIndex: { value: 42.8, trend: '+5.6%' }
       },
       TOP10: {
         totalOutput: { value: 1856.8, trend: '+14.6%' },
         externalDependency: { value: 62.1, trend: '-4.5%' },
-        collaborationIndex: { value: 48.5, trend: '+7.2%' },
-        avgGrossMargin: { value: 16.2, trend: '+0.9%' }
+        avgGrossMargin: { value: 16.2, trend: '+0.9%' },
+        collaborationIndex: { value: 48.5, trend: '+7.2%' }
       }
     }
   }

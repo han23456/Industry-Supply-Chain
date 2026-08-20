@@ -4,206 +4,53 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>产业全景看板 - 产业链/供应链图谱系统</title>
-  <link rel="stylesheet" href="css/common.css?v=11">
-  <link rel="stylesheet" href="css/panorama.css?v=11">
+  <link rel="stylesheet" href="css/common.css?v=15">
+  <link rel="stylesheet" href="css/panorama.css?v=13">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script src="js/data.js?v=4"></script>
   <script src="js/common.js?v=3"></script>
-    <!-- 引入公共组件、配置 -->
-  <!-- 加载顺序必须先配置、后组件，顺序不能颠倒 -->
-  <script src="js/config/menu-config.js?v=3"></script>
+  <script src="js/config/menu-config.js?v=6"></script>
   <script src="js/components/GovHeader.js?v=2"></script>
-  <script src="js/components/SideNav.js?v=2"></script>
+  <script src="js/components/SideNav.js?v=6"></script>
 </head>
 <body>
   <gov-header></gov-header>
-  
 
   <div class="page-layout">
     <side-nav></side-nav>
 
-    <main class="page-content">
-       <!-- 
-      <section class="view-tabs" id="panoramaTabs">
-        <div class="tab active" data-view="matrix" onclick="switchPanoramaView('matrix')">产业矩阵</div>
-        <div class="tab" data-view="support" onclick="switchPanoramaView('support')">产业支撑力</div>
-        <div class="tab" data-view="lifecycle" onclick="switchPanoramaView('lifecycle')">生命周期流转</div>
-      </section>
-      -->
+    <main class="page-content panorama-new">
+      <!-- 页面头部 -->
+      <header class="panorama-header">
+        <div class="panorama-header-bg"></div>
+        <div class="panorama-header-content">
+          <h1>前海现代化产业体系全景分析</h1>
+          <div class="panorama-framework">
+            <span class="framework-label">构建核心框架：</span>
+            <span class="framework-tag tag-blue">6大现代服务业</span>
+            <span class="framework-dot">•</span>
+            <span class="framework-tag tag-indigo">4大战略性新兴产业</span>
+            <span class="framework-dot">•</span>
+            <span class="framework-tag tag-purple">2大未来产业</span>
+          </div>
+        </div>
+      </header>
 
-      <section class="view-panel active" id="matrixView">
-        <section class="card filter-card">
-          <div class="filter-header">
-            <div class="card-title">三维产业治理筛选器</div>
-            <div class="filter-actions">
-              <span class="result-count">筛选结果：<strong id="resultCount">0</strong> 个产业</span>
-              <button class="btn btn-default btn-sm" onclick="resetFilters()">重置筛选</button>
-              <div class="matrix-filter">
-                <span class="matrix-filter-label">产业矩阵分类筛选</span>
-                <select id="matrixFilterSelect" class="gov-select" onchange="onMatrixFilterChange(this.value)">
-                  <option value="all">全部产业</option>
-                  <option value="modern_service">六大现代服务业</option>
-                  <option value="strategic_emerging">四大战略性新兴产业</option>
-                  <option value="forward_looking">两大重点前瞻产业</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="filter-rows">
-            <div class="filter-group">
-              <div class="filter-label">战略导向</div>
-              <div class="filter-options" id="filterStrategic"></div>
-            </div>
-            <div class="filter-group">
-              <div class="filter-label">生命周期</div>
-              <div class="filter-options" id="filterLifecycle"></div>
-            </div>
-            <div class="filter-group">
-              <div class="filter-label">交叉使能</div>
-              <div class="filter-options" id="filterEnabling"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="metrics-bar" id="metricsBar">
-          <div class="metric-card" id="metricTotal">
-            <div class="metric-icon" style="background:#E6F7FF;color:#1890FF">🏭</div>
-            <div class="metric-content">
-              <div class="metric-label">战略产业总数</div>
-              <div class="metric-value" style="color:#1890FF" id="metricTotalValue">0</div>
-              <div class="metric-note">6+4+2产业体系</div>
-            </div>
-          </div>
-          <div class="metric-card" id="metricCompleteness" onclick="showCompletenessModal()">
-            <div class="metric-icon" style="background:#F6FFED;color:#52C41A">📊</div>
-            <div class="metric-content">
-              <div class="metric-label">平均完整度</div>
-              <div class="metric-value" style="color:#52C41A" id="metricCompletenessValue">0%</div>
-              <div class="metric-trend up" id="metricCompletenessTrend">↑ 2.3%</div>
-            </div>
-            <div id="metricCompletenessRing"></div>
-          </div>
-          <div class="metric-card" id="metricUrgent" onclick="handleUrgentClick()">
-            <div class="metric-icon" style="background:#FFF1F0;color:#F5222D">⚠️</div>
-            <div class="metric-content">
-              <div class="metric-label">急需补链数</div>
-              <div class="metric-value" style="color:#F5222D" id="metricUrgentValue">0</div>
-            </div>
-          </div>
-          <div class="metric-card" id="metricPenetration">
-            <div class="metric-icon" style="background:#E6FFFB;color:#13C2C2">💻</div>
-            <div class="metric-content">
-              <div class="metric-label">重点补链企业数</div>
-              <div class="metric-value" style="color:#13C2C2" id="metricPenetrationValue">0</div>
-              <div class="metric-trend down" id="metricPenetrationTrend">↓ 2</div>
-            </div>
-            <div id="metricPenetrationRing"></div>
-          </div>
-        </section>
-
-        <section class="card cards-section" id="cardsSection">
-          <div class="cards-grid" id="cardsGrid"></div>
-          <div class="empty-state" id="emptyState" style="display:none">
-            <div class="empty-state-icon">🔍</div>
-            <div class="empty-state-title">无符合条件的产业</div>
-            <p>请调整筛选条件，或 <button class="btn btn-link" onclick="resetFilters()">重置筛选</button></p>
-          </div>
-        </section>
-
-        <section class="bottom-analysis" style="display:none;">
-          <div class="card analysis-card" style="display:none;">
-            <div class="card-header">
-              <div class="card-title" style="--title-bar-color:#F5222D">供需缺口TOP5</div>
-              <a href="supply-demand.html" class="btn btn-text btn-sm">查看更多 →</a>
-            </div>
-            <div class="analysis-table-wrap">
-              <table class="data-table" id="gapTable">
-                <thead>
-                  <tr><th>排名</th><th>产品分类</th><th>涉及企业</th><th>缺口类型</th><th>估算金额</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="card analysis-card" style="display:none;">
-            <div class="card-header">
-              <div class="card-title" style="--title-bar-color:#FA8C16">供应链风险TOP5</div>
-              <a href="risk-warning.html" class="btn btn-text btn-sm">查看更多 →</a>
-            </div>
-            <div class="analysis-table-wrap">
-              <table class="data-table" id="riskTable">
-                <thead>
-                  <tr><th>等级</th><th>企业名</th><th>风险类型</th><th>影响企业</th><th>发生时间</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-        <!--
-          <div class="card analysis-card">
-            <div class="card-header">
-              <div class="card-title" style="--title-bar-color:#1890FF">支撑产业活跃度</div>
-              <button class="btn btn-text btn-sm" onclick="switchPanoramaView('support')">切换支撑力视图 →</button>
-            </div>
-            <div class="heatmap-wrap" id="heatmapChart"></div>
-          </div>
-         -->
-        </section>
+      <!-- 全局核心指标概览 -->
+      <section class="panorama-section">
+        <div class="section-title-row">
+          <h2><span class="section-icon">📊</span> 全局核心指标概览</h2>
+          <span class="update-time">更新时间：2026年7月</span>
+        </div>
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="category-summary-grid" id="categorySummaryGrid"></div>
       </section>
 
-      <section class="view-panel" id="supportView">
-        <div class="dashboard" id="supportDashboard"></div>
-        <section class="card heatmap-section">
-          <div class="card-header">
-            <div class="card-title">产业支撑力热力图</div>
-            <div class="legend" id="supportLegend"></div>
-          </div>
-          <div class="heatmap-filter" id="supportHeatmapFilter"></div>
-          <div class="heatmap-grid" id="supportHeatmapGrid"></div>
-        </section>
-        <section class="card action-section">
-          <div class="card-header">
-            <div class="card-title">支撑力提升行动清单</div>
-            <button class="btn btn-default btn-sm" onclick="exportSupportActions()">导出清单</button>
-          </div>
-          <div class="action-table-wrap" id="supportActionList"></div>
-        </section>
-      </section>
-
-      <section class="view-panel" id="lifecycleView">
-        <div class="dashboard" id="lifecycleDashboard"></div>
-        <section class="card sankey-section">
-          <div class="card-header">
-            <div class="card-title">生命周期流转桑基图</div>
-            <div class="legend">
-              <span style="color:#52C41A">● 健康流转</span>
-              <span style="color:#FA8C16">● 缓慢流转</span>
-              <span style="color:#F5222D">● 卡滞</span>
-            </div>
-          </div>
-          <div id="lifecycleSankey"></div>
-        </section>
-        <section class="card" id="stuckSection" style="margin-bottom:16px">
-          <div class="card-header">
-            <div class="card-title" style="color:#F5222D">⚠️ 卡滞产业（该流转但未流转）</div>
-            <button class="btn btn-default btn-sm" onclick="toggleStuckPanel()">收起/展开</button>
-          </div>
-          <div id="stuckPanel"></div>
-        </section>
-        <section class="card" style="height:280px">
-          <div class="card-header">
-            <div class="card-title">流转明细深度分析</div>
-            <button class="btn btn-default btn-sm" onclick="exportLifecycleFlow()">导出明细</button>
-          </div>
-          <div class="flow-table-wrap" id="lifecycleFlowTable"></div>
-        </section>
-      </section>
+      <!-- 产业板块细分网格矩阵 -->
+      <div id="industrySections"></div>
     </main>
   </div>
 
-  <script src="js/panorama.js?v=3"></script>
-  <script src="js/panorama-support.js?v=2"></script>
-  <script src="js/panorama-lifecycle.js?v=2"></script>
+  <script src="js/panorama.js?v=4"></script>
 </body>
 </html>

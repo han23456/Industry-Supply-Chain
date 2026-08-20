@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>企业获补履历回测与交叉分析 - 政策分析第二阶段</title>
+
+  <!-- 项目公共样式 -->
+  <link rel="stylesheet" href="css/common.css?v=15">
+  <!-- 当前页面专用样式 -->
+  <link rel="stylesheet" href="css/policy-stage2.css?v=2">
+
+  <!-- FontAwesome 图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- 项目全局组件与配置 -->
+  <script src="js/config/menu-config.js?v=6"></script>
+  <script src="js/components/GovHeader.js?v=3"></script>
+  <script src="js/components/SideNav.js?v=6"></script>
+</head>
+<body>
+  <!-- 项目统一顶部导航 -->
+  <gov-header></gov-header>
+
+  <div class="page-layout">
+    <!-- 项目统一侧边栏导航 -->
+    <side-nav></side-nav>
+
+    <!-- 页面主内容区 -->
+    <main class="page-content">
+      <!--
+        政策分析第二阶段：企业获补履历回测与交叉分析
+        复刻参考页面 "政策分析第二阶段V2.0.html" 的设计风格与功能
+      -->
+      <div class="policy-stage2-page ps2-custom-scrollbar">
+        <div class="ps2-container">
+
+          <!-- ============================================================
+               任务上下文栏
+               ============================================================ -->
+          <div class="ps2-task-bar">
+            <div class="ps2-task-select">
+              <span class="ps2-task-select__label"><i class="fa-solid fa-clipboard-list"></i> 当前分析任务:</span>
+              <select id="taskSelect" class="ps2-select"></select>
+            </div>
+            <div class="ps2-task-meta">
+              <div class="ps2-task-meta__item">
+                <i class="fa-solid fa-database" style="color: var(--ps2-blue-600);"></i>
+                <span>来源类型: <span id="taskSourceType" class="ps2-task-meta__value">-</span></span>
+              </div>
+              <div class="ps2-task-meta__item">
+                <i class="fa-solid fa-users" style="color: var(--ps2-blue-600);"></i>
+                <span>样本企业: <span id="taskCount" class="ps2-task-meta__value">-</span></span>
+              </div>
+              <div class="ps2-task-meta__item">
+                <i class="fa-solid fa-calendar-days" style="color: var(--ps2-blue-600);"></i>
+                <span>补贴窗口: <span id="taskWindow" class="ps2-task-meta__value">-</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页面标题与操作 -->
+          <div class="ps2-page-header">
+            <div>
+              <h1 class="ps2-page-title">企业获补履历回测与交叉分析</h1>
+              <p class="ps2-page-subtitle">基于 5 年补贴数据，识别高频、大额、跨城获补画像，输出风险穿透与反套利线索。</p>
+            </div>
+            <div class="ps2-page-actions">
+              <button class="ps2-btn ps2-btn--secondary" onclick="openImportModal()">
+                <i class="fa-solid fa-file-import"></i> 新建分析任务 / 导入
+              </button>
+              <button class="ps2-btn ps2-btn--primary" onclick="openExportModal()">
+                <i class="fa-solid fa-file-export"></i> 导出回测校验报告
+              </button>
+            </div>
+          </div>
+
+          <!-- ============================================================
+               宏观风控统计卡片
+               ============================================================ -->
+          <div class="ps2-stats-grid">
+            <!-- 覆盖率 -->
+            <div class="ps2-stat-card">
+              <div class="ps2-stat-card__header">
+                <span class="ps2-stat-card__label">获补覆盖率</span>
+                <div class="ps2-stat-card__icon ps2-stat-card__icon--blue"><i class="fa-solid fa-bullseye"></i></div>
+              </div>
+              <div class="ps2-stat-card__value" id="statCoverage">0%</div>
+              <div class="ps2-stat-card__desc">样本企业中存在补贴记录的比例</div>
+              <div class="ps2-progress-bar"><div class="ps2-progress-bar__fill ps2-progress-bar__fill--blue" id="statCoverageBar" style="width: 0%;"></div></div>
+            </div>
+
+            <!-- 高频获补 -->
+            <div class="ps2-stat-card">
+              <div class="ps2-stat-card__header">
+                <span class="ps2-stat-card__label">高频获补企业</span>
+                <div class="ps2-stat-card__icon ps2-stat-card__icon--purple"><i class="fa-solid fa-layer-group"></i></div>
+              </div>
+              <div class="ps2-stat-card__value" id="statHighFreq">0 家</div>
+              <div class="ps2-stat-card__desc">5 年内获补次数 ≥ 3 次</div>
+              <div class="ps2-stat-card__legend">
+                <span class="ps2-legend-item"><span class="ps2-legend-dot" style="background: var(--ps2-purple-600);"></span>高频需关注</span>
+              </div>
+            </div>
+
+            <!-- 千万级大额 -->
+            <div class="ps2-stat-card">
+              <div class="ps2-stat-card__header">
+                <span class="ps2-stat-card__label">千万级大额企业</span>
+                <div class="ps2-stat-card__icon ps2-stat-card__icon--emerald"><i class="fa-solid fa-sack-dollar"></i></div>
+              </div>
+              <div class="ps2-stat-card__value" id="statLargeAmount">0 家</div>
+              <div class="ps2-stat-card__desc">5 年获补总额 ≥ 1000 万元</div>
+              <div class="ps2-stat-card__legend">
+                <span class="ps2-legend-item"><span class="ps2-legend-dot" style="background: var(--ps2-emerald-600);"></span>大额重点审</span>
+              </div>
+            </div>
+
+            <!-- 跨城获补 -->
+            <div class="ps2-stat-card">
+              <div class="ps2-stat-card__header">
+                <span class="ps2-stat-card__label">跨城获补企业</span>
+                <div class="ps2-stat-card__icon ps2-stat-card__icon--amber"><i class="fa-solid fa-map-location-dot"></i></div>
+              </div>
+              <div class="ps2-stat-card__value" id="statExternal">0 家 (0%)</div>
+              <div class="ps2-stat-card__desc">在深圳市外存在补贴记录</div>
+              <div class="ps2-progress-bar"><div class="ps2-progress-bar__fill ps2-progress-bar__fill--amber" id="statExternalBar" style="width: 0%;"></div></div>
+            </div>
+          </div>
+
+          <!-- ============================================================
+               标签页切换
+               ============================================================ -->
+          <div class="ps2-tabs">
+            <button class="ps2-tab is-active" data-tab="list"><i class="fa-solid fa-list" style="margin-right: 6px;"></i>企业履历与获补明细</button>
+            <button class="ps2-tab" data-tab="cross"><i class="fa-solid fa-shuffle" style="margin-right: 6px;"></i>画像一致性交叉分析</button>
+            <button class="ps2-tab" data-tab="dept"><i class="fa-solid fa-chart-pie" style="margin-right: 6px;"></i>资金来源与跨城分布</button>
+          </div>
+
+          <!-- ============================================================
+               Tab 1: 企业履历与获补明细
+               ============================================================ -->
+          <div id="tabPanelList" class="ps2-card">
+            <div class="ps2-card__header ps2-flex-wrap">
+              <h2 class="ps2-card__title"><i class="fa-solid fa-table" style="color: var(--ps2-blue-600); margin-right: 6px;"></i>企业获补履历列表</h2>
+              <span class="ps2-text-sm ps2-text-muted">点击表格行可查看企业履历穿透详情</span>
+            </div>
+            <div class="ps2-card__body">
+              <!-- 搜索与筛选 -->
+              <div class="ps2-control-bar">
+                <div class="ps2-search-box">
+                  <i class="fa-solid fa-magnifying-glass ps2-search-box__icon"></i>
+                  <input type="text" id="searchInput" class="ps2-input" placeholder="搜索企业名称 / 统一社会信用代码 / 细分赛道">
+                </div>
+                <div class="ps2-filters">
+                  <button class="ps2-filter-chip ps2-filter-chip--purple" data-filter="filterHighFreq">
+                    <i class="fa-solid fa-layer-group"></i> 高频获补 (3+)
+                  </button>
+                  <button class="ps2-filter-chip ps2-filter-chip--emerald" data-filter="filterLargeAmount">
+                    <i class="fa-solid fa-sack-dollar"></i> 千万级大额
+                  </button>
+                  <button class="ps2-filter-chip ps2-filter-chip--amber" data-filter="filterExternal">
+                    <i class="fa-solid fa-map-location-dot"></i> 跨城获补
+                  </button>
+                  <button class="ps2-filter-chip ps2-filter-chip--rose" data-filter="filterLitigation">
+                    <i class="fa-solid fa-gavel"></i> 涉诉风险
+                  </button>
+                  <select id="sortSelect" class="ps2-select ps2-sort-select">
+                    <option value="amount_desc">按获补金额 ↓</option>
+                    <option value="amount_asc">按获补金额 ↑</option>
+                    <option value="count_desc">按获补次数 ↓</option>
+                    <option value="year_desc">按最近获补年份 ↓</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 批量操作栏 -->
+              <div id="batchBar" class="ps2-batch-bar ps2-hidden">
+                <div class="ps2-batch-bar__info">
+                  已选中 <strong id="selectedCount">0</strong> 家企业
+                </div>
+                <div class="ps2-batch-bar__actions">
+                  <button class="ps2-btn ps2-btn--primary ps2-btn--sm" onclick="openPushModal()">
+                    <i class="fa-solid fa-share-from-square"></i> 推送至第三阶段风险库
+                  </button>
+                  <button class="ps2-btn ps2-btn--secondary ps2-btn--sm" onclick="openExportModal()">
+                    <i class="fa-solid fa-download"></i> 导出选中名单
+                  </button>
+                  <button class="ps2-btn ps2-btn--ghost ps2-btn--sm" onclick="toggleSelectAll(false)">
+                    取消选择
+                  </button>
+                </div>
+              </div>
+
+              <!-- 企业表格 -->
+              <div class="ps2-table-wrap">
+                <table class="ps2-table">
+                  <thead>
+                    <tr>
+                      <th class="ps2-text-center" style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" class="ps2-table__checkbox"></th>
+                      <th>企业名称 / 统一社会信用代码</th>
+                      <th>细分赛道</th>
+                      <th class="ps2-text-right">5 年获补次数</th>
+                      <th class="ps2-text-right">5 年获补总额</th>
+                      <th class="ps2-text-center">市级 / 外地分布</th>
+                      <th>风险标志位</th>
+                      <th class="ps2-text-center">最近获补年份</th>
+                      <th class="ps2-text-center">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="enterpriseTableBody">
+                    <!-- JS 动态渲染 -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 分页 -->
+              <div class="ps2-pagination">
+                <span>显示第 1 到 5 条，共 5 条记录</span>
+                <div class="ps2-pagination__buttons">
+                  <button class="ps2-page-btn" disabled>上一页</button>
+                  <button class="ps2-page-btn is-active">1</button>
+                  <button class="ps2-page-btn" disabled>下一页</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================
+               Tab 2: 画像一致性交叉分析
+               ============================================================ -->
+          <div id="tabPanelCross" class="ps2-hidden">
+            <!-- JS 动态渲染 -->
+          </div>
+
+          <!-- ============================================================
+               Tab 3: 资金来源与跨城分布
+               ============================================================ -->
+          <div id="tabPanelDept" class="ps2-hidden">
+            <!-- JS 动态渲染 -->
+          </div>
+
+        </div><!-- /.ps2-container -->
+      </div><!-- /.policy-stage2-page -->
+    </main><!-- /.page-content -->
+  </div><!-- /.page-layout -->
+
+  <!-- ============================================================
+       右侧抽屉：企业履历穿透
+       ============================================================ -->
+  <div id="drawerOverlay" class="ps2-drawer-overlay is-hidden" onclick="closeDrawer()">
+    <div class="ps2-drawer" onclick="event.stopPropagation()">
+      <div class="ps2-drawer__header">
+        <h3 id="drawerTitle" class="ps2-drawer__title">企业履历穿透</h3>
+        <button class="ps2-drawer__close" onclick="closeDrawer()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="drawerBody" class="ps2-drawer__body ps2-custom-scrollbar">
+        <!-- JS 动态渲染 -->
+      </div>
+      <div class="ps2-drawer__footer">
+        <button class="ps2-btn ps2-btn--secondary ps2-btn--sm" onclick="closeDrawer()">关闭</button>
+        <button class="ps2-btn ps2-btn--danger ps2-btn--sm" onclick="openPushModal(); closeDrawer();">
+          <i class="fa-solid fa-triangle-exclamation"></i> 推送到第三阶段监管预警
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       导入 / 新建任务 Modal
+       ============================================================ -->
+  <div id="importModal" class="ps2-modal-overlay is-hidden" onclick="closeImportModal()">
+    <div class="ps2-modal" onclick="event.stopPropagation()">
+      <div class="ps2-modal__header">
+        <h3 class="ps2-modal__title"><i class="fa-solid fa-file-import" style="color: var(--ps2-blue-600); margin-right: 8px;"></i>新建分析任务 / 导入数据</h3>
+        <button class="ps2-modal__close" onclick="closeImportModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="ps2-modal__body">
+        <div class="ps2-radio-group ps2-mb-3">
+          <div class="ps2-radio-card is-active" data-channel="A" onclick="setImportChannel('A')">
+            <input type="radio" name="importChannel" class="ps2-radio-card__input" checked>
+            <div class="ps2-radio-card__content">
+              <div class="ps2-radio-card__title">通道 A：从第一阶段结果链路导入</div>
+              <div class="ps2-radio-card__desc">复用第一阶段“多维政策筛选器”沉淀的企业名单与规则 Model，自动生成回测任务。</div>
+            </div>
+          </div>
+          <div class="ps2-radio-card" data-channel="B" onclick="setImportChannel('B')">
+            <input type="radio" name="importChannel" class="ps2-radio-card__input">
+            <div class="ps2-radio-card__content">
+              <div class="ps2-radio-card__title">通道 B：外部 Excel 导入</div>
+              <div class="ps2-radio-card__desc">上传包含企业名单与统一社会信用代码的 Excel 文件，系统自动匹配补贴数据。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ps2-form-group">
+          <label class="ps2-form-group__label">选择第一阶段快照（通道 A）</label>
+          <select class="ps2-select" style="min-width: 100%;">
+            <option>TASK-2026-001 低空经济产业 200 家 - 2026Q2 回测分析</option>
+            <option>高成长无人机企业库（已保存）</option>
+            <option>前海高知产企业库（已保存）</option>
+          </select>
+        </div>
+
+        <div class="ps2-form-group">
+          <label class="ps2-form-group__label">或上传外部文件（通道 B）</label>
+          <div class="ps2-dropzone">
+            <div class="ps2-dropzone__icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <div class="ps2-dropzone__text">点击或拖拽文件至此处上传</div>
+            <div class="ps2-dropzone__hint">支持 .xlsx / .xlsx，最大 20MB</div>
+          </div>
+          <div class="ps2-form-group__hint"><a href="#" style="color: var(--ps2-blue-600);">下载导入模板</a></div>
+        </div>
+      </div>
+      <div class="ps2-modal__footer">
+        <button class="ps2-btn ps2-btn--secondary" onclick="closeImportModal()">取消</button>
+        <button class="ps2-btn ps2-btn--primary" onclick="confirmImport()">确认导入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       风控推送 Modal
+       ============================================================ -->
+  <div id="pushModal" class="ps2-modal-overlay is-hidden" onclick="closePushModal()">
+    <div class="ps2-modal" onclick="event.stopPropagation()">
+      <div class="ps2-modal__header">
+        <h3 class="ps2-modal__title"><i class="fa-solid fa-triangle-exclamation" style="color: var(--ps2-rose-600); margin-right: 8px;"></i>推送至第三阶段监管风险预警</h3>
+        <button class="ps2-modal__close" onclick="closePushModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="ps2-modal__body" id="pushModalBody">
+        <!-- JS 动态渲染 -->
+      </div>
+      <div id="pushSuccessMsg" class="ps2-hidden" style="padding: 0 20px; color: var(--ps2-emerald-600); font-size: 13px; font-weight: 600;"></div>
+      <div class="ps2-modal__footer">
+        <button class="ps2-btn ps2-btn--secondary" onclick="closePushModal()">取消</button>
+        <button class="ps2-btn ps2-btn--danger" onclick="confirmPush()">确认推送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       导出报告 Modal
+       ============================================================ -->
+  <div id="exportModal" class="ps2-modal-overlay is-hidden" onclick="closeExportModal()">
+    <div class="ps2-modal" onclick="event.stopPropagation()">
+      <div class="ps2-modal__header">
+        <h3 class="ps2-modal__title"><i class="fa-solid fa-file-export" style="color: var(--ps2-blue-600); margin-right: 8px;"></i>导出回测校验报告</h3>
+        <button class="ps2-modal__close" onclick="closeExportModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="ps2-modal__body">
+        <p class="ps2-text-sm" style="color: var(--ps2-slate-600); margin-bottom: 16px;">
+          当前共 <strong id="exportReportCount" style="color: var(--ps2-blue-700);">0</strong> 家企业符合条件，请选择需要包含在报告中的内容：
+        </p>
+        <div class="ps2-checkbox-group">
+          <label class="ps2-checkbox-item">
+            <input type="checkbox" class="ps2-checkbox-item__input" checked>
+            <span>宏观风控统计（覆盖率、高频、大额、跨城渗透率）</span>
+          </label>
+          <label class="ps2-checkbox-item">
+            <input type="checkbox" class="ps2-checkbox-item__input" checked>
+            <span>画像一致性交叉分析（高频 / 大额 / 跨城重叠度）</span>
+          </label>
+          <label class="ps2-checkbox-item">
+            <input type="checkbox" class="ps2-checkbox-item__input" checked>
+            <span>企业全量获补明细与履历穿透</span>
+          </label>
+          <label class="ps2-checkbox-item">
+            <input type="checkbox" class="ps2-checkbox-item__input" checked>
+            <span>资金来源与跨城分布统计</span>
+          </label>
+        </div>
+      </div>
+      <div class="ps2-modal__footer">
+        <button class="ps2-btn ps2-btn--secondary" onclick="closeExportModal()">取消</button>
+        <button class="ps2-btn ps2-btn--primary" onclick="confirmExport()">生成并下载报告</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页面业务脚本 -->
+  <script src="js/policy-stage2.js?v=1"></script>
+</body>
+</html>

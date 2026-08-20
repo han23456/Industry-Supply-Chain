@@ -140,10 +140,42 @@ function buildSegmentStats(node) {
   };
 }
 
-function renderSegmentHeadHTML(node, cfg) {
+function renderSegmentHeadHTML(node, cfg, options) {
   cfg = cfg || classifyNode(node);
+  options = options || {};
   const local = node.localCount || 0;
   const national = node.nationalCount || 0;
+
+  if (options.showDashboard) {
+    const stats = buildNodeDetailStats(node);
+    const outputValue = parseFloat(stats.localOutput) || 0;
+    const employmentValue = stats.employmentScale || 0;
+    return `
+      <div class="node-detail-head node-detail-head-dashboard">
+        <div class="node-detail-head-left">
+          <div class="node-detail-title">
+            <h1 class="node-detail-name">${node.name}</h1>
+            <span class="node-detail-tag" style="background:${cfg.color}">${cfg.label}</span>
+          </div>
+        </div>
+        <div class="node-detail-dashboard">
+          <div class="node-dashboard-item node-dashboard-item--clickable" data-metric="local-enterprise" title="点击查看企业明细清单">
+            <div class="node-dashboard-label">本地企业数</div>
+            <div class="node-dashboard-value">${local}<span class="node-dashboard-unit">家</span></div>
+          </div>
+          <div class="node-dashboard-item">
+            <div class="node-dashboard-label">产值规模</div>
+            <div class="node-dashboard-value">${formatNumber(outputValue.toFixed(1))}<span class="node-dashboard-unit">亿元</span></div>
+          </div>
+          <div class="node-dashboard-item">
+            <div class="node-dashboard-label">就业规模</div>
+            <div class="node-dashboard-value">${formatNumber(employmentValue)}<span class="node-dashboard-unit">人</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   const coverageRate = national > 0 ? (local / national * 100).toFixed(1) : '0.0';
   const countText = national > 0
     ? `本区企业数：${local} 家 / 全国企业数：${national} 家（本区覆盖率 ${coverageRate}%）`
@@ -315,12 +347,17 @@ function buildNodeDetailStats(node) {
   const parkEnterprises = local > 0 ? Math.min(local, Math.round(local * (0.3 + rand() * 0.5))) : 0;
   const parkEnterpriseRatio = local > 0 ? (parkEnterprises / local * 100).toFixed(0) : '0';
 
+  // 头部关键指标：就业规模（按本地企业数 × 平均用工人数估算）
+  const avgEmployeesPerEnterprise = 50 + Math.round(rand() * 450);
+  const employmentScale = local > 0 ? (local * avgEmployeesPerEnterprise) : 0;
+
   return {
     localOutput, nationalOutput, outputShare, enterpriseCount: local,
     totalProfit, profitMargin, localGrossMargin, nationalGrossMargin, grossMarginDiff,
     inventionPatents, highValuePatents, avgPatentsPerEnterprise, nationalAvgPatents, innovationDensityDiff,
     listedCompanies, specialized, singleChampions, top100National, top100Local, top100LocalRatio,
     subsidyAmount, subsidizedEnterprises, subsidizedRatio, policyCount,
-    parkEnterprises, parkEnterpriseRatio
+    parkEnterprises, parkEnterpriseRatio,
+    employmentScale
   };
 }

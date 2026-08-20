@@ -195,8 +195,10 @@ function showLoading(show) {}
 function renderTopInfo() {
   document.title = chainData.name + '产业链图谱 - 产业链/供应链图谱系统';
 
-  const chainName = document.getElementById('chainName');
-  if (chainName) chainName.textContent = chainData.name + '产业链图谱';
+  renderGlobalBreadcrumb('globalBreadcrumb', {
+    chainData: chainData,
+    currentLabel: '产业链结构图谱'
+  });
 
   const c = chainData.completeness_score;
   const completenessValue = document.getElementById('completenessValue');
@@ -207,14 +209,6 @@ function renderTopInfo() {
   const completenessRing = document.getElementById('completenessRing');
   if (completenessRing) completenessRing.innerHTML = renderProgressRing(c, 48, 5);
 
-  const chainTags = document.getElementById('chainTags');
-  if (chainTags) {
-    chainTags.innerHTML = `
-      ${renderStrategicTag(chainData.strategic_orientation)}
-      ${renderLifecycleTag(chainData.life_cycle)}
-      <span class="tag tag-default">${CONFIG.category[chainData.category] || chainData.category}</span>
-    `;
-  }
 }
 
 // ==================== 左侧分类树 ====================

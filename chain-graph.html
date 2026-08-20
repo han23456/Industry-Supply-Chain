@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>产业链结构图谱 - 产业链/供应链图谱系统</title>
-  <link rel="stylesheet" href="css/common.css?v=11">
+  <link rel="stylesheet" href="css/common.css?v=16">
   <link rel="stylesheet" href="css/chain-graph.css?v=15">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script src="js/data.js?v=4"></script>
-  <script src="js/common.js?v=3"></script>
+  <script src="js/common.js?v=4"></script>
   <!-- 加载顺序必须先配置、后组件，顺序不能颠倒 -->
-  <script src="js/config/menu-config.js?v=3"></script>
+  <script src="js/config/menu-config.js?v=6"></script>
   <script src="js/components/GovHeader.js?v=2"></script>
-  <script src="js/components/SideNav.js?v=2"></script>
+  <script src="js/components/SideNav.js?v=6"></script>
 </head>
 <body>
    <gov-header></gov-header>
@@ -20,12 +20,7 @@
   <main class="page-content graph-page">
     <section class="top-info-bar">
       <div class="top-info-left">
-        <div class="breadcrumb">
-          <a href="index.html">首页</a>
-          <span class="breadcrumb-sep">/</span>
-          <span id="chainName">产业链结构图谱</span>
-        </div>
-        <div class="chain-tags" id="chainTags"></div>
+        <div class="global-breadcrumb" id="globalBreadcrumb"></div>
       </div>
       <div class="top-info-right">
         <button class="btn btn-primary" onclick="exportChainReport()">导出报告</button>
@@ -69,6 +64,15 @@
               <div class="metric-trend"><span class="trend-up">↑2.3%</span> 较上月新增0.62万</div>
             </div>
             <div class="overview-metric-card">
+              <div class="metric-label">产值规模</div>
+              <div class="metric-value">185.0<span class="metric-unit">亿</span></div>
+            </div>
+            <div class="overview-metric-card">
+              <div class="metric-label">就业规模</div>
+              <div class="metric-value">0.9<span class="metric-unit">万人</span></div>
+              <div class="metric-trend"><span class="trend-up">↑0.4%</span> 新增0.6万人</div>
+            </div>
+            <div class="overview-metric-card">
               <div class="metric-label">规上企业</div>
               <div class="metric-value">236<span class="metric-unit">家</span></div>
             </div>
@@ -82,11 +86,7 @@
               <div class="metric-value">66<span class="metric-unit">家</span></div>
               <div class="metric-trend"><span class="trend-up">↑3家</span> 省内占比7.4%</div>
             </div>
-            <div class="overview-metric-card">
-              <div class="metric-label">带动就业</div>
-              <div class="metric-value">175.6<span class="metric-unit">万人</span></div>
-              <div class="metric-trend"><span class="trend-up">↑0.4%</span> 新增0.6万人</div>
-            </div>
+
           </div>
 
           <!-- 模块2：重点企业分类 -->
@@ -147,7 +147,7 @@
                     <!-- 模块4：上排并列图表 -->
           <div class="overview-section overview-section-charts-row">
             <div class="overview-chart-card overview-chart-card--6">
-              <div class="chart-card-header"><div class="chart-card-title">用工总数趋势</div><button class="chart-more">更多</button></div>
+              <div class="chart-card-header"><div class="chart-card-title">就业规模趋势</div><button class="chart-more">更多</button></div>
               <div class="chart-card-body" id="employeeTotalTrendChart"></div>
             </div>
               <div class="overview-chart-card overview-chart-card--6">
@@ -162,7 +162,7 @@
               <div class="chart-card-body" id="newEnterpriseGrowthChart"></div>
             </div>
             <div class="overview-chart-card overview-chart-card--6">
-              <div class="chart-card-header"><div class="chart-card-title">用工规模结构</div></div>
+              <div class="chart-card-header"><div class="chart-card-title">就业规模结构</div></div>
               <div class="chart-card-body" id="employeeScaleChart"></div>
             </div>
           </div>
@@ -236,6 +236,6 @@
   </main>
 
   <script src="js/chain-node-common.js?v=5"></script>
-  <script src="js/chain-graph.js?v=23"></script>
+  <script src="js/chain-graph.js?v=24"></script>
 </body>
 </html>

@@ -54,7 +54,7 @@ async function loadData() {
 
 async function renderPage() {
   renderBreadcrumbWithNode(currentNode);
-  document.getElementById('nodeDetailHead').innerHTML = renderSegmentHeadHTML(currentNode);
+  document.getElementById('nodeDetailHead').innerHTML = renderSegmentHeadHTML(currentNode, null, { showDashboard: true });
   document.getElementById('nodeDetailModules').innerHTML = renderNodeModulesHTML(currentNode);
   initModuleTooltips();
 
@@ -122,50 +122,85 @@ function renderModuleHelpHTML(items) {
   `;
 }
 
+function renderModulesSectionHeaderHTML() {
+  return `
+    <div class="node-modules-section-header">
+      <div class="node-modules-section-header-main">
+        <div class="node-section-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 26V6"/>
+            <path d="M4 22L10 16L15 20L22 10L28 14"/>
+            <path d="M4 26H28"/>
+          </svg>
+        </div>
+        <h2 class="node-section-title">产业综合运行指标与空间布局</h2>
+      </div>
+      <span class="node-section-range">模块一～模块六</span>
+    </div>
+  `;
+}
+
 function renderNodeModulesHTML(node) {
   const stats = buildNodeDetailStats(node);
   const localBarWidth = Math.min(100, parseFloat(stats.localGrossMargin)).toFixed(0);
   const nationalBarWidth = Math.min(100, parseFloat(stats.nationalGrossMargin)).toFixed(0);
   const spatial = getStreetDistribution(node);
   const localCount = node.localCount || 0;
+  const national = node.nationalCount || 0;
+
+  const coverageRate = national > 0 ? (localCount / national * 100).toFixed(1) : '0.0';
 
   return `
+    ${renderModulesSectionHeaderHTML()}
     <div class="node-modules-grid">
-      <!-- 模块一：产业规模 -->
+      <!-- 模块一：产业竞争力 -->
       <div class="node-module-card">
         <div class="node-module-header">
           <div class="node-module-title-wrap">
-            <span class="node-module-bar"></span>
-            <h2 class="node-module-title">模块一：产业规模</h2>
+            <span class="node-module-dot blue"></span>
+            <h2 class="node-module-title">一、产业竞争力</h2>
           </div>
           ${renderModuleHelpHTML([
-            `本地产值：辖区${localCount}家企业工商年报主营业务收入汇总。`,
+            `本区企业数：辖区${localCount}家真实存续企业。`,
+            `全国企业数：基于全国${node.name}行业企业名录去重统计。`,
+            `本地产值：辖区企业工商年报主营业务收入汇总。`,
             `全国产值：基于全国${node.name}行业年报总额计算。`
           ])}
         </div>
         <div class="node-module-body">
-          <div class="node-metrics-grid cols-2">
-            <div class="node-metric-item">
-              <p class="node-metric-label">本地总产值</p>
-              <p class="node-metric-value">${stats.localOutput} <span class="node-metric-unit">亿元</span></p>
-            </div>
-            <div class="node-metric-item">
-              <p class="node-metric-label">全国总产值</p>
-              <p class="node-metric-value">${stats.nationalOutput} <span class="node-metric-unit">亿元</span></p>
-            </div>
-            <div class="node-metric-item">
-              <p class="node-metric-label">全国产值占比</p>
-              <p class="node-metric-value primary">${stats.outputShare}%</p>
-            </div>
-            <div class="node-metric-item">
-              <p class="node-metric-label">企业节点数量</p>
-              <p class="node-metric-value">${stats.enterpriseCount} <span class="node-metric-unit">家</span></p>
+          <div class="node-overview-card">
+            <div class="node-overview-label">企业数量概况</div>
+            <div class="node-overview-row">
+              <div class="node-overview-value">
+                本区：<strong>${localCount}</strong> 家 / 全国：<span class="muted">${national}</span> 家
+              </div>
+              <div class="node-overview-badge blue">
+                <span class="node-overview-badge-label">本区覆盖率</span>
+                <span class="node-overview-badge-value">${coverageRate}%</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="node-module-footer blue">
-          <p class="node-ai-label">🤖 AI 汇报解读：</p>
-          <p class="node-ai-text">辖区${node.name}产业产值${stats.localOutput}亿元，全国占比${stats.outputShare}%，整体产业规模处于全国中等水平，具备良好集聚成长基础。</p>
+          <div class="node-overview-card">
+            <div class="node-overview-label">产业产值概况</div>
+            <div class="node-overview-row">
+              <div class="node-overview-value">
+                本地：<strong>${stats.localOutput}</strong> 亿 / 全国：<span class="muted">${stats.nationalOutput}</span> 亿
+              </div>
+              <div class="node-overview-badge blue">
+                <span class="node-overview-badge-label">本地产值占比</span>
+                <span class="node-overview-badge-value">${stats.outputShare}%</span>
+              </div>
+            </div>
+          </div>
+          <div class="node-ai-conclusion">
+            <svg class="node-ai-conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/>
+              <path d="M9 21h6"/>
+            </svg>
+            <div class="node-ai-conclusion-text">
+              <strong>AI 解读结论：</strong>辖区${node.name}年产值${stats.localOutput}亿元，全国占比${stats.outputShare}%。整体产业规模处于全国中等水平，具备良好集聚成长基础。
+            </div>
+          </div>
         </div>
       </div>
 
@@ -173,7 +208,7 @@ function renderNodeModulesHTML(node) {
       <div class="node-module-card">
         <div class="node-module-header">
           <div class="node-module-title-wrap">
-            <span class="node-module-bar"></span>
+            <span class="node-module-dot green"></span>
             <h2 class="node-module-title">模块二：产业效益</h2>
           </div>
           ${renderModuleHelpHTML([
@@ -182,14 +217,14 @@ function renderNodeModulesHTML(node) {
           ])}
         </div>
         <div class="node-module-body">
-          <div class="node-metrics-grid cols-2">
-            <div class="node-metric-item">
-              <p class="node-metric-label">辖区利润总额</p>
-              <p class="node-metric-value">${stats.totalProfit} <span class="node-metric-unit">亿元</span></p>
+          <div class="node-metric-highlights">
+            <div class="node-metric-highlight">
+              <div class="node-metric-highlight-label">辖区利润总额</div>
+              <div class="node-metric-highlight-value">${stats.totalProfit}<span class="unit">亿元</span></div>
             </div>
-            <div class="node-metric-item">
-              <p class="node-metric-label">平均营业利润率</p>
-              <p class="node-metric-value">${stats.profitMargin}%</p>
+            <div class="node-metric-highlight green">
+              <div class="node-metric-highlight-label">平均毛利率</div>
+              <div class="node-metric-highlight-value">${stats.localGrossMargin}%</div>
             </div>
           </div>
           <div class="node-metric-item mt-3">
@@ -199,7 +234,7 @@ function renderNodeModulesHTML(node) {
             </div>
             <div class="node-progress-row">
               <div class="node-progress-label">
-                <span>本地企业平均毛利率</span>
+                <span>本区企业平均毛利率</span>
                 <span class="primary">${stats.localGrossMargin}%</span>
               </div>
               <div class="node-progress-track">
@@ -216,10 +251,15 @@ function renderNodeModulesHTML(node) {
               </div>
             </div>
           </div>
-        </div>
-        <div class="node-module-footer green">
-          <p class="node-ai-label">🤖 AI 汇报解读：</p>
-          <p class="node-ai-text">辖区${node.name}产业平均毛利率达${stats.localGrossMargin}%，高于全国行业平均${stats.grossMarginDiff}个百分点，表明辖区产业规模虽小但处于高附加值高端制造环节，盈利能力强劲。</p>
+          <div class="node-ai-conclusion">
+            <svg class="node-ai-conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/>
+              <path d="M9 21h6"/>
+            </svg>
+            <div class="node-ai-conclusion-text">
+              <strong>AI 解读结论：</strong>辖区${node.name}产业平均毛利率达${stats.localGrossMargin}%，高于全国行业平均${stats.grossMarginDiff}个百分点，表明辖区产业规模虽小但处于高附加值高端制造环节，盈利能力强劲。
+            </div>
+          </div>
         </div>
       </div>
 
@@ -227,7 +267,7 @@ function renderNodeModulesHTML(node) {
       <div class="node-module-card">
         <div class="node-module-header">
           <div class="node-module-title-wrap">
-            <span class="node-module-bar"></span>
+            <span class="node-module-dot purple"></span>
             <h2 class="node-module-title">模块三：创新能力</h2>
           </div>
           ${renderModuleHelpHTML([
@@ -271,7 +311,7 @@ function renderNodeModulesHTML(node) {
       <div class="node-module-card">
         <div class="node-module-header">
           <div class="node-module-title-wrap">
-            <span class="node-module-bar"></span>
+            <span class="node-module-dot indigo"></span>
             <h2 class="node-module-title">模块四：龙头与产业集聚</h2>
           </div>
           ${renderModuleHelpHTML([
@@ -315,7 +355,7 @@ function renderNodeModulesHTML(node) {
       <div class="node-module-card">
         <div class="node-module-header">
           <div class="node-module-title-wrap">
-            <span class="node-module-bar"></span>
+            <span class="node-module-dot amber"></span>
             <h2 class="node-module-title">模块五：政策扶持落地</h2>
           </div>
           ${renderModuleHelpHTML([
@@ -349,7 +389,7 @@ function renderNodeModulesHTML(node) {
       <div class="node-module-card module-spatial">
         <div class="node-module-header">
           <div class="node-module-title-wrap">
-            <span class="node-module-bar"></span>
+            <span class="node-module-dot gray"></span>
             <h2 class="node-module-title">模块六：空间布局与载体</h2>
           </div>
           ${renderModuleHelpHTML([
@@ -529,16 +569,20 @@ function renderTopEnterprisesHTML(enterprises) {
     return renderEnterpriseEmptyHTML();
   }
 
+  const allIds = enterprises.map(e => e.id).join(',');
+
   const rows = enterprises.map((e, index) => `
     <tr class="enterprise-row">
-      <td class="cell-checkbox"><input type="checkbox" class="enterprise-checkbox" value="${escapeHtml(e.id)}" ${index === 0 ? 'checked' : ''} aria-label="选择 ${escapeHtml(e.name)}"></td>
       <td class="cell-rank"><span class="enterprise-rank rank-${index < 3 ? index + 1 : 'other'}" aria-label="第 ${index + 1} 名">${index + 1}</span></td>
       <td class="cell-name">
         <div class="enterprise-name">${escapeHtml(e.name)}</div>
         <div class="enterprise-code">${escapeHtml(e.credit_code)}</div>
       </td>
+      <td class="cell-output">
+        <strong>${formatNumber(e.annual_revenue)}</strong><span class="node-metric-unit">亿元</span>
+      </td>
       <td class="cell-date">${escapeHtml(e.establishment_date)}</td>
-      <td class="cell-capital"><strong>${formatNumber(e.registered_capital)}万人民币</strong></td>
+      <td class="cell-capital"><strong>${formatNumber(e.registered_capital)}</strong><span class="node-metric-unit">万人民币</span></td>
       <td class="cell-address">${escapeHtml(e.register_address)}</td>
     </tr>
   `).join('');
@@ -553,8 +597,7 @@ function renderTopEnterprisesHTML(enterprises) {
         </div>
       </div>
       <div class="node-enterprise-actions">
-        <span class="node-enterprise-selected" id="enterpriseSelectedCount" aria-live="polite" aria-atomic="true">已选中 <strong>1</strong> / ${enterprises.length} 家企业</span>
-        <button class="btn-chain-analysis" id="chainGapBtn" type="button" aria-label="对选中企业进行强链补链分析">强链补链分析</button>
+        <button class="btn-chain-analysis" id="chainGapBtn" type="button" aria-label="对全部 Top10 企业进行强链补链分析" data-all-ids="${escapeHtml(allIds)}">强链补链分析</button>
       </div>
     </div>
     <p class="node-enterprise-desc">自动筛选该子产业产值最高的前10家企业，作为强链补链分析的主角</p>
@@ -562,9 +605,9 @@ function renderTopEnterprisesHTML(enterprises) {
       <table class="node-enterprise-table">
         <thead>
           <tr>
-            <th scope="col" class="cell-checkbox"><input type="checkbox" id="selectAllEnterprises" aria-label="全选企业"></th>
             <th scope="col" class="cell-rank">排名</th>
             <th scope="col" class="cell-name">企业名称 / 统一社会信用代码</th>
+            <th scope="col" class="cell-output">年产值</th>
             <th scope="col" class="cell-date">成立日期</th>
             <th scope="col" class="cell-capital">注册资本</th>
             <th scope="col" class="cell-address">注册地址</th>
@@ -634,62 +677,31 @@ function bindEnterpriseActions() {
   const section = document.getElementById('nodeDetailEnterprises');
   if (!section) return;
 
-  const selectAll = section.querySelector('#selectAllEnterprises');
-  let checkboxes = section.querySelectorAll('.enterprise-checkbox');
-  const selectedCountEl = section.querySelector('#enterpriseSelectedCount strong');
   const chainGapBtn = section.querySelector('#chainGapBtn');
   const retryBtn = section.querySelector('#retryEnterpriseBtn');
 
-  function getCheckboxes() {
-    checkboxes = section.querySelectorAll('.enterprise-checkbox');
-    return checkboxes;
-  }
-
-  function updateSelectedCount() {
-    const checked = section.querySelectorAll('.enterprise-checkbox:checked').length;
-    if (selectedCountEl) selectedCountEl.textContent = checked;
-  }
-
-  function notifyNoSelection() {
-    if (typeof showToast === 'function') {
-      showToast('请至少选择一家企业', 'warning');
-    } else {
-      alert('请至少选择一家企业');
-    }
-  }
-
-  function getSelectedIds() {
-    return Array.from(section.querySelectorAll('.enterprise-checkbox:checked')).map(cb => cb.value);
-  }
-
   function navigateToChainGap() {
-    const selected = getSelectedIds();
-    if (selected.length === 0) {
-      notifyNoSelection();
+    const allIds = chainGapBtn ? chainGapBtn.getAttribute('data-all-ids') : '';
+    if (!allIds) {
+      if (typeof showToast === 'function') {
+        showToast('暂无企业可分析', 'warning');
+      } else {
+        alert('暂无企业可分析');
+      }
       return;
     }
-    const url = `chain-gap1.html?chainId=${encodeURIComponent(currentChainId)}&nodeId=${encodeURIComponent(currentNodeId)}&enterprises=${encodeURIComponent(selected.join(','))}`;
+    const params = new URLSearchParams();
+    params.set('chainId', currentChainId);
+    params.set('nodeId', currentNodeId);
+    if (currentNode && currentNode.name) params.set('nodeName', currentNode.name);
+    const chainData = (typeof CHAIN_INDUSTRY_DATA !== 'undefined' && CHAIN_INDUSTRY_DATA[currentChainId]) ? CHAIN_INDUSTRY_DATA[currentChainId] : null;
+    const chainName = chainData && chainData.name ? chainData.name : (typeof currentChainId === 'string' && currentChainId ? currentChainId : '');
+    if (chainName) params.set('chainName', chainName);
+    params.set('enterprises', allIds);
+    const url = `chain-gap1.html?${params.toString()}`;
     // 保持与页面其它跳转一致的过渡体验
     window.location.href = url;
   }
-
-  if (selectAll) {
-    selectAll.addEventListener('change', () => {
-      getCheckboxes().forEach(cb => { cb.checked = selectAll.checked; });
-      updateSelectedCount();
-    });
-  }
-
-  function onCheckboxChange() {
-    const all = getCheckboxes();
-    const allChecked = all.length > 0 && Array.from(all).every(c => c.checked);
-    if (selectAll) selectAll.checked = allChecked;
-    updateSelectedCount();
-  }
-
-  getCheckboxes().forEach(cb => {
-    cb.addEventListener('change', onCheckboxChange);
-  });
 
   if (chainGapBtn) {
     chainGapBtn.addEventListener('click', navigateToChainGap);
@@ -706,35 +718,17 @@ function bindEnterpriseActions() {
       renderPage();
     });
   }
-
-  updateSelectedCount();
 }
 
 function renderBreadcrumbWithNode(node) {
-  const graphUrl = `chain-graph.html?chainId=${encodeURIComponent(currentChainId)}&nodeId=${encodeURIComponent(currentNodeId)}`;
-  const container = document.getElementById('breadcrumbContainer');
-  if (!container) return;
-  container.innerHTML = `
-    <a href="index.html">首页</a>
-    <span class="sep">/</span>
-    <a href="index.html">产业全景</a>
-    <span class="sep">/</span>
-    <a href="${graphUrl}">产业链结构图谱</a>
-    <span class="sep">/</span>
-    <span class="current">${node ? escapeHtml(node.name) : '产业链环节详情'}</span>
-  `;
+  renderGlobalBreadcrumb('breadcrumbContainer', {
+    chainId: currentChainId,
+    nodeId: currentNodeId,
+    currentLabel: node ? node.name : '产业链环节详情'
+  });
 }
 
 function bindActions() {
-  const backUrl = `chain-graph.html?chainId=${encodeURIComponent(currentChainId)}&nodeId=${encodeURIComponent(currentNodeId)}`;
-  const backBtns = [document.getElementById('backBtn'), document.getElementById('bottomBackBtn')];
-  backBtns.forEach(btn => {
-    if (!btn) return;
-    btn.addEventListener('click', () => {
-      window.location.href = backUrl;
-    });
-  });
-
   const networkBtn = document.getElementById('viewNetworkBtn');
   if (networkBtn) {
     networkBtn.addEventListener('click', () => {
@@ -743,6 +737,9 @@ function bindActions() {
   }
 
   bindEnterpriseActions();
+  bindEnterpriseModalEvents();
+  bindEnterpriseFormEvents();
+  bindConfirmModalEvents();
 }
 
 function renderError(message) {
@@ -750,29 +747,16 @@ function renderError(message) {
   const head = document.getElementById('nodeDetailHead');
   const modules = document.getElementById('nodeDetailModules');
   const enterprises = document.getElementById('nodeDetailEnterprises');
-  const actions = document.getElementById('nodeDetailActions');
   if (head) head.innerHTML = `<div class="node-detail-error">${escapeHtml(message)}</div>`;
   if (modules) modules.innerHTML = '';
   if (enterprises) enterprises.innerHTML = '';
-  if (actions) actions.style.display = 'none';
 
   const container = document.getElementById('breadcrumbContainer');
   if (container) {
-    container.innerHTML = `
-      <a href="index.html">首页</a>
-      <span class="sep">/</span>
-      <a href="index.html">产业全景</a>
-      <span class="sep">/</span>
-      <span class="current">产业链环节详情</span>
-    `;
-  }
-
-  const backBtn = document.getElementById('backBtn');
-  if (backBtn) {
-    backBtn.addEventListener('click', () => {
-      window.location.href = currentChainId
-        ? `chain-graph.html?chainId=${encodeURIComponent(currentChainId)}`
-        : 'index.html';
+    renderGlobalBreadcrumb('breadcrumbContainer', {
+      chainId: currentChainId,
+      nodeId: currentNodeId,
+      currentLabel: '产业链环节详情'
     });
   }
 }
@@ -796,6 +780,566 @@ function initEntranceTransition() {
   setTimeout(() => {
     overlay.style.display = 'none';
   }, 380);
+}
+
+/* ================== 本地企业明细清单弹窗 ================== */
+
+const EM_PAGE_SIZE = 10;
+let emEnterprises = [];
+let emCurrentPage = 1;
+let emSearchQuery = '';
+let emScaleFilter = '';
+let emYearFilter = '';
+let emDeleteTargetId = null;
+
+const EM_SCALE_LABELS = {
+  large: '大型企业',
+  medium: '中型企业',
+  small: '小型企业',
+  micro: '微型企业'
+};
+
+function getEMStorageKey() {
+  return `chain_node_em_${currentChainId}_${currentNodeId}`;
+}
+
+function generateModalEnterprise(seedBase, index) {
+  const seed = Math.abs(hashCode(`${currentNodeId}_${seedBase}_${index}`));
+  const rand = seededRandom(seed);
+  const rnd = (min = 0, max = 1) => min + rand() * (max - min);
+  const rndInt = (min, max) => min + Math.floor(rand() * (max - min + 1));
+
+  const scales = ['large', 'medium', 'small', 'micro'];
+  const scaleWeights = [0.1, 0.25, 0.4, 0.25];
+  let scale = scales[scales.length - 1];
+  let r = rand();
+  let cumulative = 0;
+  for (let i = 0; i < scales.length; i++) {
+    cumulative += scaleWeights[i];
+    if (r <= cumulative) {
+      scale = scales[i];
+      break;
+    }
+  }
+
+  const year = 1995 + rndInt(0, 28);
+  const month = String(rndInt(1, 12)).padStart(2, '0');
+  const day = String(rndInt(1, 28)).padStart(2, '0');
+  const employeesByScale = { large: [1000, 5000], medium: [300, 1000], small: [50, 300], micro: [5, 50] };
+  const [empMin, empMax] = employeesByScale[scale];
+  const employees = rndInt(empMin, empMax);
+  const revenue = (rnd(0.1, 8.0) * (scale === 'large' ? 3 : scale === 'medium' ? 1.5 : 1)).toFixed(2);
+
+  const prefixes = ['深圳', '广东', '华南', '创新', '高新', '智汇', '云联', '锐科', '博远', '新能'];
+  const suffixes = ['科技有限公司', '股份有限公司', '集团有限公司', '实业有限公司', '智能科技有限公司'];
+  const prefix = prefixes[rndInt(0, prefixes.length - 1)];
+  const suffix = suffixes[rndInt(0, suffixes.length - 1)];
+  const serial = String(rndInt(100, 999));
+  const name = `${prefix}${currentNode ? currentNode.name.slice(0, 4) : ''}${serial}${suffix}`;
+
+  const creditCode = `${String.fromCharCode(65 + rndInt(0, 25))}${String.fromCharCode(65 + rndInt(0, 25))}${String(rndInt(100000000, 999999999)).padStart(9, '0')}${String(rndInt(10000000, 99999999))}`;
+
+  return {
+    id: `em_${currentChainId}_${currentNodeId}_${seedBase}_${index}`,
+    name,
+    credit_code: creditCode,
+    industry: currentNode ? currentNode.name : '未分类',
+    scale,
+    establishment_date: `${year}-${month}-${day}`,
+    employees,
+    annual_revenue: parseFloat(revenue),
+    register_address: '深圳市南山区高新技术产业区'
+  };
+}
+
+function loadModalEnterprises() {
+  const count = currentNode ? (currentNode.localCount || 0) : 0;
+  const storageKey = getEMStorageKey();
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        emEnterprises = parsed;
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('读取本地企业缓存失败', err);
+  }
+
+  // 优先复用节点已有企业数据
+  let list = [];
+  const nodeEnterprises = (typeof MOCK_ENTERPRISES !== 'undefined' && MOCK_ENTERPRISES[currentNodeId]) || [];
+  if (nodeEnterprises.length > 0) {
+    list = nodeEnterprises.filter(e => !e.placeholder).map((e, idx) => {
+      const real = (typeof ALL_ENTERPRISES !== 'undefined' && ALL_ENTERPRISES.find(ent => ent.id === e.id)) || {};
+      const seed = hashCode(e.id || idx);
+      const rand = seededRandom(seed);
+      const rnd = (min = 0, max = 1) => min + rand() * (max - min);
+      const rndInt = (min, max) => min + Math.floor(rand() * (max - min + 1));
+      return {
+        id: e.id,
+        name: real.name || e.name || '未知企业',
+        credit_code: real.credit_code || `${String.fromCharCode(65 + rndInt(0, 25))}${String.fromCharCode(65 + rndInt(0, 25))}${String(rndInt(100000000, 999999999)).padStart(9, '0')}${String(rndInt(10000000, 99999999))}`,
+        industry: currentNode ? currentNode.name : '未分类',
+        scale: ['large', 'medium', 'small', 'micro'][rndInt(0, 3)],
+        establishment_date: real.establishment_date || `${2000 + rndInt(0, 23)}-${String(rndInt(1, 12)).padStart(2, '0')}-${String(rndInt(1, 28)).padStart(2, '0')}`,
+        employees: rndInt(10, 2000),
+        annual_revenue: parseFloat(real.annual_revenue || e.annual_revenue || rnd(0.5, 50.5)),
+        register_address: real.register_address || '深圳市南山区高新技术产业区'
+      };
+    }).filter(Boolean);
+  }
+
+  // 补充至本地企业数
+  const seedBase = Math.abs(hashCode(currentNodeId || 'default'));
+  while (list.length < count) {
+    list.push(generateModalEnterprise(seedBase, list.length));
+  }
+  emEnterprises = list.slice(0, count);
+  saveModalEnterprises();
+}
+
+function saveModalEnterprises() {
+  try {
+    localStorage.setItem(getEMStorageKey(), JSON.stringify(emEnterprises));
+  } catch (err) {
+    console.warn('保存本地企业缓存失败', err);
+  }
+}
+
+function getFilteredEnterprises() {
+  const q = emSearchQuery.trim().toLowerCase();
+  return emEnterprises.filter(e => {
+    const matchesSearch = !q ||
+      (e.name && e.name.toLowerCase().includes(q)) ||
+      (e.credit_code && e.credit_code.toLowerCase().includes(q)) ||
+      (e.industry && e.industry.toLowerCase().includes(q));
+    const matchesScale = !emScaleFilter || e.scale === emScaleFilter;
+    let matchesYear = true;
+    if (emYearFilter && e.establishment_date) {
+      const year = parseInt(e.establishment_date.split('-')[0], 10);
+      switch (emYearFilter) {
+        case 'before2000': matchesYear = year < 2000; break;
+        case '2000-2010': matchesYear = year >= 2000 && year <= 2010; break;
+        case '2010-2020': matchesYear = year >= 2010 && year <= 2020; break;
+        case 'after2020': matchesYear = year > 2020; break;
+      }
+    }
+    return matchesSearch && matchesScale && matchesYear;
+  });
+}
+
+function openEnterpriseModal() {
+  loadModalEnterprises();
+  emCurrentPage = 1;
+  emSearchQuery = '';
+  emScaleFilter = '';
+  emYearFilter = '';
+
+  const searchInput = document.getElementById('enterpriseModalSearch');
+  const scaleFilter = document.getElementById('enterpriseModalScaleFilter');
+  const yearFilter = document.getElementById('enterpriseModalYearFilter');
+  if (searchInput) searchInput.value = '';
+  if (scaleFilter) scaleFilter.value = '';
+  if (yearFilter) yearFilter.value = '';
+
+  renderEnterpriseModal();
+  const overlay = document.getElementById('enterpriseModalOverlay');
+  if (overlay) {
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeEnterpriseModal() {
+  const overlay = document.getElementById('enterpriseModalOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+}
+
+function renderEnterpriseModal() {
+  const filtered = getFilteredEnterprises();
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / EM_PAGE_SIZE));
+  if (emCurrentPage > totalPages) emCurrentPage = totalPages;
+  if (emCurrentPage < 1) emCurrentPage = 1;
+  const start = (emCurrentPage - 1) * EM_PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + EM_PAGE_SIZE);
+
+  const tbody = document.getElementById('enterpriseModalTableBody');
+  const stats = document.getElementById('enterpriseModalStats');
+  const pagination = document.getElementById('enterpriseModalPagination');
+
+  if (stats) {
+    const totalEmployees = emEnterprises.reduce((sum, e) => sum + (parseInt(e.employees, 10) || 0), 0);
+    const totalRevenue = emEnterprises.reduce((sum, e) => sum + (parseFloat(e.annual_revenue) || 0), 0);
+    stats.innerHTML = `
+      <span>共 <strong>${emEnterprises.length}</strong> 家企业</span>
+      <span>当前筛选 <strong>${total}</strong> 家</span>
+      <span>从业人员合计 <strong>${formatNumber(totalEmployees)}</strong> 人</span>
+      <span>年产值合计 <strong>${formatNumber(totalRevenue.toFixed(2))}</strong> 亿元</span>
+    `;
+  }
+
+  if (tbody) {
+    if (pageItems.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="enterprise-modal-empty">未找到符合条件的企业</td></tr>`;
+    } else {
+      tbody.innerHTML = pageItems.map(e => `
+        <tr data-id="${escapeHtml(e.id)}">
+          <td class="em-cell-name">${escapeHtml(e.name)}</td>
+          <td class="em-cell-code">${escapeHtml(e.credit_code)}</td>
+          <td class="em-cell-industry">${escapeHtml(e.industry)}</td>
+          <td class="em-cell-scale">${EM_SCALE_LABELS[e.scale] || escapeHtml(e.scale)}</td>
+          <td class="em-cell-date">${escapeHtml(e.establishment_date)}</td>
+          <td class="em-cell-employees">${formatNumber(e.employees)}</td>
+          <td class="em-cell-revenue">${formatNumber(parseFloat(e.annual_revenue).toFixed(2))}</td>
+          <td class="em-cell-actions">
+            <button class="enterprise-modal-action enterprise-modal-action--edit" data-action="edit" type="button">编辑</button>
+            <button class="enterprise-modal-action enterprise-modal-action--delete" data-action="delete" type="button">删除</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  if (pagination) {
+    pagination.innerHTML = renderEMPagination(totalPages, emCurrentPage, total);
+  }
+}
+
+function renderEMPagination(totalPages, current, total) {
+  if (totalPages <= 1 && total <= EM_PAGE_SIZE) return '';
+  let html = `<button class="enterprise-page-btn" data-page="prev" ${current === 1 ? 'disabled' : ''}>上一页</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= current - 1 && i <= current + 1)) {
+      html += `<button class="enterprise-page-btn ${i === current ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    } else if (i === current - 2 || i === current + 2) {
+      html += `<span class="enterprise-page-info">…</span>`;
+    }
+  }
+  html += `<button class="enterprise-page-btn" data-page="next" ${current === totalPages ? 'disabled' : ''}>下一页</button>`;
+  html += `<span class="enterprise-page-info">第 ${current} / ${totalPages} 页，共 ${total} 条</span>`;
+  return html;
+}
+
+function bindEnterpriseModalEvents() {
+  const overlay = document.getElementById('enterpriseModalOverlay');
+  const closeBtn = document.getElementById('enterpriseModalClose');
+  const searchInput = document.getElementById('enterpriseModalSearch');
+  const scaleFilter = document.getElementById('enterpriseModalScaleFilter');
+  const yearFilter = document.getElementById('enterpriseModalYearFilter');
+  const addBtn = document.getElementById('enterpriseModalAddBtn');
+  const pagination = document.getElementById('enterpriseModalPagination');
+  const tableBody = document.getElementById('enterpriseModalTableBody');
+
+  document.addEventListener('click', (e) => {
+    const metric = e.target.closest('[data-metric="local-enterprise"]');
+    if (metric) {
+      e.stopPropagation();
+      openEnterpriseModal();
+    }
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeEnterpriseModal);
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeEnterpriseModal();
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', debounce(() => {
+      emSearchQuery = searchInput.value;
+      emCurrentPage = 1;
+      renderEnterpriseModal();
+    }, 250));
+  }
+
+  if (scaleFilter) {
+    scaleFilter.addEventListener('change', () => {
+      emScaleFilter = scaleFilter.value;
+      emCurrentPage = 1;
+      renderEnterpriseModal();
+    });
+  }
+
+  if (yearFilter) {
+    yearFilter.addEventListener('change', () => {
+      emYearFilter = yearFilter.value;
+      emCurrentPage = 1;
+      renderEnterpriseModal();
+    });
+  }
+
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      openEnterpriseForm();
+    });
+  }
+
+  if (pagination) {
+    pagination.addEventListener('click', (e) => {
+      const btn = e.target.closest('.enterprise-page-btn');
+      if (!btn || btn.disabled) return;
+      const page = btn.dataset.page;
+      const totalPages = Math.max(1, Math.ceil(getFilteredEnterprises().length / EM_PAGE_SIZE));
+      if (page === 'prev') {
+        emCurrentPage = Math.max(1, emCurrentPage - 1);
+      } else if (page === 'next') {
+        emCurrentPage = Math.min(totalPages, emCurrentPage + 1);
+      } else {
+        emCurrentPage = parseInt(page, 10);
+      }
+      renderEnterpriseModal();
+    });
+  }
+
+  if (tableBody) {
+    tableBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('.enterprise-modal-action');
+      if (!btn) return;
+      const row = btn.closest('tr');
+      const id = row ? row.dataset.id : null;
+      const action = btn.dataset.action;
+      if (!id) return;
+      if (action === 'edit') {
+        const ent = emEnterprises.find(e => e.id === id);
+        if (ent) openEnterpriseForm(ent);
+      } else if (action === 'delete') {
+        emDeleteTargetId = id;
+        const ent = emEnterprises.find(e => e.id === id);
+        openConfirmModal(`确定删除企业“${ent ? ent.name : ''}”吗？删除后不可恢复。`, () => {
+          if (emDeleteTargetId) {
+            emEnterprises = emEnterprises.filter(e => e.id !== emDeleteTargetId);
+            saveModalEnterprises();
+            updateLocalEnterpriseCount();
+            renderEnterpriseModal();
+            emDeleteTargetId = null;
+          }
+          closeConfirmModal();
+          if (typeof showToast === 'function') {
+            showToast('企业已删除', 'success');
+          }
+        });
+      }
+    });
+  }
+}
+
+function openEnterpriseForm(ent) {
+  const isEdit = !!ent;
+  const overlay = document.getElementById('enterpriseFormOverlay');
+  const title = document.getElementById('enterpriseFormTitle');
+  const idField = document.getElementById('enterpriseFormId');
+  const nameField = document.getElementById('enterpriseFormName');
+  const codeField = document.getElementById('enterpriseFormCode');
+  const industryField = document.getElementById('enterpriseFormIndustry');
+  const scaleField = document.getElementById('enterpriseFormScale');
+  const dateField = document.getElementById('enterpriseFormDate');
+  const employeesField = document.getElementById('enterpriseFormEmployees');
+  const revenueField = document.getElementById('enterpriseFormRevenue');
+  const addressField = document.getElementById('enterpriseFormAddress');
+  const errorEl = document.getElementById('enterpriseFormError');
+
+  if (title) title.textContent = isEdit ? '编辑企业信息' : '添加企业';
+  if (idField) idField.value = isEdit ? ent.id : '';
+  if (nameField) nameField.value = isEdit ? ent.name : '';
+  if (codeField) codeField.value = isEdit ? ent.credit_code : '';
+  if (industryField) industryField.value = isEdit ? ent.industry : (currentNode ? currentNode.name : '');
+  if (scaleField) scaleField.value = isEdit ? ent.scale : '';
+  if (dateField) dateField.value = isEdit ? ent.establishment_date : '';
+  if (employeesField) employeesField.value = isEdit ? ent.employees : '';
+  if (revenueField) revenueField.value = isEdit ? ent.annual_revenue : '';
+  if (addressField) addressField.value = isEdit ? (ent.register_address || '') : '';
+  if (errorEl) errorEl.classList.remove('visible');
+
+  if (overlay) {
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function closeEnterpriseForm() {
+  const overlay = document.getElementById('enterpriseFormOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function bindEnterpriseFormEvents() {
+  const overlay = document.getElementById('enterpriseFormOverlay');
+  const closeBtn = document.getElementById('enterpriseFormClose');
+  const cancelBtn = document.getElementById('enterpriseFormCancel');
+  const form = document.getElementById('enterpriseForm');
+
+  if (closeBtn) closeBtn.addEventListener('click', closeEnterpriseForm);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeEnterpriseForm);
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeEnterpriseForm();
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const errorEl = document.getElementById('enterpriseFormError');
+      const idField = document.getElementById('enterpriseFormId');
+      const nameField = document.getElementById('enterpriseFormName');
+      const codeField = document.getElementById('enterpriseFormCode');
+      const industryField = document.getElementById('enterpriseFormIndustry');
+      const scaleField = document.getElementById('enterpriseFormScale');
+      const dateField = document.getElementById('enterpriseFormDate');
+      const employeesField = document.getElementById('enterpriseFormEmployees');
+      const revenueField = document.getElementById('enterpriseFormRevenue');
+      const addressField = document.getElementById('enterpriseFormAddress');
+
+      const name = (nameField ? nameField.value : '').trim();
+      const code = (codeField ? codeField.value : '').trim().toUpperCase();
+      const industry = (industryField ? industryField.value : '').trim();
+      const scale = scaleField ? scaleField.value : '';
+      const date = dateField ? dateField.value : '';
+      const employees = parseInt(employeesField ? employeesField.value : '', 10);
+      const revenue = parseFloat(revenueField ? revenueField.value : '');
+      const address = (addressField ? addressField.value : '').trim();
+
+      const errors = [];
+      if (!name) errors.push('企业名称不能为空');
+      if (!code) errors.push('统一社会信用代码不能为空');
+      else if (!/^[A-Z0-9]{18}$/.test(code)) errors.push('统一社会信用代码应为18位字母或数字');
+      if (!industry) errors.push('所属行业不能为空');
+      if (!scale) errors.push('请选择企业规模');
+      if (!date) errors.push('成立日期不能为空');
+      if (isNaN(employees) || employees < 1) errors.push('从业人数应为大于0的整数');
+      if (isNaN(revenue) || revenue < 0) errors.push('年产值应为非负数');
+
+      // 统一社会信用代码唯一性校验
+      const editId = idField ? idField.value : '';
+      const duplicate = emEnterprises.find(e => e.credit_code === code && e.id !== editId);
+      if (duplicate) errors.push(`统一社会信用代码已被企业“${duplicate.name}”使用`);
+
+      if (errors.length > 0) {
+        if (errorEl) {
+          errorEl.innerHTML = errors.map(msg => `<div>${escapeHtml(msg)}</div>`).join('');
+          errorEl.classList.add('visible');
+        }
+        return;
+      }
+
+      if (errorEl) errorEl.classList.remove('visible');
+
+      const newEnt = {
+        id: editId || `em_manual_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        name,
+        credit_code: code,
+        industry,
+        scale,
+        establishment_date: date,
+        employees,
+        annual_revenue: revenue,
+        register_address: address || '深圳市南山区高新技术产业区'
+      };
+
+      if (editId) {
+        const idx = emEnterprises.findIndex(e => e.id === editId);
+        if (idx >= 0) {
+          emEnterprises[idx] = newEnt;
+        } else {
+          emEnterprises.push(newEnt);
+        }
+      } else {
+        emEnterprises.push(newEnt);
+      }
+
+      saveModalEnterprises();
+      updateLocalEnterpriseCount();
+      renderEnterpriseModal();
+      closeEnterpriseForm();
+
+      if (typeof showToast === 'function') {
+        showToast(editId ? '企业信息已更新' : '企业已添加', 'success');
+      }
+    });
+  }
+}
+
+function openConfirmModal(message, onOk) {
+  const overlay = document.getElementById('enterpriseConfirmOverlay');
+  const body = document.getElementById('enterpriseConfirmBody');
+  const okBtn = document.getElementById('enterpriseConfirmOk');
+  const cancelBtn = document.getElementById('enterpriseConfirmCancel');
+
+  if (body) body.innerHTML = escapeHtml(message);
+  if (overlay) {
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+
+  const newOkBtn = okBtn.cloneNode(true);
+  okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+  newOkBtn.addEventListener('click', () => {
+    if (typeof onOk === 'function') onOk();
+  });
+
+  const newCancelBtn = cancelBtn.cloneNode(true);
+  cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+  newCancelBtn.addEventListener('click', closeConfirmModal);
+}
+
+function closeConfirmModal() {
+  const overlay = document.getElementById('enterpriseConfirmOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function bindConfirmModalEvents() {
+  const overlay = document.getElementById('enterpriseConfirmOverlay');
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeConfirmModal();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const formOverlay = document.getElementById('enterpriseFormOverlay');
+    const confirmOverlay = document.getElementById('enterpriseConfirmOverlay');
+    const listOverlay = document.getElementById('enterpriseModalOverlay');
+    if (formOverlay && formOverlay.classList.contains('active')) {
+      closeEnterpriseForm();
+    } else if (confirmOverlay && confirmOverlay.classList.contains('active')) {
+      closeConfirmModal();
+    } else if (listOverlay && listOverlay.classList.contains('active')) {
+      closeEnterpriseModal();
+    }
+  });
+}
+
+function updateLocalEnterpriseCount() {
+  if (!currentNode) return;
+  currentNode.localCount = emEnterprises.length;
+  const head = document.getElementById('nodeDetailHead');
+  if (head) {
+    head.innerHTML = renderSegmentHeadHTML(currentNode, null, { showDashboard: true });
+  }
+}
+
+function debounce(fn, wait) {
+  let timer = null;
+  return function (...args) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), wait);
+  };
 }
 
 function showLoading(show) {

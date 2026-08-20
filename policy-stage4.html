@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第四阶段：政策成效分析（对比与绩效评估）</title>
+
+  <!-- 项目公共样式 -->
+  <link rel="stylesheet" href="css/common.css?v=15">
+  <!-- 当前页面专用样式 -->
+  <link rel="stylesheet" href="css/policy-stage4.css?v=1">
+
+  <!-- 避免浏览器自动请求 favicon 产生 404 -->
+  <link rel="icon" href="data:,">
+
+  <!-- FontAwesome 图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js 图表库 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- 项目全局组件与配置（加载顺序：配置 -> 头部 -> 侧边栏） -->
+  <script src="js/config/menu-config.js?v=6"></script>
+  <script src="js/components/GovHeader.js?v=3"></script>
+  <script src="js/components/SideNav.js?v=6"></script>
+</head>
+<body>
+  <!-- 项目统一顶部导航 -->
+  <gov-header></gov-header>
+
+  <div class="page-layout">
+    <!-- 项目统一侧边栏导航 -->
+    <side-nav></side-nav>
+
+    <!-- 页面主内容区 -->
+    <main class="page-content">
+      <div class="policy-stage4-page ps4-custom-scrollbar">
+        <div class="ps4-container">
+
+          <!-- 页面标题与操作区 -->
+          <div class="ps4-page-header">
+            <div class="ps4-page-title-wrap">
+              <h1>
+                <i class="fa-solid fa-chart-line"></i>
+                政策成效分析（对比与绩效评估）
+              </h1>
+              <p class="ps4-page-subtitle">基于补贴发放时间戳，量化对比奖补前后经营指标变化与政策撬动效应</p>
+            </div>
+            <div class="ps4-page-actions">
+              <button id="ps4BtnExport" class="ps4-btn ps4-btn--secondary">
+                <i class="fa-solid fa-download"></i>
+                导出评估报告
+              </button>
+              <button class="ps4-btn ps4-btn--primary">
+                <i class="fa-solid fa-share-nodes"></i>
+                分享结果
+              </button>
+            </div>
+          </div>
+
+          <!-- 政策批次与基准时间设置卡片 -->
+          <div class="ps4-card">
+            <div class="ps4-policy-info">
+              <div class="ps4-policy-meta">
+                <div class="ps4-policy-name-row">
+                  <span class="ps4-status-tag ps4-status-tag--success">打款完成</span>
+                  <h2>2025年度先进制造业专项扶持资金</h2>
+                </div>
+                <div class="ps4-policy-props">
+                  <span><i class="fa-solid fa-hashtag"></i> 政策编号: POL-2025-0892</span>
+                  <span class="ps4-dot-separator">•</span>
+                  <span><i class="fa-solid fa-coins"></i> 资金总额: 1.00 亿元</span>
+                  <span class="ps4-dot-separator">•</span>
+                  <span><i class="fa-solid fa-building"></i> 初始拟奖补企业: 200 家</span>
+                </div>
+              </div>
+
+              <!-- 关键组件：时间戳基准与控制箱 -->
+              <div class="ps4-timestamp-box">
+                <div class="ps4-timestamp-item">
+                  <i class="fa-regular fa-calendar"></i>
+                  <label>补贴发放时间戳 (T₀):</label>
+                  <input type="date" id="ps4TimestampInput" value="2025-05-11">
+                </div>
+                <div class="ps4-timestamp-divider"></div>
+                <div class="ps4-timestamp-item">
+                  <span>观察窗口: <strong>前后 12 个月</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 主工作区：左侧分析主面板，右侧样本过滤面板 -->
+          <div class="ps4-workspace">
+
+            <!-- 左侧：成效分析主体 -->
+            <div class="ps4-main-col">
+
+              <!-- 核心增量指标 (成果看板) -->
+              <div>
+                <div class="ps4-card-header" style="padding-left: 0; padding-right: 0; border-bottom: none;">
+                  <h3 class="ps4-card-title">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    发奖补后1年内核心增量指标
+                  </h3>
+                  <span class="ps4-chart-desc">计算周期: 2025-05-11 ~ 2026-05-11</span>
+                </div>
+
+                <div class="ps4-stats-grid">
+                  <!-- 指标 1 -->
+                  <div class="ps4-stat-card ps4-stat-card--indigo">
+                    <div class="ps4-stat-label">新增专精特新/小巨人</div>
+                    <div class="ps4-stat-value">
+                      <span id="ps4StatSpec">12</span>
+                      <span>家</span>
+                    </div>
+                    <div class="ps4-stat-trend ps4-stat-trend--up">
+                      <i class="fa-solid fa-arrow-trend-up"></i>
+                      <span>占比提升 6.6%</span>
+                    </div>
+                    <i class="fa-solid fa-award ps4-stat-bg-icon"></i>
+                  </div>
+
+                  <!-- 指标 2 -->
+                  <div class="ps4-stat-card ps4-stat-card--blue">
+                    <div class="ps4-stat-label">新增国高企业数</div>
+                    <div class="ps4-stat-value">
+                      <span id="ps4StatHighTech">28</span>
+                      <span>家</span>
+                    </div>
+                    <div class="ps4-stat-trend ps4-stat-trend--up">
+                      <i class="fa-solid fa-arrow-trend-up"></i>
+                      <span>新增转化率 15.5%</span>
+                    </div>
+                    <i class="fa-solid fa-shield-halved ps4-stat-bg-icon"></i>
+                  </div>
+
+                  <!-- 指标 3 -->
+                  <div class="ps4-stat-card ps4-stat-card--amber">
+                    <div class="ps4-stat-label">新增授权专利数</div>
+                    <div class="ps4-stat-value">
+                      <span id="ps4StatPatent">342</span>
+                      <span>件</span>
+                    </div>
+                    <div class="ps4-stat-trend ps4-stat-trend--note">
+                      <span>含发明专利 118 件</span>
+                    </div>
+                    <i class="fa-regular fa-lightbulb ps4-stat-bg-icon"></i>
+                  </div>
+
+                  <!-- 指标 4 -->
+                  <div class="ps4-stat-card ps4-stat-card--purple">
+                    <div class="ps4-stat-label">新增上市/融资企业</div>
+                    <div class="ps4-stat-value">
+                      <span id="ps4StatFunding">7</span>
+                      <span>家</span>
+                    </div>
+                    <div class="ps4-stat-trend" style="color: var(--ps4-purple-600);">
+                      <span>累计融资 4.2 亿元</span>
+                    </div>
+                    <i class="fa-solid fa-circle-dollar-to-slot ps4-stat-bg-icon"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 双曲线对比图表：工业总产值趋势 -->
+              <div class="ps4-card ps4-chart-card">
+                <div class="ps4-chart-header">
+                  <div>
+                    <h3 class="ps4-chart-title">
+                      <i class="fa-solid fa-wave-square"></i>
+                      奖补前12个月 vs 奖补后12个月：工业总产值对比
+                    </h3>
+                    <p class="ps4-chart-desc">虚线为奖补前历史趋势，实线为奖补后实际经营轨迹（基准点：2025年5月）</p>
+                  </div>
+                </div>
+
+                <div class="ps4-chart-canvas">
+                  <canvas id="ps4DualTrendChart"></canvas>
+                </div>
+
+                <!-- 归因备注/异常影响提示 -->
+                <div class="ps4-alert-note">
+                  <i class="fa-solid fa-circle-info"></i>
+                  <div>
+                    <strong>宏观与环境因子归因提示：</strong>
+                    第 7-9 个月（2025年11月-2026年1月）出现的产值增速放缓，主要受行业原材料价格上涨及季节性停工影响。在剔除异常样本后，整体年化增长率仍达 <strong id="ps4GrowthRateText">14.2%</strong>。
+                  </div>
+                </div>
+              </div>
+
+              <!-- 就业带动比趋势图 -->
+              <div class="ps4-card ps4-chart-card">
+                <div class="ps4-chart-header ps4-chart-header--row">
+                  <div>
+                    <h3 class="ps4-chart-title">
+                      <i class="fa-solid fa-users"></i>
+                      就业带动比增长趋势 (%)
+                    </h3>
+                    <p class="ps4-chart-desc">以奖补发放月社保人数为基数，统计企业新增用工贡献率</p>
+                  </div>
+                  <div class="ps4-chart-value">
+                    <div class="ps4-chart-value-label">较奖补前平均增幅</div>
+                    <div class="ps4-chart-value-number" id="ps4EmploymentGrowth">+8.4%</div>
+                  </div>
+                </div>
+
+                <div class="ps4-chart-canvas ps4-chart-canvas--sm">
+                  <canvas id="ps4EmploymentChart"></canvas>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- 右侧：样本过滤与名单维护 -->
+            <div class="ps4-side-col">
+
+              <!-- 样本企业动态控制台 -->
+              <div class="ps4-card ps4-sample-panel">
+
+                <!-- 控制台头部 -->
+                <div class="ps4-sample-header">
+                  <div class="ps4-sample-title-row">
+                    <h3 class="ps4-sample-title">
+                      <i class="fa-solid fa-filter"></i>
+                      评估样本企业维护
+                    </h3>
+                    <span class="ps4-sample-count">
+                      入选: <span id="ps4SelectedCount">180</span> / <span id="ps4TotalCount">200</span> 家
+                    </span>
+                  </div>
+                  <p class="ps4-sample-hint">
+                    可手动勾选剔除退资、跑路或破产的企业，点击分析后将以剩余样本重新拟合评估。
+                  </p>
+
+                  <!-- 快捷筛选与搜索 -->
+                  <div class="ps4-sample-filter">
+                    <div class="ps4-search-box">
+                      <i class="fa-solid fa-magnifying-glass"></i>
+                      <input type="text" id="ps4SearchInput" placeholder="搜索企业名称...">
+                    </div>
+                    <select id="ps4StatusFilter" class="ps4-select">
+                      <option value="all">全部状态</option>
+                      <option value="normal">状态正常</option>
+                      <option value="abnormal">有异常标注</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 企业列表区域（滚动条） -->
+                <div class="ps4-company-list ps4-custom-scrollbar" id="ps4CompanyList">
+                  <!-- 动态注入列表项 -->
+                </div>
+
+                <!-- 控制台底部一键重算操作按钮 -->
+                <div class="ps4-sample-footer">
+                  <button id="ps4BtnReanalyze" class="ps4-btn ps4-btn--primary ps4-btn--block">
+                    <i class="fa-solid fa-rotate" id="ps4RefreshIcon"></i>
+                    <span>剔除选中项并重新分析</span>
+                  </button>
+                  <div class="ps4-sample-footer-note">
+                    * 重新分析不会更改原始政策发放记录
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- 评估结论辅助速记面板 -->
+              <div class="ps4-conclusion-card">
+                <h4 class="ps4-conclusion-title">
+                  <i class="fa-solid fa-file-circle-check"></i>
+                  绩效评估综合结论速记
+                </h4>
+                <ul class="ps4-conclusion-list">
+                  <li>杠杆效应明显：1亿元奖补资金直接拉动产值增量约 <span class="ps4-highlight">8.4 亿元</span>。</li>
+                  <li>创新集聚效应：新增专利授权量同步上升 <span class="ps4-highlight">24%</span>。</li>
+                  <li>已剔除 <span id="ps4AbnormalCountTag" class="ps4-highlight ps4-highlight--danger">20</span> 家经营异常企业，排除极端坏账干扰。</li>
+                </ul>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 当前页面业务脚本 -->
+  <script src="js/policy-stage4.js?v=1"></script>
+</body>
+</html>

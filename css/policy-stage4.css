@@ -1,0 +1,782 @@
+/* ============================================================
+   政策分析第四阶段：政策成效分析（对比与绩效评估）
+   原生自定义样式（BEM-like，前缀 ps4-*）
+   复刻参考页视觉风格，禁用 Tailwind / Lucide
+   ============================================================ */
+
+/* ---- 变量 ---- */
+:root {
+  --ps4-bg: #f8fafc;
+  --ps4-surface: #ffffff;
+  --ps4-text: #1e293b;
+  --ps4-text-secondary: #64748b;
+  --ps4-text-tertiary: #94a3b8;
+  --ps4-border: #e2e8f0;
+  --ps4-border-light: #f1f5f9;
+
+  --ps4-blue-50: #eff6ff;
+  --ps4-blue-100: #dbeafe;
+  --ps4-blue-500: #3b82f6;
+  --ps4-blue-600: #2563eb;
+  --ps4-blue-700: #1d4ed8;
+
+  --ps4-indigo-50: #eef2ff;
+  --ps4-indigo-100: #e0e7ff;
+  --ps4-indigo-500: #6366f1;
+  --ps4-indigo-600: #4f46e5;
+  --ps4-indigo-700: #4338ca;
+
+  --ps4-slate-50: #f8fafc;
+  --ps4-slate-100: #f1f5f9;
+  --ps4-slate-200: #e2e8f0;
+  --ps4-slate-300: #cbd5e1;
+  --ps4-slate-400: #94a3b8;
+  --ps4-slate-500: #64748b;
+  --ps4-slate-600: #475569;
+  --ps4-slate-700: #334155;
+  --ps4-slate-800: #1e293b;
+  --ps4-slate-900: #0f172a;
+
+  --ps4-emerald-50: #ecfdf5;
+  --ps4-emerald-100: #d1fae5;
+  --ps4-emerald-500: #10b981;
+  --ps4-emerald-600: #059669;
+  --ps4-emerald-700: #047857;
+
+  --ps4-amber-50: #fffbeb;
+  --ps4-amber-100: #fef3c7;
+  --ps4-amber-500: #f59e0b;
+  --ps4-amber-600: #d97706;
+
+  --ps4-rose-50: #fff1f2;
+  --ps4-rose-100: #ffe4e6;
+  --ps4-rose-500: #f43f5e;
+  --ps4-rose-600: #e11d48;
+
+  --ps4-purple-500: #a855f7;
+  --ps4-purple-600: #9333ea;
+
+  --ps4-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --ps4-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --ps4-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
+  --ps4-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08);
+
+  --ps4-radius-sm: 4px;
+  --ps4-radius: 6px;
+  --ps4-radius-md: 8px;
+  --ps4-radius-lg: 12px;
+  --ps4-radius-xl: 16px;
+  --ps4-radius-full: 9999px;
+
+  --ps4-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---- 动画 ---- */
+@keyframes ps4-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ps4-scale-up {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ps4-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ps4-fade-in { animation: ps4-fade-in 0.2s ease-out forwards; }
+.ps4-scale-up { animation: ps4-scale-up 0.2s ease-out forwards; }
+.ps4-spin { animation: ps4-spin 1s linear infinite; }
+
+/* ---- 滚动条 ---- */
+.ps4-custom-scrollbar { scrollbar-width: thin; }
+.ps4-custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.ps4-custom-scrollbar::-webkit-scrollbar-track { background: var(--ps4-slate-100); border-radius: 3px; }
+.ps4-custom-scrollbar::-webkit-scrollbar-thumb { background: var(--ps4-slate-300); border-radius: 3px; }
+.ps4-custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--ps4-slate-400); }
+
+/* ---- 页面包装 ---- */
+.policy-stage4-page {
+  min-height: 100%;
+  background: var(--ps4-bg);
+  border-radius: var(--ps4-radius);
+  padding: 24px;
+}
+
+.ps4-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---- 面包屑 / 顶部标题 ---- */
+.ps4-top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ps4-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ps4-text-secondary);
+}
+
+.ps4-breadcrumb i { font-size: 12px; color: var(--ps4-slate-400); }
+.ps4-breadcrumb span:last-child { color: var(--ps4-text); font-weight: 500; }
+
+.ps4-stage-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--ps4-indigo-50);
+  border: 1px solid var(--ps4-indigo-100);
+  border-radius: var(--ps4-radius-full);
+  color: var(--ps4-indigo-700);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ps4-stage-indicator i { font-size: 13px; }
+
+/* ---- 页面标题与操作区 ---- */
+.ps4-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ps4-page-title-wrap h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ps4-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 4px 0;
+}
+
+.ps4-page-title-wrap h1 i { color: var(--ps4-indigo-600); font-size: 22px; }
+
+.ps4-page-subtitle {
+  font-size: 13px;
+  color: var(--ps4-text-secondary);
+}
+
+.ps4-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---- 按钮 ---- */
+.ps4-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--ps4-radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--ps4-transition);
+  border: 1px solid transparent;
+}
+
+.ps4-btn i { font-size: 13px; }
+
+.ps4-btn--primary {
+  background: var(--ps4-indigo-600);
+  color: #fff;
+  border-color: var(--ps4-indigo-600);
+  box-shadow: var(--ps4-shadow-sm);
+}
+.ps4-btn--primary:hover { background: var(--ps4-indigo-700); border-color: var(--ps4-indigo-700); }
+
+.ps4-btn--secondary {
+  background: #fff;
+  color: var(--ps4-slate-700);
+  border-color: var(--ps4-slate-200);
+}
+.ps4-btn--secondary:hover { background: var(--ps4-slate-50); border-color: var(--ps4-slate-300); }
+
+.ps4-btn--block { width: 100%; }
+
+/* ---- 通用卡片 ---- */
+.ps4-card {
+  background: var(--ps4-surface);
+  border-radius: var(--ps4-radius-lg);
+  border: 1px solid var(--ps4-border);
+  box-shadow: var(--ps4-shadow-sm);
+}
+
+.ps4-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ps4-border-light);
+}
+
+.ps4-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ps4-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.ps4-card-title i { color: var(--ps4-indigo-600); font-size: 16px; }
+
+.ps4-card-subtitle {
+  font-size: 12px;
+  color: var(--ps4-text-secondary);
+  margin-top: 2px;
+}
+
+.ps4-card-body { padding: 20px; }
+
+/* ---- 政策批次信息卡片 ---- */
+.ps4-policy-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+}
+
+.ps4-policy-meta { display: flex; flex-direction: column; gap: 6px; }
+
+.ps4-policy-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ps4-policy-name-row h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ps4-text);
+  margin: 0;
+}
+
+.ps4-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--ps4-radius-full);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ps4-status-tag--success {
+  background: var(--ps4-emerald-100);
+  color: var(--ps4-emerald-700);
+}
+
+.ps4-policy-props {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ps4-text-secondary);
+}
+
+.ps4-policy-props span { display: inline-flex; align-items: center; gap: 4px; }
+.ps4-policy-props i { font-size: 11px; }
+
+.ps4-timestamp-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--ps4-slate-50);
+  border: 1px solid var(--ps4-slate-200);
+  border-radius: var(--ps4-radius-md);
+}
+
+.ps4-timestamp-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.ps4-timestamp-item label {
+  font-weight: 600;
+  color: var(--ps4-slate-600);
+}
+
+.ps4-timestamp-item input[type="date"] {
+  padding: 4px 8px;
+  border: 1px solid var(--ps4-slate-300);
+  border-radius: var(--ps4-radius-sm);
+  font-size: 12px;
+  color: var(--ps4-text);
+  background: #fff;
+  font-family: inherit;
+}
+
+.ps4-timestamp-item input[type="date"]:focus {
+  outline: none;
+  border-color: var(--ps4-indigo-500);
+  box-shadow: 0 0 0 2px var(--ps4-indigo-100);
+}
+
+.ps4-timestamp-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--ps4-slate-300);
+}
+
+/* ---- 主工作区网格 ---- */
+.ps4-workspace {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .ps4-workspace { grid-template-columns: 2fr 1fr; }
+}
+
+.ps4-main-col,
+.ps4-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---- 统计指标卡片 ---- */
+.ps4-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .ps4-stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.ps4-stat-card {
+  background: var(--ps4-surface);
+  border-radius: var(--ps4-radius-lg);
+  border: 1px solid var(--ps4-border);
+  box-shadow: var(--ps4-shadow-sm);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ps4-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ps4-text-secondary);
+  margin-bottom: 6px;
+}
+
+.ps4-stat-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.ps4-stat-value span:first-child {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ps4-stat-value span:last-child {
+  font-size: 12px;
+  color: var(--ps4-text-secondary);
+}
+
+.ps4-stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ps4-stat-trend--up { color: var(--ps4-emerald-600); }
+.ps4-stat-trend--note { color: var(--ps4-text-secondary); }
+
+.ps4-stat-bg-icon {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  font-size: 64px;
+  opacity: 0.05;
+  line-height: 1;
+}
+
+.ps4-stat-card--indigo .ps4-stat-value span:first-child { color: var(--ps4-indigo-600); }
+.ps4-stat-card--indigo .ps4-stat-bg-icon { color: var(--ps4-indigo-600); }
+
+.ps4-stat-card--blue .ps4-stat-value span:first-child { color: var(--ps4-blue-600); }
+.ps4-stat-card--blue .ps4-stat-bg-icon { color: var(--ps4-blue-600); }
+
+.ps4-stat-card--amber .ps4-stat-value span:first-child { color: var(--ps4-amber-600); }
+.ps4-stat-card--amber .ps4-stat-bg-icon { color: var(--ps4-amber-600); }
+
+.ps4-stat-card--purple .ps4-stat-value span:first-child { color: var(--ps4-purple-600); }
+.ps4-stat-card--purple .ps4-stat-bg-icon { color: var(--ps4-purple-600); }
+
+/* ---- 图表卡片 ---- */
+.ps4-chart-card { padding: 20px; }
+
+.ps4-chart-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ps4-border-light);
+}
+
+.ps4-chart-header--row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ps4-chart-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ps4-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.ps4-chart-title i { color: var(--ps4-indigo-600); font-size: 16px; }
+
+.ps4-chart-desc {
+  font-size: 12px;
+  color: var(--ps4-text-secondary);
+}
+
+.ps4-chart-value {
+  text-align: right;
+}
+
+.ps4-chart-value-label {
+  font-size: 11px;
+  color: var(--ps4-text-secondary);
+}
+
+.ps4-chart-value-number {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ps4-emerald-600);
+}
+
+.ps4-chart-canvas {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+.ps4-chart-canvas--sm { height: 220px; }
+
+.ps4-alert-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--ps4-amber-50);
+  border: 1px solid #fde68a;
+  border-radius: var(--ps4-radius-md);
+  font-size: 12px;
+  color: #92400e;
+}
+
+.ps4-alert-note i {
+  margin-top: 1px;
+  color: var(--ps4-amber-600);
+  font-size: 13px;
+}
+
+.ps4-alert-note strong { color: #78350f; }
+
+/* ---- 右侧样本企业维护面板 ---- */
+.ps4-sample-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 520px;
+}
+
+.ps4-sample-header {
+  padding: 16px;
+  background: var(--ps4-slate-50);
+  border-bottom: 1px solid var(--ps4-border-light);
+  border-radius: var(--ps4-radius-lg) var(--ps4-radius-lg) 0 0;
+}
+
+.ps4-sample-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.ps4-sample-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ps4-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.ps4-sample-title i { color: var(--ps4-indigo-600); font-size: 14px; }
+
+.ps4-sample-count {
+  padding: 3px 10px;
+  background: var(--ps4-indigo-50);
+  color: var(--ps4-indigo-700);
+  border-radius: var(--ps4-radius-full);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ps4-sample-hint {
+  font-size: 12px;
+  color: var(--ps4-text-secondary);
+  line-height: 1.5;
+}
+
+.ps4-sample-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ps4-search-box {
+  position: relative;
+  flex: 1;
+}
+
+.ps4-search-box i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--ps4-text-tertiary);
+}
+
+.ps4-search-box input {
+  width: 100%;
+  padding: 7px 10px 7px 28px;
+  border: 1px solid var(--ps4-slate-200);
+  border-radius: var(--ps4-radius-md);
+  font-size: 12px;
+  color: var(--ps4-text);
+  background: #fff;
+  font-family: inherit;
+}
+
+.ps4-search-box input:focus {
+  outline: none;
+  border-color: var(--ps4-indigo-500);
+  box-shadow: 0 0 0 2px var(--ps4-indigo-100);
+}
+
+.ps4-select {
+  padding: 7px 10px;
+  border: 1px solid var(--ps4-slate-200);
+  border-radius: var(--ps4-radius-md);
+  font-size: 12px;
+  color: var(--ps4-slate-600);
+  background: #fff;
+  font-family: inherit;
+  min-width: 100px;
+}
+
+.ps4-select:focus {
+  outline: none;
+  border-color: var(--ps4-indigo-500);
+  box-shadow: 0 0 0 2px var(--ps4-indigo-100);
+}
+
+.ps4-company-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  max-height: 420px;
+}
+
+.ps4-company-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--ps4-border-light);
+}
+
+.ps4-company-item--abnormal {
+  background: var(--ps4-rose-50);
+  border: 1px solid var(--ps4-rose-100);
+  border-radius: var(--ps4-radius-md);
+  margin: 6px 0;
+  padding: 10px;
+}
+
+.ps4-company-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ps4-company-main input[type="checkbox"] {
+  margin-top: 2px;
+  width: 14px;
+  height: 14px;
+  accent-color: var(--ps4-indigo-600);
+  flex-shrink: 0;
+}
+
+.ps4-company-info { min-width: 0; }
+
+.ps4-company-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ps4-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ps4-company-item--abnormal .ps4-company-name {
+  text-decoration: line-through;
+  color: var(--ps4-text-tertiary);
+}
+
+.ps4-company-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.ps4-company-tag {
+  font-size: 10px;
+  color: var(--ps4-text-secondary);
+}
+
+.ps4-company-tag--danger {
+  background: var(--ps4-rose-100);
+  color: var(--ps4-rose-600);
+  padding: 1px 6px;
+  border-radius: var(--ps4-radius-sm);
+  font-weight: 700;
+}
+
+.ps4-company-id {
+  font-size: 10px;
+  color: var(--ps4-text-tertiary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ps4-sample-footer {
+  padding: 14px 16px;
+  background: var(--ps4-slate-50);
+  border-top: 1px solid var(--ps4-border-light);
+  border-radius: 0 0 var(--ps4-radius-lg) var(--ps4-radius-lg);
+}
+
+.ps4-sample-footer-note {
+  text-align: center;
+  font-size: 10px;
+  color: var(--ps4-text-tertiary);
+  margin-top: 8px;
+}
+
+/* ---- 绩效评估综合结论速记面板 ---- */
+.ps4-conclusion-card {
+  background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);
+  color: #fff;
+  border-radius: var(--ps4-radius-lg);
+  padding: 20px;
+  box-shadow: var(--ps4-shadow-md);
+}
+
+.ps4-conclusion-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+}
+
+.ps4-conclusion-title i { color: #a5b4fc; font-size: 16px; }
+
+.ps4-conclusion-list {
+  list-style: disc;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ps4-conclusion-list li::marker { color: #a5b4fc; }
+
+.ps4-highlight { font-weight: 700; color: #fcd34d; }
+.ps4-highlight--danger { color: #fda4af; }
+
+/* ---- 响应式辅助 ---- */
+@media (max-width: 1023px) {
+  .policy-stage4-page { padding: 16px; }
+  .ps4-container { gap: 16px; }
+  .ps4-page-header { flex-direction: column; align-items: flex-start; }
+  .ps4-page-actions { width: 100%; }
+  .ps4-policy-info { flex-direction: column; align-items: flex-start; }
+  .ps4-timestamp-box { width: 100%; }
+  .ps4-chart-header--row { flex-direction: column; align-items: flex-start; }
+  .ps4-chart-value { text-align: left; width: 100%; }
+  .ps4-sample-panel { min-height: auto; }
+}
+
+@media (max-width: 639px) {
+  .ps4-stats-grid { grid-template-columns: 1fr; }
+  .ps4-policy-props { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .ps4-policy-props .ps4-dot-separator { display: none; }
+  .ps4-timestamp-item input[type="date"] { width: 100%; }
+  .ps4-timestamp-divider { display: none; }
+}

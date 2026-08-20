@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>政策财政资金风控平台 - 第三阶段：事中事后监管期</title>
+
+  <!-- 项目公共样式 -->
+  <link rel="stylesheet" href="css/common.css?v=15">
+  <!-- 当前页面专用样式 -->
+  <link rel="stylesheet" href="css/policy-stage3.css?v=1">
+
+  <!-- 避免浏览器自动请求 favicon 产生 404 -->
+  <link rel="icon" href="data:,">
+
+  <!-- FontAwesome 图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- 项目全局组件与配置（加载顺序：配置 -> 头部 -> 侧边栏） -->
+  <script src="js/config/menu-config.js?v=6"></script>
+  <script src="js/components/GovHeader.js?v=3"></script>
+  <script src="js/components/SideNav.js?v=6"></script>
+</head>
+<body>
+  <!-- 项目统一顶部导航 -->
+  <gov-header></gov-header>
+
+  <div class="page-layout">
+    <!-- 项目统一侧边栏导航 -->
+    <side-nav></side-nav>
+
+    <!-- 页面主内容区 -->
+    <main class="page-content">
+      <div class="policy-stage3-page ps3-custom-scrollbar">
+        <div class="ps3-container">
+          <!-- ============================================================
+               页面标题与操作区
+               ============================================================ -->
+          <div class="ps3-page-header">
+            <div class="ps3-page-title-wrap">
+              <div class="ps3-page-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div>
+                <h1 class="ps3-page-title">
+                  政策财政资金风控平台
+                  <span class="ps3-page-tag">第三阶段：事中事后监管期</span>
+                </h1>
+                <p class="ps3-page-subtitle">资金安全兜底 · 实时风险拦截 · 运维留痕闭环</p>
+              </div>
+            </div>
+
+            <div class="ps3-page-actions">
+              <button class="ps3-btn ps3-btn--secondary" onclick="openApiStatusModal()">
+                <i class="fa-solid fa-database ps3-btn__icon ps3-btn__icon--success"></i>
+                <span>科创风控 12项API: 正常</span>
+              </button>
+
+              <button class="ps3-btn ps3-btn--secondary" onclick="openAuditLogsModal()">
+                <i class="fa-solid fa-clock-rotate-left ps3-btn__icon ps3-btn__icon--info"></i>
+                <span>审计日志</span>
+              </button>
+
+              <div class="ps3-user-mini">
+                <div class="ps3-user-mini__avatar">审</div>
+                <div class="ps3-user-mini__info">
+                  <div class="ps3-user-mini__name">张审核员</div>
+                  <div class="ps3-user-mini__dept">财政资金核查组</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================
+               顶部核心数据看板
+               ============================================================ -->
+          <div class="ps3-stats-grid">
+            <!-- 卡片1：监管中名单 -->
+            <div class="ps3-stat-card ps3-stat-card--blue">
+              <div class="ps3-stat-card__header">
+                <div>
+                  <p class="ps3-stat-card__label">监管中政策名单数</p>
+                  <h3 class="ps3-stat-card__value">
+                    <span id="ps3-stat-total-lists">3</span>
+                    <span class="ps3-stat-card__unit">批次</span>
+                  </h3>
+                </div>
+                <div class="ps3-stat-card__icon ps3-stat-card__icon--blue">
+                  <i class="fa-solid fa-layer-group"></i>
+                </div>
+              </div>
+              <div class="ps3-stat-card__footer">
+                <span class="ps3-stat-card__trend ps3-stat-card__trend--success">
+                  <i class="fa-solid fa-circle-check"></i> 均已关联
+                </span>
+                <span class="ps3-stat-card__desc">科创风控时间戳引擎</span>
+              </div>
+            </div>
+
+            <!-- 卡片2：本月需拦截/追回资金总额 -->
+            <div class="ps3-stat-card ps3-stat-card--red">
+              <div class="ps3-stat-card__header">
+                <div>
+                  <div class="ps3-stat-card__label-wrap">
+                    <p class="ps3-stat-card__label ps3-stat-card__label--danger">本月需拦截/追回资金总额</p>
+                    <span class="ps3-stat-card__tag ps3-stat-card__tag--danger">实时痛点</span>
+                  </div>
+                  <h3 class="ps3-stat-card__value ps3-stat-card__value--danger">
+                    <span id="ps3-stat-intercept-amount">0.0</span>
+                    <span class="ps3-stat-card__unit ps3-stat-card__unit--danger">万元</span>
+                  </h3>
+                </div>
+                <div class="ps3-stat-card__icon ps3-stat-card__icon--red ps3-pulse">
+                  <i class="fa-solid fa-dollar-sign"></i>
+                </div>
+              </div>
+              <div class="ps3-stat-card__footer ps3-stat-card__footer--split">
+                <span class="ps3-stat-card__desc">资金安全保障率: <strong>100%</strong></span>
+                <span class="ps3-stat-card__highlight">避免财政损失</span>
+              </div>
+            </div>
+
+            <!-- 卡片3：异常需处置企业数 -->
+            <div class="ps3-stat-card ps3-stat-card--amber">
+              <div class="ps3-stat-card__header">
+                <div>
+                  <p class="ps3-stat-card__label">异常需处置企业数</p>
+                  <h3 class="ps3-stat-card__value ps3-stat-card__value--amber">
+                    <span id="ps3-stat-intercept-count">0</span>
+                    <span class="ps3-stat-card__unit">家</span>
+                  </h3>
+                </div>
+                <div class="ps3-stat-card__icon ps3-stat-card__icon--amber">
+                  <i class="fa-solid fa-building"></i>
+                </div>
+              </div>
+              <div class="ps3-stat-card__footer">
+                <span class="ps3-stat-card__trend ps3-stat-card__trend--amber">实时统计</span>
+                <span class="ps3-stat-card__desc">命中主要风险指标</span>
+              </div>
+            </div>
+
+            <!-- 卡片4：待处理紧急预警 -->
+            <div class="ps3-stat-card ps3-stat-card--purple">
+              <div class="ps3-stat-card__header">
+                <div>
+                  <p class="ps3-stat-card__label">待处理紧急预警</p>
+                  <h3 class="ps3-stat-card__value">
+                    <span id="ps3-stat-urgent-alerts">0</span>
+                    <span class="ps3-stat-card__unit">条</span>
+                  </h3>
+                </div>
+                <div class="ps3-stat-card__icon ps3-stat-card__icon--purple">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+              </div>
+              <div class="ps3-stat-card__footer">
+                <i class="fa-solid fa-clock ps3-stat-card__footer-icon"></i>
+                <span class="ps3-stat-card__desc">平均复核响应 &lt; 24h</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================
+               监管列表高级筛选区
+               ============================================================ -->
+          <div class="ps3-filter-panel">
+            <div class="ps3-filter-panel__header">
+              <div class="ps3-filter-panel__title">
+                <i class="fa-solid fa-filter"></i>
+                <span>监管列表高级筛选</span>
+              </div>
+
+              <div class="ps3-filter-panel__actions">
+                <div class="ps3-search-box">
+                  <i class="fa-solid fa-magnifying-glass ps3-search-box__icon"></i>
+                  <input
+                    id="ps3-search-input"
+                    type="text"
+                    class="ps3-search-box__input"
+                    placeholder="搜索企业名称 / 统一社会信用代码..."
+                    oninput="handleSearchInput(event)"
+                  />
+                </div>
+
+                <button class="ps3-btn ps3-btn--ghost" onclick="resetFilters()">
+                  重置
+                </button>
+              </div>
+            </div>
+
+            <div class="ps3-filter-panel__body">
+              <div class="ps3-filter-field">
+                <label class="ps3-filter-field__label" for="ps3-filter-list">监管期名单批次</label>
+                <select id="ps3-filter-list" class="ps3-select" onchange="renderTable()">
+                  <option value="ALL">全部名单 (共3批)</option>
+                  <option value="2025年第一批高新技术产业扶持资金名单">2025年第一批高新技术扶持资金名单</option>
+                  <option value="2025年战略性新兴产业特别补助">2025年战略性新兴产业特别补助</option>
+                  <option value="2025年重大科技专项研发补贴">2025年重大科技专项研发补贴</option>
+                </select>
+              </div>
+
+              <div class="ps3-filter-field">
+                <label class="ps3-filter-field__label" for="ps3-filter-alert-level">预警严重等级</label>
+                <select id="ps3-filter-alert-level" class="ps3-select" onchange="renderTable()">
+                  <option value="ALL">全部等级</option>
+                  <option value="紧急">🟥 紧急 (破产/严重失信)</option>
+                  <option value="高">🟧 高 (异动/欠税/清退)</option>
+                  <option value="中">🟨 中 (经营异常/社保/处罚)</option>
+                  <option value="低">🟦 低 (信息不全)</option>
+                  <option value="无">⚪ 正常无预警</option>
+                </select>
+              </div>
+
+              <div class="ps3-filter-field">
+                <label class="ps3-filter-field__label" for="ps3-filter-status">资金拦截处置状态</label>
+                <select id="ps3-filter-status" class="ps3-select" onchange="renderTable()">
+                  <option value="ALL">全部状态</option>
+                  <option value="已预警">预警待拦截</option>
+                  <option value="已拦截">已直接拦截 (暂缓拨付)</option>
+                  <option value="已追回">已追回资金</option>
+                  <option value="正常">正常监管中</option>
+                </select>
+              </div>
+
+              <div class="ps3-filter-field">
+                <label class="ps3-filter-field__label" for="ps3-filter-indicator">命中科创风控指标</label>
+                <select id="ps3-filter-indicator" class="ps3-select" onchange="renderTable()">
+                  <option value="ALL">全部 12 项指标</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================
+               监管期企业动态表格
+               ============================================================ -->
+          <div class="ps3-table-card">
+            <div class="ps3-table-card__header">
+              <div class="ps3-table-card__title-wrap">
+                <h2 class="ps3-table-card__title">监管期企业动态列表</h2>
+                <span class="ps3-table-card__subtitle">（实时映射科创风控扫描快照）</span>
+              </div>
+              <div class="ps3-table-card__count">
+                共筛选出 <span id="ps3-filtered-count" class="ps3-table-card__count-num">0</span> 家企业
+              </div>
+            </div>
+
+            <div class="ps3-table-wrap">
+              <table class="ps3-data-table">
+                <thead>
+                  <tr>
+                    <th class="ps3-data-table__th">企业信息 / 统一代码</th>
+                    <th class="ps3-data-table__th">所属监管批次 / 发放日</th>
+                    <th class="ps3-data-table__th ps3-data-table__th--right">应收 / 实发金额</th>
+                    <th class="ps3-data-table__th ps3-data-table__th--center">命中风控指标</th>
+                    <th class="ps3-data-table__th ps3-data-table__th--center">预警等级</th>
+                    <th class="ps3-data-table__th ps3-data-table__th--center">拦截状态 / 金额</th>
+                    <th class="ps3-data-table__th ps3-data-table__th--center">维护留痕</th>
+                    <th class="ps3-data-table__th ps3-data-table__th--right">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="ps3-enterprise-table-body" class="ps3-data-table__body">
+                  <!-- JS 动态渲染 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div><!-- /.ps3-container -->
+      </div><!-- /.policy-stage3-page -->
+    </main><!-- /.page-content -->
+  </div><!-- /.page-layout -->
+
+  <!-- ============================================================
+       Toast 动态提示
+       ============================================================ -->
+  <div id="ps3-toast" class="ps3-toast is-hidden">
+    <i class="fa-solid fa-circle-check ps3-toast__icon"></i>
+    <span id="ps3-toast-message" class="ps3-toast__message"></span>
+  </div>
+
+  <!-- ============================================================
+       1. 企业风控详情抽屉
+       ============================================================ -->
+  <div id="ps3-detail-drawer" class="ps3-drawer-overlay is-hidden" onclick="closeDrawer()">
+    <div class="ps3-drawer" onclick="event.stopPropagation()">
+      <div class="ps3-drawer__header">
+        <div>
+          <div class="ps3-drawer__title-wrap">
+            <h3 id="ps3-drawer-ent-name" class="ps3-drawer__title"></h3>
+            <span id="ps3-drawer-alert-badge"></span>
+          </div>
+          <p id="ps3-drawer-ent-code" class="ps3-drawer__code"></p>
+        </div>
+        <button class="ps3-drawer__close" onclick="closeDrawer()">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <div class="ps3-drawer__body ps3-custom-scrollbar">
+        <div class="ps3-drawer__summary">
+          <div class="ps3-drawer__summary-item">
+            <span class="ps3-drawer__summary-label">应发放金额</span>
+            <span id="ps3-drawer-expected-amount" class="ps3-drawer__summary-value"></span>
+          </div>
+          <div class="ps3-drawer__summary-item">
+            <span class="ps3-drawer__summary-label">实际拨付/登记</span>
+            <span id="ps3-drawer-actual-amount" class="ps3-drawer__summary-value ps3-drawer__summary-value--primary"></span>
+          </div>
+          <div class="ps3-drawer__summary-item">
+            <span class="ps3-drawer__summary-label">发放时点（时间戳）</span>
+            <span id="ps3-drawer-grant-date" class="ps3-drawer__summary-value"></span>
+          </div>
+        </div>
+
+        <div class="ps3-drawer__section">
+          <div class="ps3-drawer__section-header">
+            <h4 class="ps3-drawer__section-title">
+              <i class="fa-solid fa-shield-halved"></i>
+              科创风控 12 项预警指标实时扫描全景
+            </h4>
+            <span class="ps3-drawer__section-meta">数据源: 实时对接科创风控API</span>
+          </div>
+          <div id="ps3-drawer-risk-grid" class="ps3-risk-grid">
+            <!-- 动态填入12项指标状态 -->
+          </div>
+        </div>
+
+        <div class="ps3-drawer__section">
+          <h4 class="ps3-drawer__section-title">
+            <i class="fa-solid fa-file-lines"></i>
+            预警证据链与原始抓取快照
+          </h4>
+          <div id="ps3-drawer-evidence-list" class="ps3-evidence-list">
+            <!-- 动态填入证据链 -->
+          </div>
+        </div>
+      </div>
+
+      <div class="ps3-drawer__footer">
+        <button id="ps3-drawer-btn-maint" class="ps3-btn ps3-btn--default">
+          维护与调整
+        </button>
+        <button id="ps3-drawer-btn-intercept" class="ps3-btn ps3-btn--danger">
+          发起资金拦截/追回
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       2. 名单运维调整弹窗
+       ============================================================ -->
+  <div id="ps3-maint-modal" class="ps3-modal-overlay is-hidden" onclick="closeMaintModal()">
+    <div class="ps3-modal ps3-modal--md" onclick="event.stopPropagation()">
+      <div class="ps3-modal__header ps3-modal__header--dark">
+        <h3 class="ps3-modal__title">
+          <i class="fa-solid fa-pen-to-square"></i>
+          监管期名单运维与调整
+        </h3>
+        <button class="ps3-modal__close" onclick="closeMaintModal()">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleMaintSubmit(event)" class="ps3-modal__body">
+        <div class="ps3-modal__info">
+          <div id="ps3-maint-ent-name" class="ps3-modal__info-title"></div>
+          <div id="ps3-maint-ent-info" class="ps3-modal__info-desc"></div>
+        </div>
+
+        <div class="ps3-form-group">
+          <label class="ps3-form-group__label">维护动作类型</label>
+          <div class="ps3-action-type-group">
+            <button
+              type="button"
+              onclick="setMaintActionType('AMOUNT_CHANGE')"
+              id="ps3-btn-action-amount"
+              class="ps3-action-type-btn ps3-action-type-btn--active"
+            >
+              审核金额变更
+            </button>
+            <button
+              type="button"
+              onclick="setMaintActionType('REMOVE')"
+              id="ps3-btn-action-remove"
+              class="ps3-action-type-btn"
+            >
+              手动勾除企业
+            </button>
+            <button
+              type="button"
+              onclick="setMaintActionType('STATUS_CHANGE')"
+              id="ps3-btn-action-status"
+              class="ps3-action-type-btn"
+            >
+              状态变更
+            </button>
+          </div>
+        </div>
+
+        <div id="ps3-maint-field-amount" class="ps3-form-group">
+          <label class="ps3-form-group__label" for="ps3-maint-input-amount">调整后实际发放金额 (万元)</label>
+          <input
+            type="number"
+            step="0.1"
+            id="ps3-maint-input-amount"
+            class="ps3-input"
+            placeholder="如根据70%规则调整金额"
+          />
+          <p class="ps3-form-group__hint">（领导原话场景：200家不一定全给，可能按条件的50%-70%发放）</p>
+        </div>
+
+        <div id="ps3-maint-field-remove" class="ps3-alert ps3-alert--danger is-hidden">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          警告：剔除后，该企业将移出监管名单，资金不计入待拦截项。
+        </div>
+
+        <div id="ps3-maint-field-status" class="ps3-form-group is-hidden">
+          <label class="ps3-form-group__label" for="ps3-maint-select-status">变更发放状态</label>
+          <select id="ps3-maint-select-status" class="ps3-select">
+            <option value="待发放">待发放</option>
+            <option value="已发放">已发放</option>
+            <option value="监管中">监管中</option>
+            <option value="已完结">已完结</option>
+          </select>
+        </div>
+
+        <div class="ps3-form-group">
+          <label class="ps3-form-group__label" for="ps3-maint-textarea-reason">
+            变更原因 / 运维依据 <span class="ps3-text-danger">* (强制留痕)</span>
+          </label>
+          <textarea
+            id="ps3-maint-textarea-reason"
+            rows="3"
+            required
+            class="ps3-textarea"
+            placeholder="例如：经审定核实，该企业今年实际投入不足，按资助标准扣减30%后拨付..."
+          ></textarea>
+        </div>
+      </form>
+
+      <div class="ps3-modal__footer">
+        <button type="button" class="ps3-btn ps3-btn--default" onclick="closeMaintModal()">
+          取消
+        </button>
+        <button type="button" class="ps3-btn ps3-btn--primary" onclick="handleMaintSubmit(event)">
+          确认变更并存入审计日志
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       3. 资金拦截与追回决策弹窗
+       ============================================================ -->
+  <div id="ps3-intercept-modal" class="ps3-modal-overlay is-hidden" onclick="closeInterceptModal()">
+    <div class="ps3-modal ps3-modal--md" onclick="event.stopPropagation()">
+      <div class="ps3-modal__header ps3-modal__header--danger">
+        <h3 class="ps3-modal__title">
+          <i class="fa-solid fa-ban"></i>
+          资金拦截与追回决策执行
+        </h3>
+        <button class="ps3-modal__close" onclick="closeInterceptModal()">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleInterceptSubmit(event)" class="ps3-modal__body">
+        <div class="ps3-modal__info ps3-modal__info--danger">
+          <div id="ps3-intercept-ent-name" class="ps3-modal__info-title"></div>
+          <div id="ps3-intercept-ent-info" class="ps3-modal__info-desc"></div>
+        </div>
+
+        <div class="ps3-form-group">
+          <label class="ps3-form-group__label" for="ps3-intercept-type">选择拦截执行模式</label>
+          <select id="ps3-intercept-type" class="ps3-select">
+            <option value="直接拦截">直接拦截 (适用于未拨付/未来拨付资金冻结)</option>
+            <option value="追回已发">追回已发 (已拨付资金全额原路追回)</option>
+            <option value="部分追回">部分追回 (按风险比例追回指定金额)</option>
+          </select>
+        </div>
+
+        <div class="ps3-form-group">
+          <label class="ps3-form-group__label" for="ps3-intercept-amount">执行拦截/追回金额 (万元)</label>
+          <input
+            type="number"
+            step="0.1"
+            id="ps3-intercept-amount"
+            required
+            class="ps3-input ps3-input--danger"
+          />
+        </div>
+
+        <div class="ps3-form-group">
+          <label class="ps3-form-group__label" for="ps3-intercept-reviewer">双人复核审批人</label>
+          <input
+            type="text"
+            id="ps3-intercept-reviewer"
+            disabled
+            value="李主管 (复核员)"
+            class="ps3-input ps3-input--disabled"
+          />
+        </div>
+
+        <div class="ps3-form-group">
+          <label class="ps3-form-group__label" for="ps3-intercept-remark">
+            拦截决策与依据处理意见 <span class="ps3-text-danger">*</span>
+          </label>
+          <textarea
+            id="ps3-intercept-remark"
+            rows="3"
+            required
+            class="ps3-textarea ps3-textarea--danger"
+            placeholder="请输入法务/核查组对于拦截该笔资金的正式决策意见..."
+          ></textarea>
+        </div>
+      </form>
+
+      <div class="ps3-modal__footer">
+        <button type="button" class="ps3-btn ps3-btn--default" onclick="closeInterceptModal()">
+          取消
+        </button>
+        <button type="button" class="ps3-btn ps3-btn--danger" onclick="handleInterceptSubmit(event)">
+          确认下发拦截指令
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       4. 审计日志查询弹窗
+       ============================================================ -->
+  <div id="ps3-audit-modal" class="ps3-modal-overlay is-hidden" onclick="closeAuditLogsModal()">
+    <div class="ps3-modal ps3-modal--lg" onclick="event.stopPropagation()">
+      <div class="ps3-modal__header ps3-modal__header--dark">
+        <div class="ps3-modal__title-wrap">
+          <i class="fa-solid fa-clock-rotate-left ps3-modal__title-icon"></i>
+          <h3 class="ps3-modal__title">监管运维不可篡改审计日志 (policy_audit_log)</h3>
+        </div>
+        <button class="ps3-modal__close" onclick="closeAuditLogsModal()">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <div class="ps3-modal__subheader">
+        <span>所有运维操作（勾除、金额变动、拦截决策）均受系统存证审计</span>
+        <span id="ps3-audit-log-total" class="ps3-modal__subheader-badge">TOTAL: 0 LOGS</span>
+      </div>
+
+      <div class="ps3-modal__body ps3-modal__body--scroll">
+        <table class="ps3-data-table ps3-data-table--compact">
+          <thead>
+            <tr>
+              <th class="ps3-data-table__th">时间 / 操作人</th>
+              <th class="ps3-data-table__th">动作类型</th>
+              <th class="ps3-data-table__th">涉及企业</th>
+              <th class="ps3-data-table__th">变更前 → 变更后</th>
+              <th class="ps3-data-table__th">操作原因与依据</th>
+            </tr>
+          </thead>
+          <tbody id="ps3-audit-log-table-body" class="ps3-data-table__body">
+            <!-- 动态写入日志 -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ps3-modal__footer ps3-modal__footer--dark">
+        <button class="ps3-btn ps3-btn--dark" onclick="closeAuditLogsModal()">
+          关闭窗口
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       5. 科创风控 API 接口状态弹窗
+       ============================================================ -->
+  <div id="ps3-api-status-modal" class="ps3-modal-overlay is-hidden" onclick="closeApiStatusModal()">
+    <div class="ps3-modal ps3-modal--sm" onclick="event.stopPropagation()">
+      <div class="ps3-modal__body ps3-modal__body--center">
+        <div class="ps3-api-status__header">
+          <i class="fa-solid fa-database ps3-api-status__icon"></i>
+          <h3 class="ps3-api-status__title">科创风控 12项指标 API 接口状态</h3>
+        </div>
+
+        <p class="ps3-api-status__desc">
+          根据技术规范，本系统直接复用科创风控 12 项预警扫描接口，本阶段不重复建设风控引擎，仅通过名单发放时间戳进行批量精准回扫。
+        </p>
+
+        <div class="ps3-api-status__list">
+          <div class="ps3-api-status__item">
+            <span>刷新频率：</span>
+            <span class="ps3-api-status__value">T+1 日级自动全量扫描</span>
+          </div>
+          <div class="ps3-api-status__item">
+            <span>最高延时数据源：</span>
+            <span class="ps3-api-status__value">司法破产类 (周级)</span>
+          </div>
+          <div class="ps3-api-status__item">
+            <span>当前API响应延时：</span>
+            <span class="ps3-api-status__value ps3-api-status__value--success">28ms (正常)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ps3-modal__footer">
+        <button class="ps3-btn ps3-btn--primary" onclick="closeApiStatusModal()">
+          了解并返回
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页面业务脚本 -->
+  <script src="js/policy-stage3.js?v=1"></script>
+</body>
+</html>

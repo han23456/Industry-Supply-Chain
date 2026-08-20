@@ -286,6 +286,44 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .sidebar-item:hover { background: var(--primary-lighter); color: var(--primary); }
 .sidebar-item.active { background: var(--primary-light); color: var(--primary); border-right-color: var(--primary); font-weight: 600; }
 .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+.sidebar-icon svg {
+  height: 1em;
+  width: auto;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+/* 二级菜单分组 */
+.sidebar-group-title {
+  justify-content: space-between;
+}
+.sidebar-chevron {
+  margin-left: auto;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+.sidebar-group.expanded .sidebar-chevron {
+  transform: rotate(90deg);
+}
+.sidebar-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+  padding-left: 8px;
+}
+.sidebar-group.expanded .sidebar-submenu {
+  max-height: 300px;
+}
+.sidebar-subitem {
+  padding-left: 48px;
+  font-size: 13px;
+}
+.sidebar-subitem .sidebar-icon {
+  width: 16px;
+  font-size: 14px;
+}
+.sidebar-subitem:hover { background: var(--primary-lighter); color: var(--primary); }
+.sidebar-subitem.active { background: var(--primary-light); color: var(--primary); border-right-color: var(--primary); font-weight: 600; }
 
 .page-content {
   flex: 1;
@@ -513,6 +551,42 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .breadcrumb a:hover { color: var(--primary); }
 .breadcrumb .sep { color: var(--text-tertiary); }
 .breadcrumb .current { color: var(--text); font-weight: 500; }
+
+/* ---------- 全局层级面包屑 ---------- */
+.global-breadcrumb {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+}
+.global-breadcrumb__list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #666677;
+}
+.global-breadcrumb__item { display: inline-flex; align-items: center; }
+.global-breadcrumb__link {
+  color: #666677;
+  font-weight: 400;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+.global-breadcrumb__link:hover { color: var(--primary); }
+.global-breadcrumb__current {
+  color: #1a1a1a;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.global-breadcrumb__sep {
+  color: #666677;
+  font-size: 13px;
+  margin: 0 8px;
+}
 
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1200;

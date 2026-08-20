@@ -1,0 +1,1208 @@
+/* ========================================
+   政策分析第一阶段 - 多维政策筛选器
+   基于参考页面 "政策分析第一阶段V3.0.html" 复刻
+   采用模块化 CSS，便于后续迭代维护
+   ======================================== */
+
+/* ----------------------------------------
+   1. 页面级基础布局
+   ---------------------------------------- */
+
+/*
+ * 页面内容包装器
+ * 作用：在 .page-content 内部撑满可用空间并恢复参考页的 slate-100 背景
+ * 通过负 margin 抵消 .page-content 的 padding，再通过 padding 补回内容边距
+ */
+.policy-stage1-page {
+  background: #f1f5f9;
+  margin: -24px -28px -28px;
+  padding: 24px 28px 28px;
+  min-height: calc(100vh - var(--header-h, 60px));
+
+  /* 与项目公共变量保持一致，同时兼容参考页视觉 */
+  --ps1-brand-50: #f0f5ff;
+  --ps1-brand-100: #e6f0ff;
+  --ps1-brand-200: #bae0ff;
+  --ps1-brand-500: #1677ff;
+  --ps1-brand-600: #0958d9;
+  --ps1-brand-700: #003eb3;
+
+  --ps1-slate-50: #f8fafc;
+  --ps1-slate-100: #f1f5f9;
+  --ps1-slate-200: #e2e8f0;
+  --ps1-slate-300: #cbd5e1;
+  --ps1-slate-400: #94a3b8;
+  --ps1-slate-500: #64748b;
+  --ps1-slate-600: #475569;
+  --ps1-slate-700: #334155;
+  --ps1-slate-800: #1e293b;
+
+  --ps1-emerald-50: #ecfdf5;
+  --ps1-emerald-200: #a7f3d0;
+  --ps1-emerald-500: #10b981;
+  --ps1-emerald-600: #059669;
+  --ps1-emerald-700: #047857;
+
+  --ps1-rose-50: #fff1f2;
+  --ps1-rose-600: #e11d48;
+
+  --ps1-indigo-50: #eef2ff;
+  --ps1-indigo-200: #c7d2fe;
+  --ps1-indigo-600: #4f46e5;
+
+  --ps1-sky-50: #f0f9ff;
+  --ps1-sky-200: #bae6fd;
+  --ps1-sky-600: #0284c7;
+
+  --ps1-blue-50: #eff6ff;
+  --ps1-blue-200: #bfdbfe;
+  --ps1-blue-600: #2563eb;
+
+  --ps1-radius-sm: 4px;
+  --ps1-radius-md: 6px;
+  --ps1-radius-lg: 8px;
+  --ps1-radius-xl: 12px;
+  --ps1-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --ps1-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  color: var(--ps1-slate-800);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* 页面内容区容器 */
+.ps1-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .ps1-container {
+    padding: 24px;
+  }
+}
+
+/* ----------------------------------------
+   2. 通用卡片/面板
+   ---------------------------------------- */
+.ps1-card {
+  background: #fff;
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-xl);
+  box-shadow: var(--ps1-shadow-sm);
+}
+
+.ps1-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+}
+
+.ps1-card-header--wrap {
+  flex-wrap: wrap;
+}
+
+.ps1-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps1-slate-800);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.ps1-card-subtitle {
+  font-size: 12px;
+  color: var(--ps1-slate-500);
+  margin-top: 4px;
+}
+
+.ps1-card-body {
+  padding: 16px;
+}
+
+.ps1-card-body.no-padding-top {
+  padding-top: 0;
+}
+
+/* ----------------------------------------
+   3. 顶部 Banner
+   ---------------------------------------- */
+.ps1-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+@media (min-width: 768px) {
+  .ps1-banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.ps1-banner-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.ps1-banner-accent {
+  width: 6px;
+  height: 40px;
+  background: var(--ps1-brand-500);
+  border-radius: 999px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ps1-banner-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ps1-slate-800);
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ps1-banner-desc {
+  font-size: 12px;
+  color: var(--ps1-slate-500);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ps1-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-self: flex-end;
+}
+
+@media (min-width: 768px) {
+  .ps1-banner-actions {
+    align-self: auto;
+  }
+}
+
+/* ----------------------------------------
+   4. 生效规则 Tag 栏
+   ---------------------------------------- */
+.ps1-active-tags-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+}
+
+.ps1-active-tags-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+.ps1-active-tags-label {
+  color: var(--ps1-slate-600);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.ps1-active-tags-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ps1-active-tag {
+  background: var(--ps1-brand-50);
+  color: var(--ps1-brand-600);
+  border: 1px solid var(--ps1-brand-200);
+  padding: 4px 8px;
+  border-radius: var(--ps1-radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ps1-active-tag .ps1-icon-remove {
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.ps1-active-tag .ps1-icon-remove:hover {
+  opacity: 1;
+}
+
+.ps1-link-text {
+  font-size: 12px;
+  color: var(--ps1-slate-400);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: var(--ps1-transition);
+  white-space: nowrap;
+}
+
+.ps1-link-text:hover {
+  color: var(--ps1-slate-600);
+}
+
+/* ----------------------------------------
+   5. 主网格布局
+   ---------------------------------------- */
+.ps1-main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .ps1-main-grid {
+    grid-template-columns: 4fr 8fr;
+  }
+}
+
+.ps1-left-column,
+.ps1-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ----------------------------------------
+   6. 表单控件
+   ---------------------------------------- */
+.ps1-form-label {
+  font-size: 11px;
+  color: var(--ps1-slate-500);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ps1-select {
+  width: 100%;
+  font-size: 12px;
+  background: var(--ps1-slate-50);
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-lg);
+  padding: 8px 10px;
+  color: var(--ps1-slate-700);
+  font-weight: 500;
+  outline: none;
+  transition: var(--ps1-transition);
+  appearance: none;
+  cursor: pointer;
+}
+
+.ps1-select:focus {
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--ps1-brand-500);
+}
+
+.ps1-input {
+  width: 100%;
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-md);
+  padding: 6px 8px;
+  color: var(--ps1-slate-800);
+  outline: none;
+  transition: var(--ps1-transition);
+}
+
+.ps1-input:focus {
+  box-shadow: 0 0 0 1px var(--ps1-brand-500);
+}
+
+.ps1-input::placeholder {
+  color: var(--ps1-slate-400);
+}
+
+.ps1-search-box {
+  position: relative;
+}
+
+.ps1-search-box .ps1-icon-search {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ps1-slate-400);
+  font-size: 12px;
+}
+
+.ps1-search-box .ps1-input {
+  padding-left: 28px;
+}
+
+/* 带下拉图标的 select 包装器 */
+.ps1-select-wrapper {
+  position: relative;
+}
+
+.ps1-select-wrapper .ps1-select {
+  padding-right: 28px;
+}
+
+.ps1-select-wrapper__icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ps1-slate-400);
+  font-size: 10px;
+  pointer-events: none;
+}
+
+.ps1-select-inline {
+  width: auto;
+  min-width: 90px;
+  padding: 4px 8px;
+  font-size: 12px;
+  background: #fff;
+}
+
+/* ----------------------------------------
+   7. 按钮组件
+   ---------------------------------------- */
+.ps1-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--ps1-radius-lg);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--ps1-transition);
+  white-space: nowrap;
+}
+
+.ps1-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ps1-btn--default {
+  background: var(--ps1-slate-100);
+  color: var(--ps1-slate-700);
+  border-color: var(--ps1-slate-200);
+}
+
+.ps1-btn--default:hover {
+  background: var(--ps1-slate-200);
+}
+
+.ps1-btn--primary {
+  background: var(--ps1-brand-500);
+  color: #fff;
+  border-color: var(--ps1-brand-500);
+}
+
+.ps1-btn--primary:hover {
+  background: var(--ps1-brand-600);
+}
+
+.ps1-btn--success {
+  background: var(--ps1-emerald-600);
+  color: #fff;
+  border-color: var(--ps1-emerald-600);
+}
+
+.ps1-btn--success:hover {
+  background: var(--ps1-emerald-700);
+}
+
+.ps1-btn--danger {
+  background: #fff;
+  color: var(--ps1-rose-600);
+  border-color: #fecdd3;
+}
+
+.ps1-btn--danger:hover {
+  background: var(--ps1-rose-50);
+}
+
+.ps1-btn--ghost {
+  background: transparent;
+  color: var(--ps1-brand-600);
+  border-color: transparent;
+}
+
+.ps1-btn--ghost:hover {
+  text-decoration: underline;
+}
+
+/* 360°画像按钮：轻量描边样式 */
+.ps1-btn--profile {
+  background: var(--ps1-brand-50);
+  border: 1px solid var(--ps1-brand-200);
+}
+
+.ps1-btn--profile:hover {
+  background: var(--ps1-brand-100);
+}
+
+.ps1-btn--sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.ps1-btn--xs {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+/* 快捷建议按钮 */
+.ps1-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  color: var(--ps1-slate-600);
+  background: #fff;
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-sm);
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: var(--ps1-transition);
+}
+
+.ps1-quick-btn:hover {
+  color: var(--ps1-brand-600);
+  border-color: var(--ps1-brand-200);
+}
+
+/* ----------------------------------------
+   8. 标签/芯片
+   ---------------------------------------- */
+.ps1-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--ps1-radius-md);
+}
+
+.ps1-badge--brand {
+  background: var(--ps1-brand-50);
+  color: var(--ps1-brand-600);
+}
+
+.ps1-badge--emerald {
+  background: var(--ps1-emerald-50);
+  color: var(--ps1-emerald-600);
+  border: 1px solid var(--ps1-emerald-200);
+}
+
+.ps1-badge--indigo {
+  background: var(--ps1-indigo-50);
+  color: var(--ps1-indigo-600);
+  border: 1px solid var(--ps1-indigo-200);
+}
+
+.ps1-badge--sky {
+  background: var(--ps1-sky-50);
+  color: var(--ps1-sky-600);
+  border: 1px solid var(--ps1-sky-200);
+}
+
+.ps1-badge--blue {
+  background: var(--ps1-blue-50);
+  color: var(--ps1-blue-600);
+  border: 1px solid var(--ps1-blue-200);
+}
+
+/* ----------------------------------------
+   9. 产业链节点按钮
+   ---------------------------------------- */
+.ps1-chain-node-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ps1-chain-node-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: var(--ps1-radius-md);
+  border: 1px solid var(--ps1-slate-200);
+  background: var(--ps1-slate-50);
+  color: var(--ps1-slate-700);
+  cursor: pointer;
+  transition: var(--ps1-transition);
+}
+
+.ps1-chain-node-btn:hover {
+  border-color: var(--ps1-brand-200);
+}
+
+.ps1-chain-node-btn.is-selected {
+  background: var(--ps1-brand-50);
+  border-color: var(--ps1-brand-500);
+  color: var(--ps1-brand-600);
+  font-weight: 600;
+}
+
+/* ----------------------------------------
+   10. 维度标签按钮
+   ---------------------------------------- */
+.ps1-tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ps1-tag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--ps1-radius-lg);
+  border: 1px solid var(--ps1-slate-200);
+  background: var(--ps1-slate-50);
+  color: var(--ps1-slate-700);
+  cursor: pointer;
+  transition: var(--ps1-transition);
+}
+
+.ps1-tag-btn:hover {
+  background: var(--ps1-slate-100);
+}
+
+.ps1-tag-btn.is-selected {
+  background: var(--ps1-brand-50);
+  border-color: var(--ps1-brand-500);
+  color: var(--ps1-brand-600);
+  font-weight: 600;
+}
+
+.ps1-tag-btn .ps1-icon-check {
+  font-size: 10px;
+  color: var(--ps1-slate-400);
+}
+
+.ps1-tag-btn.is-selected .ps1-icon-check {
+  color: var(--ps1-brand-500);
+}
+
+/* ----------------------------------------
+   11. 数值/复选条件卡片
+   ---------------------------------------- */
+.ps1-condition-card {
+  background: var(--ps1-slate-50);
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-lg);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: var(--ps1-transition);
+}
+
+.ps1-condition-card.is-active {
+  border-color: var(--ps1-brand-500);
+  background: rgba(240, 245, 255, 0.2);
+}
+
+.ps1-condition-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.ps1-condition-card__label {
+  font-weight: 500;
+  color: var(--ps1-slate-700);
+}
+
+.ps1-condition-card__unit {
+  font-size: 10px;
+  color: var(--ps1-slate-400);
+}
+
+.ps1-condition-card__body {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ps1-condition-card__inputs {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ps1-condition-card__suggestions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.ps1-condition-card__suggestions-label {
+  font-size: 10px;
+  color: var(--ps1-slate-400);
+}
+
+/* 区间输入隐藏/显示 */
+.ps1-between-input {
+  display: none;
+  font-size: 12px;
+  color: var(--ps1-slate-400);
+}
+
+.ps1-between-input.is-visible {
+  display: block;
+}
+
+/* 复选框条件行 */
+.ps1-checkbox-row {
+  background: var(--ps1-slate-50);
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-lg);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: var(--ps1-transition);
+}
+
+.ps1-checkbox-row:hover {
+  background: var(--ps1-slate-100);
+}
+
+.ps1-checkbox-row.is-active {
+  border-color: var(--ps1-brand-500);
+  background: rgba(240, 245, 255, 0.2);
+}
+
+.ps1-checkbox-row__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ps1-slate-700);
+  font-weight: 500;
+}
+
+.ps1-checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--ps1-brand-500);
+  cursor: pointer;
+}
+
+/* ----------------------------------------
+   12. 维度标签库面板
+   ---------------------------------------- */
+.ps1-tag-library {
+  background: #fff;
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-xl);
+  box-shadow: var(--ps1-shadow-sm);
+  overflow: hidden;
+  max-height: 680px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ps1-tag-library__header {
+  background: rgba(248, 250, 252, 0.8);
+  border-bottom: 1px solid var(--ps1-slate-200);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.ps1-tag-library__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps1-slate-800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.ps1-tag-library__hint {
+  font-size: 10px;
+  color: var(--ps1-slate-400);
+}
+
+.ps1-tag-library__search {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ps1-slate-100);
+}
+
+.ps1-tag-library__sections {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ps1-tag-section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ps1-slate-100);
+}
+
+.ps1-tag-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ps1-tag-section__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ps1-slate-700);
+  margin: 0;
+}
+
+.ps1-tag-section__count {
+  font-size: 10px;
+  color: var(--ps1-slate-400);
+}
+
+.ps1-tag-section__conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 自定义滚动条，与参考页一致 */
+.ps1-tag-library__sections::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.ps1-tag-library__sections::-webkit-scrollbar-track {
+  background: var(--ps1-slate-100);
+}
+
+.ps1-tag-library__sections::-webkit-scrollbar-thumb {
+  background: var(--ps1-slate-300);
+  border-radius: 3px;
+}
+
+.ps1-tag-library__sections::-webkit-scrollbar-thumb:hover {
+  background: var(--ps1-slate-400);
+}
+
+/* ----------------------------------------
+   13. 漏斗统计区
+   ---------------------------------------- */
+.ps1-funnel-panel {
+  background: var(--ps1-slate-50);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: var(--ps1-radius-xl);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ps1-funnel-panel__label {
+  font-size: 12px;
+  color: var(--ps1-slate-500);
+  font-weight: 500;
+}
+
+.ps1-funnel-count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ps1-funnel-count__number {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--ps1-brand-600);
+  line-height: 1;
+}
+
+.ps1-funnel-count__text {
+  font-size: 12px;
+  color: var(--ps1-slate-600);
+  font-weight: 600;
+}
+
+.ps1-funnel-path {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  padding: 4px 0;
+  font-size: 11px;
+  color: var(--ps1-slate-600);
+}
+
+.ps1-funnel-node {
+  background: #fff;
+  padding: 4px 8px;
+  border-radius: var(--ps1-radius-md);
+  border: 1px solid var(--ps1-slate-200);
+  white-space: nowrap;
+}
+
+.ps1-funnel-node--final {
+  background: var(--ps1-emerald-50);
+  color: var(--ps1-emerald-700);
+  font-weight: 700;
+  border-color: var(--ps1-emerald-200);
+}
+
+.ps1-funnel-arrow {
+  color: var(--ps1-slate-400);
+  font-size: 10px;
+}
+
+.ps1-funnel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ps1-slate-400);
+  padding-top: 8px;
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.ps1-funnel-footer strong {
+  color: var(--ps1-brand-600);
+}
+
+/* ----------------------------------------
+   14. 企业明细表格
+   ---------------------------------------- */
+.ps1-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-lg);
+}
+
+.ps1-table {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  color: var(--ps1-slate-700);
+  border-collapse: collapse;
+}
+
+.ps1-table thead {
+  background: var(--ps1-slate-50);
+  color: var(--ps1-slate-500);
+  font-weight: 600;
+  border-bottom: 1px solid var(--ps1-slate-200);
+}
+
+.ps1-table th,
+.ps1-table td {
+  padding: 12px;
+  vertical-align: top;
+}
+
+.ps1-table th {
+  white-space: nowrap;
+}
+
+.ps1-table tbody tr {
+  border-bottom: 1px solid var(--ps1-slate-100);
+  transition: var(--ps1-transition);
+}
+
+.ps1-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.ps1-table tbody tr:hover {
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.ps1-table .ps1-text-muted {
+  color: var(--ps1-slate-400);
+}
+
+.ps1-table .ps1-font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.ps1-enterprise-name {
+  font-weight: 700;
+  color: var(--ps1-slate-800);
+}
+
+.ps1-enterprise-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+/* ----------------------------------------
+   15. 分页
+   ---------------------------------------- */
+.ps1-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--ps1-slate-500);
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+.ps1-pagination__info {
+  white-space: nowrap;
+}
+
+.ps1-pagination__buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ps1-page-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--ps1-slate-200);
+  border-radius: var(--ps1-radius-md);
+  background: #fff;
+  color: var(--ps1-slate-700);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--ps1-transition);
+}
+
+.ps1-page-btn:hover:not(:disabled) {
+  background: var(--ps1-slate-50);
+}
+
+.ps1-page-btn.is-active {
+  background: var(--ps1-brand-500);
+  color: #fff;
+  border-color: var(--ps1-brand-500);
+  font-weight: 700;
+}
+
+.ps1-page-btn:disabled {
+  color: var(--ps1-slate-400);
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------
+   16. Modal 弹窗
+   ---------------------------------------- */
+.ps1-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.ps1-modal-overlay.is-hidden {
+  display: none;
+}
+
+.ps1-modal {
+  background: #fff;
+  border-radius: var(--ps1-radius-xl);
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--ps1-slate-200);
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ps1-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--ps1-slate-100);
+  padding-bottom: 12px;
+}
+
+.ps1-modal__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps1-slate-800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.ps1-modal__close {
+  color: var(--ps1-slate-400);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--ps1-transition);
+}
+
+.ps1-modal__close:hover {
+  color: var(--ps1-slate-600);
+}
+
+.ps1-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.ps1-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ps1-form-group label {
+  color: var(--ps1-slate-600);
+  font-weight: 500;
+}
+
+.ps1-form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.ps1-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ps1-slate-100);
+}
+
+/* ----------------------------------------
+   17. 工具类
+   ---------------------------------------- */
+.ps1-flex {
+  display: flex;
+}
+
+.ps1-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.ps1-items-center {
+  align-items: center;
+}
+
+.ps1-justify-between {
+  justify-content: space-between;
+}
+
+.ps1-gap-1 {
+  gap: 4px;
+}
+
+.ps1-gap-2 {
+  gap: 8px;
+}
+
+.ps1-gap-3 {
+  gap: 12px;
+}
+
+.ps1-mb-2 {
+  margin-bottom: 8px;
+}
+
+.ps1-mt-1 {
+  margin-top: 4px;
+}
+
+.ps1-text-xs {
+  font-size: 12px;
+}
+
+.ps1-text-2xs {
+  font-size: 10px;
+}
+
+.ps1-italic {
+  font-style: italic;
+}
+
+/* FontAwesome/Tailwind 兼容工具类 */
+.text-brand-500 { color: var(--ps1-brand-500); }
+.text-brand-600 { color: var(--ps1-brand-600); }
+.text-center { text-align: center; }
+.font-medium { font-weight: 500; }
+
+/* 辅助工具类 */
+.ps1-text-muted {
+  color: var(--ps1-slate-400);
+}
+
+.ps1-title-no-margin {
+  margin: 0;
+}
+
+.ps1-icon-md {
+  font-size: 14px;
+}
+
+.ps1-w-10 {
+  width: 40px;
+}
+
+.ps1-w-12 {
+  width: 48px;
+}
+
+.ps1-status-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ps1-emerald-500);
+  border-radius: 50%;
+  display: inline-block;
+}

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多维政策筛选器 - 产业链/供应链图谱系统</title>
+
+  <!-- 项目公共样式 -->
+  <link rel="stylesheet" href="css/common.css?v=15">
+  <!-- 当前页面专用样式 -->
+  <link rel="stylesheet" href="css/policy-stage1.css?v=2">
+
+  <!-- FontAwesome 图标库，参考页使用 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- 项目全局组件与配置（加载顺序：配置 -> 数据 -> 头部 -> 侧边栏） -->
+  <script src="js/config/menu-config.js?v=6"></script>
+  <script src="js/data.js?v=4"></script>
+  <script src="js/components/GovHeader.js?v=3"></script>
+  <script src="js/components/SideNav.js?v=6"></script>
+</head>
+<body>
+  <!-- 项目统一顶部导航 -->
+  <gov-header></gov-header>
+
+  <div class="page-layout">
+    <!-- 项目统一侧边栏导航 -->
+    <side-nav></side-nav>
+
+    <!-- 页面主内容区 -->
+    <main class="page-content">
+      <!--
+        政策分析第一阶段：多维政策筛选器
+        整体包装器负责恢复参考页的 slate-100 背景并撑满 .page-content
+      -->
+      <div class="policy-stage1-page">
+        <div class="ps1-container">
+
+          <!-- ============================================================
+               顶部 Banner：页面标题、说明与快捷操作
+               ============================================================ -->
+          <div class="ps1-card ps1-banner">
+            <div class="ps1-banner-main">
+              <div class="ps1-banner-accent"></div>
+              <div>
+                <h1 class="ps1-banner-title">
+                  <i class="fa-solid fa-bullseye text-brand-500"></i>
+                  全域政策制定与精准筛选
+                </h1>
+                <p class="ps1-banner-desc">
+                  已结合产业链空间定位与维度标签库。通过勾选硬性组合门槛，系统实时进行递减碰撞并生成全量免申即享企业清单，支持一键导出名单与沉淀规则 Model。
+                </p>
+              </div>
+            </div>
+
+            <div class="ps1-banner-actions">
+              <button class="ps1-btn ps1-btn--danger" onclick="resetAll()">
+                <i class="fa-solid fa-rotate-left"></i>
+                清空规则
+              </button>
+            </div>
+          </div>
+
+          <!-- ============================================================
+               生效中的规则条件 Tag 栏
+               ============================================================ -->
+          <div class="ps1-card ps1-active-tags-bar">
+            <div class="ps1-active-tags-main">
+              <span class="ps1-active-tags-label">
+                <i class="fa-solid fa-circle-check text-brand-500"></i>
+                生效中的规则条件 (含产业链联动):
+              </span>
+              <div id="activeTagsContainer" class="ps1-active-tags-list">
+                <!-- JS 动态插入 -->
+              </div>
+            </div>
+            <button class="ps1-link-text" onclick="resetAll()">清空</button>
+          </div>
+
+          <!-- ============================================================
+               主体左右分栏：左侧筛选 / 右侧结果
+               ============================================================ -->
+          <div class="ps1-main-grid">
+
+            <!-- 左侧：筛选设置（占比 4/12） -->
+            <div class="ps1-left-column">
+
+              <!-- 1. 产业链空间联动筛选 -->
+              <div class="ps1-card">
+                <div class="ps1-card-header">
+                  <h3 class="ps1-card-title">
+                    <i class="fa-solid fa-sitemap text-brand-500"></i>
+                    产业链空间联动筛选
+                  </h3>
+                  <span class="ps1-badge ps1-badge--brand">图谱联动</span>
+                </div>
+                <div class="ps1-card-body no-padding-top">
+                  <div class="ps1-mb-2">
+                    <label class="ps1-form-label">选择目标产业链:</label>
+                    <div class="ps1-select-wrapper">
+                      <select id="chainSelect" class="ps1-select">
+                        <option value="">-- 不限产业链 (全域) --</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down ps1-select-wrapper__icon"></i>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="ps1-form-label">产业链环节/节点:</div>
+                    <div id="chainNodeContainer" class="ps1-chain-node-group">
+                      <span class="ps1-text-muted ps1-text-2xs">该产业链暂无下设细分环节</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. 维度标签库 -->
+              <div class="ps1-tag-library">
+                <!-- 面板头部 -->
+                <div class="ps1-tag-library__header">
+                  <h3 class="ps1-tag-library__title">
+                    维度标签库
+                    <span class="ps1-tag-library__hint">(实时填写/动态运算)</span>
+                  </h3>
+                  <button class="ps1-btn ps1-btn--ghost ps1-btn--sm" onclick="resetAll()">重置</button>
+                </div>
+
+                <!-- 关键字搜索 -->
+                <div class="ps1-tag-library__search">
+                  <div class="ps1-search-box">
+                    <i class="fa-solid fa-magnifying-glass ps1-icon-search"></i>
+                    <input type="text" id="keywordSearch" class="ps1-input" placeholder="搜索标签 (如: 无人机、产值、社保... 按Enter搜索)">
+                  </div>
+                </div>
+
+                <!-- 维度分类区 -->
+                <div class="ps1-tag-library__sections">
+
+                  <!-- 一、企业基本属性 -->
+                  <div class="ps1-tag-section" id="section-1">
+                    <div class="ps1-tag-section__header">
+                      <h4 class="ps1-tag-section__title">一、企业基本属性</h4>
+                      <span class="ps1-tag-section__count" id="sec1-count">已选 0/4</span>
+                    </div>
+                    <div class="ps1-tag-group">
+                      <button class="ps1-tag-btn" data-selected="false" data-name="注册地在前海" onclick="toggleTag(this)">
+                        <i class="fa-regular fa-square ps1-icon-check"></i>
+                        <span>注册地在前海</span>
+                      </button>
+                      <button class="ps1-tag-btn" data-selected="false" data-name="高新技术企业" onclick="toggleTag(this)">
+                        <i class="fa-regular fa-square ps1-icon-check"></i>
+                        <span>高新技术企业</span>
+                      </button>
+                      <button class="ps1-tag-btn" data-selected="false" data-name="规模以上企业" onclick="toggleTag(this)">
+                        <i class="fa-regular fa-square ps1-icon-check"></i>
+                        <span>规模以上企业</span>
+                      </button>
+    
+                    </div>
+                  </div>
+
+                  <!-- 二、经营与成长能力 -->
+                  <div class="ps1-tag-section" id="section-2">
+                    <div class="ps1-tag-section__header">
+                      <h4 class="ps1-tag-section__title">二、经营与成长能力</h4>
+                      <span class="ps1-tag-section__count" id="sec2-count">已选 0/4</span>
+                    </div>
+                    <div class="ps1-tag-section__conditions">
+
+                      <!-- 上年产值规模 -->
+                      <div class="ps1-condition-card">
+                        <div class="ps1-condition-card__header">
+                          <span class="ps1-condition-card__label">上年产值规模</span>
+                          <span class="ps1-condition-card__unit">万元</span>
+                        </div>
+                        <div class="ps1-condition-card__body">
+                          <select class="ps1-select ps1-select-inline ps1-op-select" onchange="handleInputChange()">
+                            <option value="gte">≥ (大于等于)</option>
+                            <option value="gt">&gt; (大于)</option>
+                            <option value="eq">= (等于)</option>
+                            <option value="lte">≤ (小于等于)</option>
+                            <option value="lt">&lt; (小于)</option>
+                            <option value="between">区间 (介于)</option>
+                          </select>
+                          <div class="ps1-condition-card__inputs">
+                            <input type="number" placeholder="不限" class="ps1-input ps1-num-input" oninput="handleInputChange()">
+                            <span class="ps1-between-input">至</span>
+                            <input type="number" placeholder="最大" class="ps1-input ps1-num-input-max ps1-between-input" oninput="handleInputChange()">
+                          </div>
+                        </div>
+                        <div class="ps1-condition-card__suggestions">
+                          <span class="ps1-condition-card__suggestions-label">建议选择:</span>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 500)">≥500万</button>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 2000)">≥2000万</button>
+                        </div>
+                      </div>
+
+                      <!-- 产值同比增长率 -->
+                      <div class="ps1-condition-card">
+                        <div class="ps1-condition-card__header">
+                          <span class="ps1-condition-card__label">产值同比增长率</span>
+                          <span class="ps1-condition-card__unit">%</span>
+                        </div>
+                        <div class="ps1-condition-card__body">
+                          <select class="ps1-select ps1-select-inline ps1-op-select" onchange="handleInputChange()">
+                            <option value="gte">≥ (大于等于)</option>
+                            <option value="gt">&gt; (大于)</option>
+                            <option value="eq">= (等于)</option>
+                            <option value="lte">≤ (小于等于)</option>
+                            <option value="lt">&lt; (小于)</option>
+                            <option value="between">区间 (介于)</option>
+                          </select>
+                          <div class="ps1-condition-card__inputs">
+                            <input type="number" placeholder="不限" class="ps1-input ps1-num-input" oninput="handleInputChange()">
+                            <span class="ps1-between-input">至</span>
+                            <input type="number" placeholder="最大" class="ps1-input ps1-num-input-max ps1-between-input" oninput="handleInputChange()">
+                          </div>
+                        </div>
+                        <div class="ps1-condition-card__suggestions">
+                          <span class="ps1-condition-card__suggestions-label">建议选择:</span>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 30)">≥30%</button>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 50)">≥50%</button>
+                        </div>
+                      </div>
+
+                      <!-- 近三年产值复合增长率 -->
+                      <div class="ps1-condition-card">
+                        <div class="ps1-condition-card__header">
+                          <span class="ps1-condition-card__label">近三年产值复合增长率</span>
+                          <span class="ps1-condition-card__unit">%</span>
+                        </div>
+                        <div class="ps1-condition-card__body">
+                          <select class="ps1-select ps1-select-inline ps1-op-select" onchange="handleInputChange()">
+                            <option value="gte">≥ (大于等于)</option>
+                            <option value="gt">&gt; (大于)</option>
+                            <option value="eq">= (等于)</option>
+                            <option value="lte">≤ (小于等于)</option>
+                            <option value="lt">&lt; (小于)</option>
+                            <option value="between">区间 (介于)</option>
+                          </select>
+                          <div class="ps1-condition-card__inputs">
+                            <input type="number" placeholder="不限" class="ps1-input ps1-num-input" oninput="handleInputChange()">
+                            <span class="ps1-between-input">至</span>
+                            <input type="number" placeholder="最大" class="ps1-input ps1-num-input-max ps1-between-input" oninput="handleInputChange()">
+                          </div>
+                        </div>
+                        <div class="ps1-condition-card__suggestions">
+                          <span class="ps1-condition-card__suggestions-label">建议选择:</span>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 20)">≥20%</button>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 40)">≥40%</button>
+                        </div>
+                      </div>
+
+                      <!-- 利润增长率 -->
+                      <div class="ps1-condition-card">
+                        <div class="ps1-condition-card__header">
+                          <span class="ps1-condition-card__label">利润增长率</span>
+                          <span class="ps1-condition-card__unit">%</span>
+                        </div>
+                        <div class="ps1-condition-card__body">
+                          <select class="ps1-select ps1-select-inline ps1-op-select" onchange="handleInputChange()">
+                            <option value="gte">≥ (大于等于)</option>
+                            <option value="gt">&gt; (大于)</option>
+                            <option value="eq">= (等于)</option>
+                            <option value="lte">≤ (小于等于)</option>
+                            <option value="lt">&lt; (小于)</option>
+                            <option value="between">区间 (介于)</option>
+                          </select>
+                          <div class="ps1-condition-card__inputs">
+                            <input type="number" placeholder="不限" class="ps1-input ps1-num-input" oninput="handleInputChange()">
+                            <span class="ps1-between-input">至</span>
+                            <input type="number" placeholder="最大" class="ps1-input ps1-num-input-max ps1-between-input" oninput="handleInputChange()">
+                          </div>
+                        </div>
+                        <div class="ps1-condition-card__suggestions">
+                          <span class="ps1-condition-card__suggestions-label">建议选择:</span>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 30)">≥30%</button>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- 三、创新与知识产权 -->
+                  <div class="ps1-tag-section" id="section-3">
+                    <div class="ps1-tag-section__header">
+                      <h4 class="ps1-tag-section__title">三、创新与知识产权</h4>
+                      <span class="ps1-tag-section__count" id="sec3-count">已选 0/4</span>
+                    </div>
+                    <div class="ps1-tag-section__conditions">
+
+                      <!-- 发明专利持有量 -->
+                      <div class="ps1-condition-card">
+                        <div class="ps1-condition-card__header">
+                          <span class="ps1-condition-card__label">发明专利持有量</span>
+                          <span class="ps1-condition-card__unit">件</span>
+                        </div>
+                        <div class="ps1-condition-card__body">
+                          <select class="ps1-select ps1-select-inline ps1-op-select" onchange="handleInputChange()">
+                            <option value="gte">≥ (大于等于)</option>
+                            <option value="gt">&gt; (大于)</option>
+                            <option value="eq">= (等于)</option>
+                            <option value="lte">≤ (小于等于)</option>
+                          </select>
+                          <input type="number" placeholder="如: 10" class="ps1-input ps1-num-input" oninput="handleInputChange()">
+                        </div>
+                        <div class="ps1-condition-card__suggestions">
+                          <span class="ps1-condition-card__suggestions-label">建议选择:</span>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 10)">≥10件</button>
+                        </div>
+                      </div>
+
+                      <!-- 软件著作权 -->
+                      <div class="ps1-condition-card">
+                        <div class="ps1-condition-card__header">
+                          <span class="ps1-condition-card__label">软件著作权</span>
+                          <span class="ps1-condition-card__unit">项</span>
+                        </div>
+                        <div class="ps1-condition-card__body">
+                          <select class="ps1-select ps1-select-inline ps1-op-select" onchange="handleInputChange()">
+                            <option value="gte">≥ (大于等于)</option>
+                            <option value="gt">&gt; (大于)</option>
+                            <option value="eq">= (等于)</option>
+                            <option value="lte">≤ (小于等于)</option>
+                          </select>
+                          <input type="number" placeholder="如: 10" class="ps1-input ps1-num-input" oninput="handleInputChange()">
+                        </div>
+                        <div class="ps1-condition-card__suggestions">
+                          <span class="ps1-condition-card__suggestions-label">建议选择:</span>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 10)">≥10项</button>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 20)">≥20项</button>
+                        </div>
+                      </div>
+
+                      <!-- 专精特新 / 小巨人资质 -->
+                      <div class="ps1-checkbox-row" onclick="toggleCheckboxCard(this)">
+                        <label class="ps1-checkbox-row__label">
+                          <input type="checkbox" class="ps1-checkbox ps1-card-checkbox" onchange="handleInputChange()">
+                          <span>专精特新 / 小巨人资质</span>
+                        </label>
+                      </div>
+
+                      <!-- 参与国家标准制定 -->
+                      <div class="ps1-checkbox-row" onclick="toggleCheckboxCard(this)">
+                        <label class="ps1-checkbox-row__label">
+                          <input type="checkbox" class="ps1-checkbox ps1-card-checkbox" onchange="handleInputChange()">
+                          <span>参与国家标准制定</span>
+                        </label>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- 四、融资能力与估值 -->
+                  <div class="ps1-tag-section" id="section-4">
+                    <div class="ps1-tag-section__header">
+                      <h4 class="ps1-tag-section__title">四、融资能力与估值</h4>
+                      <span class="ps1-tag-section__count" id="sec4-count">已选 0/2</span>
+                    </div>
+                    <div class="ps1-tag-section__conditions">
+
+                      <!-- 近2年获股权融资 -->
+                      <div class="ps1-condition-card">
+                        <div class="ps1-condition-card__header">
+                          <span class="ps1-condition-card__label">近2年获股权融资</span>
+                          <span class="ps1-condition-card__unit">万元</span>
+                        </div>
+                        <div class="ps1-condition-card__body">
+                          <select class="ps1-select ps1-select-inline ps1-op-select" onchange="handleInputChange()">
+                            <option value="gte">≥ (大于等于)</option>
+                            <option value="gt">&gt; (大于)</option>
+                            <option value="eq">= (等于)</option>
+                          </select>
+                          <input type="number" placeholder="如: 5000" class="ps1-input ps1-num-input" oninput="handleInputChange()">
+                        </div>
+                        <div class="ps1-condition-card__suggestions">
+                          <span class="ps1-condition-card__suggestions-label">建议选择:</span>
+                          <button class="ps1-quick-btn" onclick="setQuickVal(this, 'gte', 5000)">≥5000万</button>
+                        </div>
+                      </div>
+
+                      <!-- 近1年完成B轮及以上融资 -->
+                      <div class="ps1-checkbox-row" onclick="toggleCheckboxCard(this)">
+                        <label class="ps1-checkbox-row__label">
+                          <input type="checkbox" class="ps1-checkbox ps1-card-checkbox" onchange="handleInputChange()">
+                          <span>近1年完成B轮及以上融资</span>
+                        </label>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- 五、经营风险 -->
+                  <div class="ps1-tag-section" id="section-5">
+                    <div class="ps1-tag-section__header">
+                      <h4 class="ps1-tag-section__title">五、经营风险 (排除项)</h4>
+                      <span class="ps1-tag-section__count" id="sec5-count">已选 0/1</span>
+                    </div>
+                    <div class="ps1-tag-section__conditions">
+                      <div class="ps1-checkbox-row" onclick="toggleCheckboxCard(this)">
+                        <label class="ps1-checkbox-row__label">
+                          <input type="checkbox" class="ps1-checkbox ps1-card-checkbox" onchange="handleInputChange()">
+                          <span>近1年无行政处罚</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                </div><!-- /.ps1-tag-library__sections -->
+              </div><!-- /.ps1-tag-library -->
+
+            </div><!-- /.ps1-left-column -->
+
+            <!-- 右侧：统计分析、漏斗碰撞与表格展示（占比 8/12） -->
+            <div class="ps1-right-column">
+
+              <!-- 1. 初选符合大方向企业列表 + 筛选漏斗分析 -->
+              <div class="ps1-card">
+                <div class="ps1-card-header ps1-card-header--wrap">
+                  <div class="ps1-flex ps1-items-center ps1-gap-2 ps1-flex-wrap">
+                    <i class="fa-solid fa-filter-circle-dollar text-brand-500 ps1-icon-md"></i>
+                    <h2 class="ps1-card-title ps1-title-no-margin">
+                      初选符合大方向企业列表 (产业链空间 + 维度标签)
+                    </h2>
+                    <span class="ps1-badge ps1-badge--emerald">客商门槛 全覆盖</span>
+                  </div>
+
+                  <div class="ps1-flex ps1-items-center ps1-gap-2 ps1-flex-wrap">
+                    <button class="ps1-btn ps1-btn--success" onclick="exportData()">
+                      <i class="fa-solid fa-download"></i>
+                      导出受惠企业名单
+                    </button>
+                    <button class="ps1-btn ps1-btn--primary" onclick="exportRuleModel()">
+                      <i class="fa-solid fa-code-merge"></i>
+                      导出政策规则 Model
+                    </button>
+                  </div>
+                </div>
+
+                <div class="ps1-card-body no-padding-top">
+                  <div class="ps1-funnel-panel">
+                    <div class="ps1-funnel-panel__label">产业链定位 + 维度标签组合过滤结果:</div>
+
+                    <div class="ps1-funnel-count">
+                      <span id="finalMatchedCount" class="ps1-funnel-count__number">53</span>
+                      <span class="ps1-funnel-count__text">家企业符合免申即享条件</span>
+                    </div>
+
+                    <div id="funnelPathContainer" class="ps1-funnel-path">
+                      <!-- JS 动态渲染漏斗路径 -->
+                    </div>
+
+                    <div class="ps1-funnel-footer">
+                      <span>辖区企业总基数: <strong>210,482 家</strong></span>
+                      <span>匹配率: <strong id="matchRatio">0.03%</strong></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. 符合免申即享条件企业明细列表 -->
+              <div class="ps1-card">
+                <div class="ps1-card-header">
+                  <h3 class="ps1-card-title ps1-title-no-margin">
+                    符合免申即享条件企业明细 (全量客观达标)
+                  </h3>
+                  <span class="ps1-text-2xs ps1-text-muted">结合产业链空间定位筛选，不做主观打分与排序</span>
+                </div>
+
+                <div class="ps1-card-body no-padding-top">
+                  <div class="ps1-table-wrap">
+                    <table class="ps1-table">
+                      <thead>
+                        <tr>
+                          <th class="text-center ps1-w-10"><input type="checkbox" checked></th>
+                          <th class="ps1-w-12">序号</th>
+                          <th>企业名称 / 统一社会信用代码</th>
+                          <th>产业链环节与特征标签</th>
+                          <th>实缴资本 / 社保人数</th>
+                          <th>风控状态</th>
+                          <th class="text-center">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="text-center"><input type="checkbox" checked></td>
+                          <td class="ps1-text-muted">01</td>
+                          <td>
+                            <div class="ps1-enterprise-name">深圳市大疆百旺创新科技有限公司</div>
+                            <div class="ps1-text-2xs ps1-font-mono ps1-text-muted">91440300MA5EXXX129</div>
+                          </td>
+                          <td>
+                            <div class="ps1-enterprise-tags">
+                              <span class="ps1-badge ps1-badge--indigo">环节: 核心整机研发</span>
+                              <span class="ps1-badge ps1-badge--sky">低空无人机及航线证明</span>
+                              <span class="ps1-badge ps1-badge--blue">产值增长 +42%</span>
+                            </div>
+                            <div class="ps1-text-2xs ps1-text-muted">发明专利 86件</div>
+                          </td>
+                          <td>
+                            <div class="font-medium">实缴: 5,000 万元</div>
+                            <div class="ps1-text-2xs ps1-text-muted">社保: 2,480人 (+18%)</div>
+                          </td>
+                          <td>
+                            <span class="ps1-badge ps1-badge--emerald">
+                              <span class="ps1-status-dot"></span>
+                              正常无预警
+                            </span>
+                          </td>
+                          <td class="text-center">
+                            <button class="ps1-btn ps1-btn--ghost ps1-btn--profile">360°画像</button>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td class="text-center"><input type="checkbox" checked></td>
+                          <td class="ps1-text-muted">02</td>
+                          <td>
+                            <div class="ps1-enterprise-name">深圳市前海智行科技股份有限公司</div>
+                            <div class="ps1-text-2xs ps1-font-mono ps1-text-muted">91440300MA5FYYY888</div>
+                          </td>
+                          <td>
+                            <div class="ps1-enterprise-tags">
+                              <span class="ps1-badge ps1-badge--indigo">环节: 核心整机研发</span>
+                              <span class="ps1-badge ps1-badge--sky">低空无人机及航线证明</span>
+                              <span class="ps1-badge ps1-badge--blue">产值增长 +35%</span>
+                            </div>
+                            <div class="ps1-text-2xs ps1-font-mono ps1-text-muted">发明专利 24件</div>
+                          </td>
+                          <td>
+                            <div class="font-medium">实缴: 2,000 万元</div>
+                            <div class="ps1-text-2xs ps1-text-muted">社保: 420人 (+22%)</div>
+                          </td>
+                          <td>
+                            <span class="ps1-badge ps1-badge--emerald">
+                              <span class="ps1-status-dot"></span>
+                              正常无预警
+                            </span>
+                          </td>
+                          <td class="text-center">
+                            <button class="ps1-btn ps1-btn--ghost ps1-btn--profile">360°画像</button>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td class="text-center"><input type="checkbox" checked></td>
+                          <td class="ps1-text-muted">03</td>
+                          <td>
+                            <div class="ps1-enterprise-name">深圳市南山知行技术有限公司</div>
+                            <div class="ps1-text-2xs ps1-font-mono ps1-text-muted">91440300MA5GZZZ333</div>
+                          </td>
+                          <td>
+                            <div class="ps1-enterprise-tags">
+                              <span class="ps1-badge ps1-badge--indigo">环节: 关键零部件</span>
+                              <span class="ps1-badge ps1-badge--sky">低空无人机</span>
+                              <span class="ps1-badge ps1-badge--blue">营收增长</span>
+                            </div>
+                            <div class="ps1-text-2xs ps1-text-muted ps1-font-mono">发明专利 18件</div>
+                          </td>
+                          <td>
+                            <div class="font-medium">实缴: 1,200 万元</div>
+                            <div class="ps1-text-2xs ps1-text-muted">社保: 180人 (+16%)</div>
+                          </td>
+                          <td>
+                            <span class="ps1-badge ps1-badge--emerald">
+                              <span class="ps1-status-dot"></span>
+                              正常无预警
+                            </span>
+                          </td>
+                          <td class="text-center">
+                            <button class="ps1-btn ps1-btn--ghost ps1-btn--profile">360°画像</button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- 分页 -->
+                  <div class="ps1-pagination">
+                    <span>显示第 1 到 3 条，共 53 条记录</span>
+                    <div class="ps1-pagination__buttons">
+                      <button class="ps1-page-btn" disabled>上一页</button>
+                      <button class="ps1-page-btn is-active">1</button>
+                      <button class="ps1-page-btn">2</button>
+                      <button class="ps1-page-btn">3</button>
+                      <button class="ps1-page-btn">下一页</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /.ps1-right-column -->
+
+          </div><!-- /.ps1-main-grid -->
+
+        </div><!-- /.ps1-container -->
+      </div><!-- /.policy-stage1-page -->
+    </main><!-- /.page-content -->
+  </div><!-- /.page-layout -->
+
+  <!-- ============================================================
+       存为方案 Modal 弹窗
+       ============================================================ -->
+  <div id="savePresetModal" class="ps1-modal-overlay is-hidden">
+    <div class="ps1-modal">
+      <div class="ps1-modal__header">
+        <h3 class="ps1-modal__title">
+          <i class="fa-regular fa-bookmark text-brand-500"></i>
+          保存为常用筛选方案
+        </h3>
+        <button class="ps1-modal__close" onclick="closeSaveModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="ps1-modal__body">
+        <div class="ps1-form-group">
+          <label>方案名称:</label>
+          <input type="text" id="presetNameInput" class="ps1-input" placeholder="如: 高成长无人机企业库">
+        </div>
+        <div class="ps1-form-group">
+          <label>方案描述 (可选):</label>
+          <textarea class="ps1-input" placeholder="输入简单描述以供团队协作识别"></textarea>
+        </div>
+      </div>
+
+      <div class="ps1-modal__footer">
+        <button class="ps1-btn ps1-btn--default" onclick="closeSaveModal()">取消</button>
+        <button class="ps1-btn ps1-btn--primary" onclick="confirmSavePreset()">保存方案</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页面业务脚本 -->
+  <script src="js/policy-stage1.js?v=3"></script>
+</body>
+</html>

@@ -13,6 +13,11 @@
   padding: 0 32px 32px;
 }
 
+/* ===== 全局面包屑 ===== */
+.dashboard__breadcrumb {
+  padding: 16px 0 8px;
+}
+
 /* ===== 全局头部 ===== */
 .dashboard__header {
   display: flex;

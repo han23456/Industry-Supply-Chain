@@ -1,0 +1,1524 @@
+/* ============================================================
+   政策分析第三阶段：事中事后监管期
+   原生自定义样式（BEM-like，前缀 ps3-*）
+   复刻参考页视觉风格，禁用 Tailwind / Lucide
+   ============================================================ */
+
+/* ---- 变量 ---- */
+:root {
+  --ps3-bg: #f8fafc;
+  --ps3-surface: #ffffff;
+  --ps3-text: #1e293b;
+  --ps3-text-secondary: #64748b;
+  --ps3-text-tertiary: #94a3b8;
+  --ps3-border: #e2e8f0;
+  --ps3-border-light: #f1f5f9;
+
+  --ps3-blue-50: #eff6ff;
+  --ps3-blue-100: #dbeafe;
+  --ps3-blue-500: #3b82f6;
+  --ps3-blue-600: #2563eb;
+  --ps3-blue-700: #1d4ed8;
+
+  --ps3-red-50: #fef2f2;
+  --ps3-red-100: #fee2e2;
+  --ps3-red-500: #ef4444;
+  --ps3-red-600: #dc2626;
+  --ps3-red-700: #b91c1c;
+
+  --ps3-amber-50: #fffbeb;
+  --ps3-amber-100: #fef3c7;
+  --ps3-amber-500: #f59e0b;
+  --ps3-amber-600: #d97706;
+
+  --ps3-purple-50: #faf5ff;
+  --ps3-purple-100: #f3e8ff;
+  --ps3-purple-500: #a855f7;
+  --ps3-purple-600: #9333ea;
+
+  --ps3-emerald-50: #ecfdf5;
+  --ps3-emerald-100: #d1fae5;
+  --ps3-emerald-500: #10b981;
+  --ps3-emerald-600: #059669;
+
+  --ps3-slate-50: #f8fafc;
+  --ps3-slate-100: #f1f5f9;
+  --ps3-slate-200: #e2e8f0;
+  --ps3-slate-300: #cbd5e1;
+  --ps3-slate-400: #94a3b8;
+  --ps3-slate-500: #64748b;
+  --ps3-slate-600: #475569;
+  --ps3-slate-700: #334155;
+  --ps3-slate-800: #1e293b;
+  --ps3-slate-900: #0f172a;
+
+  --ps3-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --ps3-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --ps3-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
+  --ps3-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08);
+
+  --ps3-radius-sm: 4px;
+  --ps3-radius: 6px;
+  --ps3-radius-md: 8px;
+  --ps3-radius-lg: 12px;
+  --ps3-radius-xl: 16px;
+  --ps3-radius-full: 9999px;
+
+  --ps3-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---- 动画 ---- */
+@keyframes ps3-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ps3-scale-up {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ps3-slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes ps3-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+.ps3-fade-in { animation: ps3-fade-in 0.2s ease-out forwards; }
+.ps3-scale-up { animation: ps3-scale-up 0.2s ease-out forwards; }
+.ps3-slide-in-right { animation: ps3-slide-in-right 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.ps3-pulse { animation: ps3-pulse 2s infinite; }
+
+/* ---- 滚动条 ---- */
+.ps3-custom-scrollbar { scrollbar-width: thin; }
+.ps3-custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.ps3-custom-scrollbar::-webkit-scrollbar-track { background: var(--ps3-slate-100); border-radius: 3px; }
+.ps3-custom-scrollbar::-webkit-scrollbar-thumb { background: var(--ps3-slate-300); border-radius: 3px; }
+.ps3-custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--ps3-slate-400); }
+
+.ps3-no-scrollbar::-webkit-scrollbar { display: none; }
+.ps3-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ---- 页面包装 ---- */
+.policy-stage3-page {
+  min-height: 100%;
+  background: var(--ps3-bg);
+  border-radius: var(--ps3-radius);
+  padding: 24px;
+}
+
+.ps3-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.is-hidden { display: none !important; }
+
+/* ---- 顶部面包屑与阶段指示器 ---- */
+.ps3-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ps3-border-light);
+}
+
+.ps3-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ps3-text-secondary);
+}
+
+.ps3-breadcrumb__item { cursor: default; }
+.ps3-breadcrumb__item--current { color: var(--ps3-text); font-weight: 500; }
+.ps3-breadcrumb__sep { color: var(--ps3-text-tertiary); }
+
+.ps3-stage-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ps3-text-tertiary);
+}
+
+.ps3-stage-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: var(--ps3-radius-full);
+  background: var(--ps3-slate-100);
+  border: 1px solid var(--ps3-border);
+  transition: var(--ps3-transition);
+}
+
+.ps3-stage-step--active {
+  background: var(--ps3-blue-100);
+  color: var(--ps3-blue-700);
+  border-color: var(--ps3-blue-500);
+  font-weight: 600;
+}
+
+/* ---- 页面标题区 ---- */
+.ps3-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--ps3-surface);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--ps3-shadow-sm);
+}
+
+.ps3-page-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ps3-page-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--ps3-radius-md);
+  background: var(--ps3-blue-600);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.ps3-page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ps3-slate-900);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ps3-page-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ps3-blue-700);
+  background: var(--ps3-blue-50);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: var(--ps3-radius-full);
+}
+
+.ps3-page-subtitle {
+  font-size: 12px;
+  color: var(--ps3-text-tertiary);
+  margin-top: 4px;
+}
+
+.ps3-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ps3-user-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 12px;
+  border-left: 1px solid var(--ps3-border);
+  font-size: 12px;
+}
+
+.ps3-user-mini__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ps3-blue-600);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.ps3-user-mini__name { color: var(--ps3-text); font-weight: 600; }
+.ps3-user-mini__dept { color: var(--ps3-text-tertiary); font-size: 11px; }
+
+/* ---- 按钮 ---- */
+.ps3-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--ps3-radius);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: var(--ps3-transition);
+  white-space: nowrap;
+}
+
+.ps3-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ps3-btn--primary {
+  background: var(--ps3-blue-600);
+  color: #fff;
+  border-color: var(--ps3-blue-600);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+.ps3-btn--primary:hover { background: var(--ps3-blue-700); border-color: var(--ps3-blue-700); }
+
+.ps3-btn--secondary {
+  background: var(--ps3-slate-100);
+  color: var(--ps3-slate-700);
+  border-color: var(--ps3-border);
+}
+.ps3-btn--secondary:hover { background: var(--ps3-slate-200); color: var(--ps3-slate-900); }
+
+.ps3-btn--default {
+  background: #fff;
+  color: var(--ps3-slate-700);
+  border-color: var(--ps3-border);
+}
+.ps3-btn--default:hover { background: var(--ps3-slate-50); border-color: var(--ps3-slate-300); }
+
+.ps3-btn--ghost {
+  background: transparent;
+  color: var(--ps3-slate-600);
+  border-color: var(--ps3-border);
+}
+.ps3-btn--ghost:hover { background: var(--ps3-slate-50); color: var(--ps3-slate-900); }
+
+.ps3-btn--danger {
+  background: var(--ps3-red-600);
+  color: #fff;
+  border-color: var(--ps3-red-600);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+}
+.ps3-btn--danger:hover { background: var(--ps3-red-700); border-color: var(--ps3-red-700); }
+
+.ps3-btn--dark {
+  background: var(--ps3-slate-800);
+  color: #fff;
+  border-color: var(--ps3-slate-800);
+}
+.ps3-btn--dark:hover { background: var(--ps3-slate-900); }
+
+.ps3-btn__icon { font-size: 11px; }
+.ps3-btn__icon--success { color: var(--ps3-emerald-500); }
+.ps3-btn__icon--info { color: var(--ps3-blue-500); }
+
+/* ---- 核心数据看板 ---- */
+.ps3-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .ps3-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .ps3-stats-grid { grid-template-columns: 1fr; }
+}
+
+.ps3-stat-card {
+  background: var(--ps3-surface);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius-lg);
+  padding: 20px;
+  box-shadow: var(--ps3-shadow-sm);
+  transition: var(--ps3-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.ps3-stat-card:hover { box-shadow: var(--ps3-shadow-md); }
+.ps3-stat-card--red { background: linear-gradient(135deg, #fff 0%, #fef2f2 100%); border-color: var(--ps3-red-100); }
+.ps3-stat-card--red:hover { border-color: #fecaca; }
+.ps3-stat-card--blue:hover { border-color: var(--ps3-blue-100); }
+.ps3-stat-card--amber:hover { border-color: var(--ps3-amber-100); }
+.ps3-stat-card--purple:hover { border-color: var(--ps3-purple-100); }
+
+.ps3-stat-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ps3-stat-card__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ps3-text-secondary);
+  margin-bottom: 6px;
+}
+
+.ps3-stat-card__label--danger { color: var(--ps3-red-600); }
+
+.ps3-stat-card__label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.ps3-stat-card__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: var(--ps3-radius-sm);
+  font-weight: 500;
+}
+
+.ps3-stat-card__tag--danger {
+  background: var(--ps3-red-100);
+  color: var(--ps3-red-700);
+}
+
+.ps3-stat-card__value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ps3-slate-900);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ps3-stat-card__value--danger { color: var(--ps3-red-600); }
+.ps3-stat-card__value--amber { color: var(--ps3-amber-600); }
+
+.ps3-stat-card__unit {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ps3-text-tertiary);
+}
+
+.ps3-stat-card__unit--danger { color: var(--ps3-red-500); }
+
+.ps3-stat-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ps3-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.ps3-stat-card__icon--blue { background: var(--ps3-blue-50); color: var(--ps3-blue-600); }
+.ps3-stat-card__icon--red { background: var(--ps3-red-100); color: var(--ps3-red-600); }
+.ps3-stat-card__icon--amber { background: var(--ps3-amber-50); color: var(--ps3-amber-600); }
+.ps3-stat-card__icon--purple { background: var(--ps3-purple-50); color: var(--ps3-purple-600); }
+
+.ps3-stat-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--ps3-text-secondary);
+  flex-wrap: wrap;
+}
+
+.ps3-stat-card__footer--split { justify-content: space-between; }
+
+.ps3-stat-card__trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.ps3-stat-card__trend--success { color: var(--ps3-emerald-600); }
+.ps3-stat-card__trend--amber { color: var(--ps3-amber-600); }
+
+.ps3-stat-card__highlight { color: var(--ps3-red-500); font-weight: 600; font-size: 11px; }
+
+.ps3-stat-card__footer-icon { color: var(--ps3-text-tertiary); }
+
+/* ---- 筛选面板 ---- */
+.ps3-filter-panel {
+  background: var(--ps3-surface);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius-lg);
+  box-shadow: var(--ps3-shadow-sm);
+  overflow: hidden;
+}
+
+.ps3-filter-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ps3-border-light);
+}
+
+.ps3-filter-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ps3-slate-700);
+}
+
+.ps3-filter-panel__title i { color: var(--ps3-text-tertiary); }
+
+.ps3-filter-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ps3-search-box {
+  position: relative;
+  width: 260px;
+}
+
+.ps3-search-box__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ps3-text-tertiary);
+  font-size: 12px;
+}
+
+.ps3-search-box__input {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  font-size: 12px;
+  color: var(--ps3-text);
+  background: var(--ps3-slate-50);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius);
+  outline: none;
+  transition: var(--ps3-transition);
+}
+
+.ps3-search-box__input:focus {
+  background: #fff;
+  border-color: var(--ps3-blue-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.ps3-filter-panel__body {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+@media (max-width: 1200px) {
+  .ps3-filter-panel__body { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .ps3-filter-panel__body { grid-template-columns: 1fr; }
+  .ps3-search-box { width: 100%; }
+}
+
+.ps3-filter-field { display: flex; flex-direction: column; gap: 6px; }
+
+.ps3-filter-field__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ps3-text-secondary);
+}
+
+.ps3-select,
+.ps3-input,
+.ps3-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--ps3-text);
+  background: var(--ps3-slate-50);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius);
+  outline: none;
+  transition: var(--ps3-transition);
+  font-family: inherit;
+}
+
+.ps3-select:focus,
+.ps3-input:focus,
+.ps3-textarea:focus {
+  background: #fff;
+  border-color: var(--ps3-blue-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.ps3-input--danger,
+.ps3-textarea--danger {
+  color: var(--ps3-red-600);
+  font-weight: 700;
+}
+
+.ps3-input--danger:focus,
+.ps3-textarea--danger:focus {
+  border-color: var(--ps3-red-500);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.ps3-input--disabled {
+  background: var(--ps3-slate-100);
+  color: var(--ps3-text-secondary);
+  cursor: not-allowed;
+}
+
+.ps3-textarea { resize: vertical; line-height: 1.5; }
+
+/* ---- 表格卡片 ---- */
+.ps3-table-card {
+  background: var(--ps3-surface);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius-lg);
+  box-shadow: var(--ps3-shadow-sm);
+  overflow: hidden;
+}
+
+.ps3-table-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ps3-border-light);
+  background: var(--ps3-slate-50);
+}
+
+.ps3-table-card__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ps3-table-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ps3-slate-900);
+}
+
+.ps3-table-card__subtitle {
+  font-size: 12px;
+  color: var(--ps3-text-tertiary);
+}
+
+.ps3-table-card__count {
+  font-size: 12px;
+  color: var(--ps3-text-secondary);
+}
+
+.ps3-table-card__count-num {
+  color: var(--ps3-blue-600);
+  font-weight: 700;
+}
+
+.ps3-table-wrap { overflow-x: auto; }
+
+.ps3-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.ps3-data-table__th {
+  padding: 12px 14px;
+  background: var(--ps3-slate-100);
+  color: var(--ps3-slate-600);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--ps3-border);
+  white-space: nowrap;
+}
+
+.ps3-data-table__th--right { text-align: right; }
+.ps3-data-table__th--center { text-align: center; }
+
+.ps3-data-table__body td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ps3-border-light);
+  color: var(--ps3-text);
+  vertical-align: top;
+}
+
+.ps3-data-table__body tr { transition: var(--ps3-transition); }
+.ps3-data-table__body tr:hover td { background: rgba(241, 245, 249, 0.7); }
+.ps3-data-table__body tr.ps3-row--urgent td { background: rgba(254, 242, 242, 0.35); }
+
+.ps3-data-table--compact td { padding: 10px 12px; }
+
+/* ---- 链接与操作按钮 ---- */
+.ps3-ent-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: var(--ps3-slate-900);
+  cursor: pointer;
+  transition: var(--ps3-transition);
+}
+
+.ps3-ent-name:hover { color: var(--ps3-blue-600); }
+
+.ps3-ent-name i { font-size: 10px; color: var(--ps3-text-tertiary); }
+
+.ps3-ent-code {
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--ps3-text-tertiary);
+  margin-top: 4px;
+}
+
+.ps3-ent-batch {
+  color: var(--ps3-slate-700);
+  font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ps3-ent-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ps3-text-tertiary);
+  margin-top: 4px;
+}
+
+.ps3-amount-origin {
+  font-size: 11px;
+  color: var(--ps3-text-tertiary);
+}
+
+.ps3-amount-paid {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.ps3-amount-paid--reduced { color: var(--ps3-amber-600); }
+
+.ps3-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--ps3-radius-full);
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ps3-chip--reduced {
+  background: var(--ps3-amber-100);
+  color: var(--ps3-amber-700);
+}
+
+.ps3-indicators-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  max-width: 160px;
+  margin: 0 auto;
+}
+
+.ps3-indicator-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: var(--ps3-slate-700);
+  background: var(--ps3-slate-100);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius-sm);
+  cursor: help;
+}
+
+.ps3-indicator-chip:hover { background: var(--ps3-slate-200); }
+
+.ps3-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--ps3-radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ps3-badge--urgent {
+  background: var(--ps3-red-100);
+  color: var(--ps3-red-800);
+  border: 1px solid var(--ps3-red-100);
+}
+
+.ps3-badge--high {
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+
+.ps3-badge--medium {
+  background: var(--ps3-amber-100);
+  color: var(--ps3-amber-800);
+  border: 1px solid var(--ps3-amber-100);
+}
+
+.ps3-badge--low {
+  background: var(--ps3-blue-100);
+  color: var(--ps3-blue-800);
+  border: 1px solid var(--ps3-blue-100);
+}
+
+.ps3-badge--normal {
+  background: var(--ps3-slate-100);
+  color: var(--ps3-slate-600);
+  border: 1px solid var(--ps3-border);
+}
+
+.ps3-badge--warn {
+  background: var(--ps3-amber-50);
+  color: var(--ps3-amber-600);
+  border: 1px solid var(--ps3-amber-100);
+}
+
+.ps3-badge--blocked {
+  background: var(--ps3-red-50);
+  color: var(--ps3-red-700);
+  border: 1px solid var(--ps3-red-100);
+}
+
+.ps3-intercept-amount {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ps3-red-600);
+  margin-top: 4px;
+}
+
+.ps3-maintainer { font-size: 11px; color: var(--ps3-slate-600); }
+.ps3-maintain-time { font-size: 10px; color: var(--ps3-text-tertiary); margin-top: 2px; }
+
+.ps3-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.ps3-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ps3-radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ps3-slate-600);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--ps3-transition);
+  font-size: 13px;
+}
+
+.ps3-action-btn:hover { background: var(--ps3-slate-100); }
+.ps3-action-btn--view:hover { color: var(--ps3-blue-600); }
+.ps3-action-btn--intercept:hover { color: var(--ps3-red-600); background: var(--ps3-red-50); }
+.ps3-action-btn--maint:hover { color: var(--ps3-blue-600); background: var(--ps3-blue-50); }
+
+.ps3-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--ps3-text-tertiary);
+  text-align: center;
+}
+
+.ps3-empty-state i { font-size: 32px; margin-bottom: 10px; opacity: 0.5; }
+
+/* ---- Toast ---- */
+.ps3-toast {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--ps3-slate-900);
+  color: #fff;
+  border-radius: var(--ps3-radius-md);
+  box-shadow: var(--ps3-shadow-xl);
+  border: 1px solid var(--ps3-slate-700);
+  font-size: 13px;
+  font-weight: 500;
+  animation: ps3-fade-in 0.2s ease-out forwards;
+}
+
+.ps3-toast__icon { color: var(--ps3-emerald-500); font-size: 16px; }
+
+/* ---- 抽屉 ---- */
+.ps3-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  animation: ps3-fade-in 0.2s ease-out forwards;
+}
+
+.ps3-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 680px;
+  max-width: 100%;
+  height: 100%;
+  background: var(--ps3-surface);
+  box-shadow: var(--ps3-shadow-xl);
+  border-left: 1px solid var(--ps3-border);
+  display: flex;
+  flex-direction: column;
+  animation: ps3-slide-in-right 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.ps3-drawer__header {
+  padding: 16px 20px;
+  background: var(--ps3-slate-900);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--ps3-slate-800);
+}
+
+.ps3-drawer__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ps3-drawer__title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ps3-drawer__code {
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--ps3-slate-400);
+  margin-top: 4px;
+}
+
+.ps3-drawer__close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ps3-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ps3-slate-400);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  transition: var(--ps3-transition);
+}
+
+.ps3-drawer__close:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+.ps3-drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ps3-drawer__summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  background: var(--ps3-slate-50);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius-md);
+  padding: 16px;
+}
+
+.ps3-drawer__summary-item { display: flex; flex-direction: column; gap: 4px; }
+
+.ps3-drawer__summary-label {
+  font-size: 11px;
+  color: var(--ps3-text-tertiary);
+}
+
+.ps3-drawer__summary-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps3-slate-800);
+}
+
+.ps3-drawer__summary-value--primary { color: var(--ps3-blue-600); }
+
+.ps3-drawer__section { display: flex; flex-direction: column; gap: 12px; }
+
+.ps3-drawer__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ps3-drawer__section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ps3-slate-900);
+}
+
+.ps3-drawer__section-title i { color: var(--ps3-blue-600); }
+.ps3-drawer__section:nth-child(3) .ps3-drawer__section-title i { color: var(--ps3-amber-600); }
+
+.ps3-drawer__section-meta {
+  font-size: 11px;
+  color: var(--ps3-text-tertiary);
+}
+
+.ps3-drawer__footer {
+  padding: 14px 20px;
+  background: var(--ps3-slate-50);
+  border-top: 1px solid var(--ps3-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* ---- 风险指标网格 ---- */
+.ps3-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .ps3-risk-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.ps3-risk-card {
+  padding: 12px;
+  border-radius: var(--ps3-radius-md);
+  border: 1px solid var(--ps3-border);
+  background: var(--ps3-surface);
+  color: var(--ps3-text-secondary);
+  opacity: 0.8;
+  transition: var(--ps3-transition);
+}
+
+.ps3-risk-card--hit {
+  background: var(--ps3-red-50);
+  border-color: #fecaca;
+  color: var(--ps3-red-900);
+  opacity: 1;
+  box-shadow: var(--ps3-shadow-sm);
+}
+
+.ps3-risk-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.ps3-risk-card__num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  color: var(--ps3-text-tertiary);
+}
+
+.ps3-risk-card__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: var(--ps3-radius-sm);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.ps3-risk-card__status--hit {
+  background: var(--ps3-red-600);
+  color: #fff;
+}
+
+.ps3-risk-card__status--ok {
+  color: var(--ps3-emerald-600);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.ps3-risk-card__name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ps3-slate-800);
+  margin-bottom: 4px;
+}
+
+.ps3-risk-card__source {
+  font-size: 10px;
+  color: var(--ps3-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 证据链 ---- */
+.ps3-evidence-list { position: relative; padding-left: 16px; border-left: 2px solid var(--ps3-border); }
+
+.ps3-evidence-empty {
+  padding: 24px;
+  background: var(--ps3-slate-50);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius-md);
+  text-align: center;
+  color: var(--ps3-text-tertiary);
+  font-size: 12px;
+}
+
+.ps3-evidence-item {
+  position: relative;
+  background: var(--ps3-slate-50);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius-md);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.ps3-evidence-item::before {
+  content: '';
+  position: absolute;
+  left: -23px;
+  top: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ps3-red-500);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--ps3-red-100);
+}
+
+.ps3-evidence-item__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.ps3-evidence-item__title {
+  font-weight: 700;
+  color: var(--ps3-slate-900);
+  font-size: 12px;
+}
+
+.ps3-evidence-item__time {
+  font-size: 10px;
+  color: var(--ps3-text-tertiary);
+  white-space: nowrap;
+}
+
+.ps3-evidence-item__meta {
+  font-size: 11px;
+  color: var(--ps3-text-secondary);
+  margin-bottom: 10px;
+}
+
+.ps3-evidence-item__snapshot {
+  background: var(--ps3-slate-900);
+  color: #e2e8f0;
+  border-radius: var(--ps3-radius);
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+
+.ps3-evidence-item__snapshot-label {
+  font-size: 10px;
+  color: var(--ps3-slate-400);
+  margin-bottom: 4px;
+}
+
+.ps3-evidence-item__snapshot pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---- 弹窗 ---- */
+.ps3-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: ps3-fade-in 0.2s ease-out forwards;
+}
+
+.ps3-modal {
+  background: var(--ps3-surface);
+  border-radius: var(--ps3-radius-lg);
+  box-shadow: var(--ps3-shadow-xl);
+  border: 1px solid var(--ps3-border);
+  width: 640px;
+  max-width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: ps3-scale-up 0.2s ease-out forwards;
+  overflow: hidden;
+}
+
+.ps3-modal--sm { width: 420px; }
+.ps3-modal--md { width: 520px; }
+.ps3-modal--lg { width: 880px; }
+
+.ps3-modal__header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--ps3-border-light);
+}
+
+.ps3-modal__header--dark {
+  background: var(--ps3-slate-900);
+  color: #fff;
+  border-bottom-color: var(--ps3-slate-800);
+}
+
+.ps3-modal__header--danger {
+  background: var(--ps3-red-600);
+  color: #fff;
+  border-bottom-color: var(--ps3-red-600);
+}
+
+.ps3-modal__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ps3-modal__title-icon { color: var(--ps3-blue-400); font-size: 18px; }
+
+.ps3-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ps3-modal__close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.7;
+  transition: var(--ps3-transition);
+}
+
+.ps3-modal__close:hover { opacity: 1; background: rgba(255, 255, 255, 0.1); }
+
+.ps3-modal__subheader {
+  padding: 10px 18px;
+  background: var(--ps3-slate-50);
+  border-bottom: 1px solid var(--ps3-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ps3-text-secondary);
+}
+
+.ps3-modal__subheader-badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: var(--ps3-slate-200);
+  color: var(--ps3-slate-700);
+  padding: 2px 8px;
+  border-radius: var(--ps3-radius-sm);
+  font-size: 10px;
+}
+
+.ps3-modal__body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ps3-modal__body--scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 18px;
+}
+
+.ps3-modal__body--center {
+  align-items: center;
+  text-align: center;
+}
+
+.ps3-modal__footer {
+  padding: 12px 18px;
+  border-top: 1px solid var(--ps3-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ps3-modal__footer--dark {
+  background: var(--ps3-slate-100);
+  border-top-color: var(--ps3-border);
+}
+
+.ps3-modal__info {
+  padding: 12px;
+  background: var(--ps3-blue-50);
+  border: 1px solid var(--ps3-blue-100);
+  border-radius: var(--ps3-radius-md);
+}
+
+.ps3-modal__info--danger {
+  background: var(--ps3-red-50);
+  border-color: var(--ps3-red-100);
+}
+
+.ps3-modal__info-title {
+  font-weight: 700;
+  color: var(--ps3-slate-900);
+  font-size: 13px;
+}
+
+.ps3-modal__info-desc {
+  font-size: 11px;
+  color: var(--ps3-text-secondary);
+  margin-top: 3px;
+}
+
+.ps3-modal__info--danger .ps3-modal__info-title { color: var(--ps3-red-900); }
+.ps3-modal__info--danger .ps3-modal__info-desc { color: var(--ps3-red-700); }
+
+/* ---- 表单 ---- */
+.ps3-form-group { display: flex; flex-direction: column; gap: 6px; }
+
+.ps3-form-group__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ps3-slate-700);
+}
+
+.ps3-form-group__hint {
+  font-size: 10px;
+  color: var(--ps3-text-tertiary);
+  margin-top: 2px;
+}
+
+.ps3-text-danger { color: var(--ps3-red-500); }
+
+.ps3-action-type-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ps3-action-type-btn {
+  padding: 10px 8px;
+  border-radius: var(--ps3-radius-md);
+  border: 1px solid var(--ps3-border);
+  background: var(--ps3-slate-50);
+  color: var(--ps3-slate-600);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--ps3-transition);
+}
+
+.ps3-action-type-btn:hover { background: var(--ps3-slate-100); }
+
+.ps3-action-type-btn--active {
+  background: var(--ps3-blue-50);
+  border-color: var(--ps3-blue-600);
+  color: var(--ps3-blue-700);
+}
+
+.ps3-action-type-btn--remove.ps3-action-type-btn--active {
+  background: var(--ps3-red-50);
+  border-color: var(--ps3-red-600);
+  color: var(--ps3-red-700);
+}
+
+.ps3-action-type-btn--status.ps3-action-type-btn--active {
+  background: var(--ps3-amber-50);
+  border-color: var(--ps3-amber-600);
+  color: var(--ps3-amber-700);
+}
+
+.ps3-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--ps3-radius-md);
+  font-size: 12px;
+}
+
+.ps3-alert--danger {
+  background: var(--ps3-red-50);
+  color: var(--ps3-red-700);
+  border: 1px solid var(--ps3-red-100);
+}
+
+/* ---- API 状态弹窗 ---- */
+.ps3-api-status__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ps3-api-status__icon {
+  font-size: 28px;
+  color: var(--ps3-emerald-600);
+}
+
+.ps3-api-status__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ps3-slate-900);
+}
+
+.ps3-api-status__desc {
+  font-size: 12px;
+  color: var(--ps3-text-secondary);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.ps3-api-status__list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ps3-api-status__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--ps3-slate-50);
+  border: 1px solid var(--ps3-border);
+  border-radius: var(--ps3-radius);
+  font-size: 12px;
+}
+
+.ps3-api-status__value {
+  font-weight: 700;
+  color: var(--ps3-slate-800);
+}
+
+.ps3-api-status__value--success {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--ps3-emerald-600);
+}
+
+/* ---- 审计日志变更展示 ---- */
+.ps3-change-before {
+  color: var(--ps3-text-tertiary);
+  text-decoration: line-through;
+}
+
+.ps3-change-arrow {
+  color: var(--ps3-blue-500);
+  margin: 0 4px;
+  font-size: 10px;
+}
+
+.ps3-change-after {
+  color: var(--ps3-slate-900);
+  font-weight: 700;
+}
+
+.ps3-log-reason {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 工具类 ---- */
+.ps3-text-right { text-align: right; }
+.ps3-text-center { text-align: center; }
+.ps3-text-muted { color: var(--ps3-text-tertiary); }

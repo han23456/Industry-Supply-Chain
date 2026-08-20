@@ -24,6 +24,12 @@
   /* ===== 从 URL 获取的链主企业 ID 列表 ===== */
   var selectedEnterpriseIds = [];
 
+  /* ===== 从 URL 获取的产业链上下文 ===== */
+  var urlChainId = null;
+  var urlNodeId = null;
+  var urlChainName = null;
+  var urlNodeName = null;
+
   /* ===== 链主企业详情折叠状态 ===== */
   var enterpriseCollapsedState = {};
 
@@ -37,6 +43,7 @@
     loadComprehensiveCollapsedState();
 
     renderHeader();
+    renderGlobalBreadcrumb();
     renderMetricCards();
 
     // 渲染链主企业详情（带加载状态）
@@ -72,6 +79,10 @@
         return s;
       });
     }
+    urlChainId = params.get('chainId') || null;
+    urlNodeId = params.get('nodeId') || null;
+    urlChainName = params.get('chainName') || null;
+    urlNodeName = params.get('nodeName') || null;
   }
 
   /* ===== 确定性随机数（基于企业 ID 生成稳定数据） ===== */
@@ -704,18 +715,33 @@
     var headerLeft = $('.dashboard__header-left');
     headerLeft.innerHTML = '';
 
+    var mainName = urlChainName || chain.mainName;
+    var subName = urlNodeName || chain.subName;
+
     headerLeft.appendChild(el('div', {
       class: 'dashboard__title',
-      text: chain.mainName
+      text: mainName
     }));
     headerLeft.appendChild(el('div', {
       class: 'dashboard__subtitle',
-      text: '细分产业：' + chain.subName
+      text: '细分产业：' + subName
     }));
     headerLeft.appendChild(el('div', {
       class: 'dashboard__disclaimer',
       text: chain.disclaimer
     }));
+  }
+
+  /* ===== 渲染全局面包屑 ===== */
+  function renderGlobalBreadcrumb() {
+    var currentLabel = urlNodeName || MockData.industryChain.subName || '强链补链深度分析';
+    CommonUtil.renderGlobalBreadcrumb('globalBreadcrumb', {
+      chainId: urlChainId,
+      nodeId: urlNodeId,
+      chainName: urlChainName || MockData.industryChain.mainName,
+      nodeName: urlNodeName,
+      currentLabel: currentLabel
+    });
   }
 
   /* ===== 渲染指标卡片 ===== */

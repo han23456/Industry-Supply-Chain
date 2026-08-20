@@ -224,6 +224,86 @@ var CommonUtil = (function () {
     }
   }
 
+  /* ---------- 全局层级面包屑 ---------- */
+
+  var MATRIX_GROUP_LABELS = {
+    modern_service: '6大现代服务业',
+    strategic_emerging: '4大战略性新兴产业',
+    forward_looking: '2大重点前瞻产业'
+  };
+
+  function getMatrixGroupLabel(matrixGroup) {
+    if (MATRIX_GROUP_LABELS[matrixGroup]) return MATRIX_GROUP_LABELS[matrixGroup];
+    return '产业矩阵';
+  }
+
+  function getChainById(chainId) {
+    if (typeof MOCK_INDUSTRY_CHAINS === 'undefined' || !chainId) return null;
+    for (var i = 0; i < MOCK_INDUSTRY_CHAINS.length; i++) {
+      if (MOCK_INDUSTRY_CHAINS[i].id === chainId) return MOCK_INDUSTRY_CHAINS[i];
+    }
+    return null;
+  }
+
+  function escapeBreadcrumbHtml(text) {
+    if (text == null) return '';
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function buildGlobalBreadcrumbHTML(items) {
+    var list = '';
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var isLast = i === items.length - 1;
+      var content = item.current
+        ? '<span class="global-breadcrumb__current" aria-current="page">' + escapeBreadcrumbHtml(item.label) + '</span>'
+        : '<a class="global-breadcrumb__link" href="' + escapeBreadcrumbHtml(item.url) + '">' + escapeBreadcrumbHtml(item.label) + '</a>';
+      var sep = isLast
+        ? ''
+        : '<span class="global-breadcrumb__sep" aria-hidden="true">›</span>';
+      list += '<li class="global-breadcrumb__item">' + content + sep + '</li>';
+    }
+    return '<nav class="global-breadcrumb" aria-label="面包屑导航"><ol class="global-breadcrumb__list">' + list + '</ol></nav>';
+  }
+
+  function renderGlobalBreadcrumb(containerId, options) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+
+    options = options || {};
+    var params = new URLSearchParams(window.location.search);
+    var chainId = options.chainId || params.get('chainId') || null;
+    var nodeId = options.nodeId || params.get('nodeId') || null;
+    var chainData = options.chainData || getChainById(chainId);
+    var chainName = options.chainName || (chainData ? chainData.name : null) || chainId || '产业链';
+    var matrixGroup = options.matrixGroup || (chainData ? chainData.matrix_group : null) || null;
+    var currentLabel = options.currentLabel || '当前页面';
+    var currentUrl = options.currentUrl || '#';
+
+    var chainUrl = '#';
+    if (chainId) {
+      chainUrl = 'chain-graph.html?chainId=' + encodeURIComponent(chainId);
+      if (nodeId) chainUrl += '&nodeId=' + encodeURIComponent(nodeId);
+    }
+
+    var items = [
+      { label: '前海现代化产业体系', url: 'index.html' },
+      {
+        label: getMatrixGroupLabel(matrixGroup),
+        url: 'index.html' + (matrixGroup ? '?matrix=' + encodeURIComponent(matrixGroup) : '')
+      },
+      { label: chainName, url: chainUrl },
+      { label: currentLabel, url: currentUrl, current: true }
+    ];
+
+    container.innerHTML = buildGlobalBreadcrumbHTML(items);
+  }
+
   /* ===== 公开接口 ===== */
   return {
     $: $,
@@ -234,7 +314,8 @@ var CommonUtil = (function () {
     closeModal: closeModal,
     formatNumber: formatNumber,
     formatWanToYi: formatWanToYi,
-    getLevelTagClass: getLevelTagClass
+    getLevelTagClass: getLevelTagClass,
+    renderGlobalBreadcrumb: renderGlobalBreadcrumb
   };
 
 })();

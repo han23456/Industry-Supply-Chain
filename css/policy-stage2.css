@@ -1,0 +1,1580 @@
+/* ========================================
+   政策分析第二阶段 - 企业获补履历回测与交叉分析
+   基于参考页面 "政策分析第二阶段V2.0.html" 复刻
+   采用模块化 CSS，便于后续迭代维护
+   ======================================== */
+
+/* ----------------------------------------
+   1. 页面级基础布局与变量
+   ---------------------------------------- */
+.policy-stage2-page {
+  --ps2-blue-50: #eff6ff;
+  --ps2-blue-100: #dbeafe;
+  --ps2-blue-200: #bfdbfe;
+  --ps2-blue-600: #2563eb;
+  --ps2-blue-700: #1d4ed8;
+  --ps2-blue-800: #1e40af;
+
+  --ps2-slate-50: #f8fafc;
+  --ps2-slate-100: #f1f5f9;
+  --ps2-slate-200: #e2e8f0;
+  --ps2-slate-300: #cbd5e1;
+  --ps2-slate-400: #94a3b8;
+  --ps2-slate-500: #64748b;
+  --ps2-slate-600: #475569;
+  --ps2-slate-700: #334155;
+  --ps2-slate-800: #1e293b;
+  --ps2-slate-900: #0f172a;
+
+  --ps2-purple-50: #faf5ff;
+  --ps2-purple-100: #f3e8ff;
+  --ps2-purple-600: #9333ea;
+
+  --ps2-emerald-50: #ecfdf5;
+  --ps2-emerald-100: #d1fae5;
+  --ps2-emerald-500: #10b981;
+  --ps2-emerald-600: #059669;
+
+  --ps2-amber-50: #fffbeb;
+  --ps2-amber-100: #fef3c7;
+  --ps2-amber-500: #f59e0b;
+  --ps2-amber-600: #d97706;
+
+  --ps2-rose-50: #fff1f2;
+  --ps2-rose-100: #ffe4e6;
+  --ps2-rose-600: #e11d48;
+
+  --ps2-radius-sm: 4px;
+  --ps2-radius-md: 6px;
+  --ps2-radius-lg: 8px;
+  --ps2-radius-xl: 12px;
+  --ps2-radius-full: 9999px;
+  --ps2-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ps2-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --ps2-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --ps2-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --ps2-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  color: var(--ps2-slate-800);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--ps2-slate-100);
+  min-height: 100%;
+}
+
+/* 页面内容区容器 */
+.ps2-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* ----------------------------------------
+   2. 顶部任务上下文栏
+   ---------------------------------------- */
+.ps2-task-bar {
+  background: #fff;
+  border-bottom: 1px solid var(--ps2-slate-200);
+  padding: 16px 24px;
+  margin: -24px -24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .ps2-task-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.ps2-task-select {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ps2-task-select__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ps2-slate-700);
+  white-space: nowrap;
+}
+
+.ps2-select {
+  font-size: 13px;
+  color: var(--ps2-slate-700);
+  background: var(--ps2-slate-50);
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-lg);
+  padding: 8px 32px 8px 12px;
+  min-width: 360px;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: var(--ps2-transition);
+}
+
+.ps2-select:focus {
+  border-color: var(--ps2-blue-600);
+  box-shadow: 0 0 0 3px var(--ps2-blue-100);
+}
+
+.ps2-task-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ps2-slate-500);
+}
+
+.ps2-task-meta__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ps2-task-meta__value {
+  color: var(--ps2-slate-800);
+  font-weight: 600;
+}
+
+/* ----------------------------------------
+   3. 阶段指示器
+   ---------------------------------------- */
+.ps2-stage-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.ps2-stage-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--ps2-radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--ps2-slate-200);
+  color: var(--ps2-slate-500);
+  background: #fff;
+}
+
+.ps2-stage-item.is-active {
+  background: var(--ps2-blue-700);
+  border-color: var(--ps2-blue-700);
+  color: #fff;
+}
+
+.ps2-stage-arrow {
+  color: var(--ps2-slate-300);
+  font-size: 12px;
+}
+
+/* ----------------------------------------
+   4. 页面标题区
+   ---------------------------------------- */
+.ps2-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .ps2-page-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.ps2-page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  margin: 0 0 6px;
+}
+
+.ps2-page-subtitle {
+  font-size: 13px;
+  color: var(--ps2-slate-500);
+  margin: 0;
+}
+
+.ps2-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ----------------------------------------
+   5. 通用按钮
+   ---------------------------------------- */
+.ps2-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: var(--ps2-radius-lg);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--ps2-transition);
+  white-space: nowrap;
+}
+
+.ps2-btn--primary {
+  background: var(--ps2-blue-700);
+  color: #fff;
+  border-color: var(--ps2-blue-700);
+}
+
+.ps2-btn--primary:hover {
+  background: var(--ps2-blue-800);
+}
+
+.ps2-btn--secondary {
+  background: #fff;
+  color: var(--ps2-slate-700);
+  border-color: var(--ps2-slate-200);
+}
+
+.ps2-btn--secondary:hover {
+  background: var(--ps2-slate-50);
+  border-color: var(--ps2-slate-300);
+}
+
+.ps2-btn--ghost {
+  background: transparent;
+  color: var(--ps2-blue-700);
+  border-color: transparent;
+}
+
+.ps2-btn--ghost:hover {
+  background: var(--ps2-blue-50);
+}
+
+.ps2-btn--danger {
+  background: var(--ps2-rose-600);
+  color: #fff;
+  border-color: var(--ps2-rose-600);
+}
+
+.ps2-btn--danger:hover {
+  background: #be123c;
+}
+
+.ps2-btn--sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.ps2-btn--xs {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+/* ----------------------------------------
+   6. 统计卡片
+   ---------------------------------------- */
+.ps2-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .ps2-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ps2-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.ps2-stat-card {
+  background: #fff;
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-xl);
+  padding: 16px;
+  box-shadow: var(--ps2-shadow-sm);
+  transition: var(--ps2-transition);
+}
+
+.ps2-stat-card:hover {
+  border-color: var(--ps2-blue-200);
+}
+
+.ps2-stat-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ps2-stat-card__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ps2-slate-600);
+}
+
+.ps2-stat-card__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ps2-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.ps2-stat-card__icon--blue {
+  background: var(--ps2-blue-50);
+  color: var(--ps2-blue-600);
+}
+
+.ps2-stat-card__icon--purple {
+  background: var(--ps2-purple-50);
+  color: var(--ps2-purple-600);
+}
+
+.ps2-stat-card__icon--emerald {
+  background: var(--ps2-emerald-50);
+  color: var(--ps2-emerald-600);
+}
+
+.ps2-stat-card__icon--amber {
+  background: var(--ps2-amber-50);
+  color: var(--ps2-amber-600);
+}
+
+.ps2-stat-card__value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ps2-slate-800);
+  margin-bottom: 8px;
+}
+
+.ps2-stat-card__desc {
+  font-size: 12px;
+  color: var(--ps2-slate-500);
+}
+
+.ps2-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--ps2-slate-100);
+  border-radius: var(--ps2-radius-full);
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.ps2-progress-bar__fill {
+  height: 100%;
+  border-radius: var(--ps2-radius-full);
+  transition: width 0.5s ease;
+}
+
+.ps2-progress-bar__fill--blue {
+  background: var(--ps2-blue-600);
+}
+
+.ps2-progress-bar__fill--amber {
+  background: var(--ps2-amber-500);
+}
+
+.ps2-stat-card__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 11px;
+}
+
+.ps2-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ps2-slate-600);
+}
+
+.ps2-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ----------------------------------------
+   7. 标签页
+   ---------------------------------------- */
+.ps2-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--ps2-slate-200);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.ps2-tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ps2-slate-500);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: var(--ps2-transition);
+  white-space: nowrap;
+}
+
+.ps2-tab:hover {
+  color: var(--ps2-slate-700);
+}
+
+.ps2-tab.is-active {
+  color: var(--ps2-blue-700);
+  border-bottom-color: var(--ps2-blue-700);
+}
+
+/* ----------------------------------------
+   8. 卡片与面板
+   ---------------------------------------- */
+.ps2-card {
+  background: #fff;
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-xl);
+  box-shadow: var(--ps2-shadow-sm);
+  overflow: hidden;
+}
+
+.ps2-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ps2-slate-100);
+  flex-wrap: wrap;
+}
+
+.ps2-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  margin: 0;
+}
+
+.ps2-card__body {
+  padding: 20px;
+}
+
+/* ----------------------------------------
+   9. 搜索与筛选控制栏
+   ---------------------------------------- */
+.ps2-control-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .ps2-control-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.ps2-search-box {
+  position: relative;
+  flex: 1;
+  max-width: 360px;
+}
+
+.ps2-search-box__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ps2-slate-400);
+  font-size: 13px;
+}
+
+.ps2-input {
+  width: 100%;
+  font-size: 13px;
+  color: var(--ps2-slate-800);
+  background: #fff;
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-lg);
+  padding: 8px 12px 8px 36px;
+  outline: none;
+  transition: var(--ps2-transition);
+}
+
+.ps2-input:focus {
+  border-color: var(--ps2-blue-600);
+  box-shadow: 0 0 0 3px var(--ps2-blue-100);
+}
+
+.ps2-input::placeholder {
+  color: var(--ps2-slate-400);
+}
+
+.ps2-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ps2-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--ps2-radius-full);
+  border: 1px solid var(--ps2-slate-200);
+  background: #fff;
+  color: var(--ps2-slate-600);
+  cursor: pointer;
+  transition: var(--ps2-transition);
+}
+
+.ps2-filter-chip:hover {
+  border-color: var(--ps2-slate-300);
+}
+
+.ps2-filter-chip.is-active {
+  border-color: currentColor;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.ps2-filter-chip--purple.is-active {
+  color: var(--ps2-purple-600);
+  background: var(--ps2-purple-50);
+  border-color: var(--ps2-purple-100);
+}
+
+.ps2-filter-chip--emerald.is-active {
+  color: var(--ps2-emerald-600);
+  background: var(--ps2-emerald-50);
+  border-color: var(--ps2-emerald-100);
+}
+
+.ps2-filter-chip--amber.is-active {
+  color: var(--ps2-amber-600);
+  background: var(--ps2-amber-50);
+  border-color: var(--ps2-amber-100);
+}
+
+.ps2-filter-chip--rose.is-active {
+  color: var(--ps2-rose-600);
+  background: var(--ps2-rose-50);
+  border-color: var(--ps2-rose-100);
+}
+
+.ps2-sort-select {
+  min-width: 140px;
+  padding-left: 12px;
+}
+
+/* ----------------------------------------
+   10. 批量操作栏
+   ---------------------------------------- */
+.ps2-batch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--ps2-blue-50);
+  border: 1px solid var(--ps2-blue-100);
+  border-radius: var(--ps2-radius-lg);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.ps2-batch-bar__info {
+  font-size: 13px;
+  color: var(--ps2-slate-700);
+}
+
+.ps2-batch-bar__info strong {
+  color: var(--ps2-blue-700);
+}
+
+.ps2-batch-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ----------------------------------------
+   11. 表格
+   ---------------------------------------- */
+.ps2-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-lg);
+}
+
+.ps2-table {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  color: var(--ps2-slate-700);
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.ps2-table thead {
+  background: var(--ps2-slate-50);
+  color: var(--ps2-slate-500);
+  font-weight: 600;
+  border-bottom: 1px solid var(--ps2-slate-200);
+}
+
+.ps2-table th,
+.ps2-table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.ps2-table th {
+  white-space: nowrap;
+}
+
+.ps2-table tbody tr {
+  border-bottom: 1px solid var(--ps2-slate-100);
+  cursor: pointer;
+  transition: var(--ps2-transition);
+}
+
+.ps2-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.ps2-table tbody tr:hover {
+  background: rgba(239, 246, 255, 0.4);
+}
+
+.ps2-table tbody tr.is-selected {
+  background: var(--ps2-blue-50);
+}
+
+.ps2-table__checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--ps2-blue-600);
+  cursor: pointer;
+}
+
+.ps2-enterprise-name {
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  margin-bottom: 2px;
+}
+
+.ps2-enterprise-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  color: var(--ps2-slate-400);
+}
+
+.ps2-text-right {
+  text-align: right;
+}
+
+.ps2-text-center {
+  text-align: center;
+}
+
+.ps2-font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* ----------------------------------------
+   12. Badge 标签
+   ---------------------------------------- */
+.ps2-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--ps2-radius-md);
+  white-space: nowrap;
+}
+
+.ps2-badge--blue {
+  background: var(--ps2-blue-50);
+  color: var(--ps2-blue-700);
+}
+
+.ps2-badge--purple {
+  background: var(--ps2-purple-50);
+  color: var(--ps2-purple-600);
+}
+
+.ps2-badge--emerald {
+  background: var(--ps2-emerald-50);
+  color: var(--ps2-emerald-600);
+}
+
+.ps2-badge--amber {
+  background: var(--ps2-amber-50);
+  color: var(--ps2-amber-600);
+}
+
+.ps2-badge--rose {
+  background: var(--ps2-rose-50);
+  color: var(--ps2-rose-600);
+}
+
+.ps2-badge--slate {
+  background: var(--ps2-slate-100);
+  color: var(--ps2-slate-600);
+}
+
+.ps2-badges-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ----------------------------------------
+   13. 分页
+   ---------------------------------------- */
+.ps2-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 0 0;
+  font-size: 12px;
+  color: var(--ps2-slate-500);
+  flex-wrap: wrap;
+}
+
+.ps2-pagination__buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ps2-page-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-md);
+  background: #fff;
+  color: var(--ps2-slate-700);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--ps2-transition);
+}
+
+.ps2-page-btn:hover:not(:disabled) {
+  background: var(--ps2-slate-50);
+}
+
+.ps2-page-btn.is-active {
+  background: var(--ps2-blue-700);
+  color: #fff;
+  border-color: var(--ps2-blue-700);
+}
+
+.ps2-page-btn:disabled {
+  color: var(--ps2-slate-400);
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------
+   14. 交叉分析 Tab
+   ---------------------------------------- */
+.ps2-analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .ps2-analysis-grid {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+.ps2-ai-conclusion {
+  background: linear-gradient(135deg, var(--ps2-blue-50) 0%, #fff 100%);
+  border: 1px solid var(--ps2-blue-100);
+  border-radius: var(--ps2-radius-lg);
+  padding: 16px;
+}
+
+.ps2-ai-conclusion__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps2-blue-700);
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ps2-ai-conclusion__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ps2-slate-700);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.ps2-ai-conclusion__item:last-child {
+  margin-bottom: 0;
+}
+
+.ps2-ai-conclusion__dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ps2-blue-600);
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.ps2-matrix {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .ps2-matrix {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ps2-matrix {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ps2-matrix-card {
+  background: #fff;
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-lg);
+  padding: 16px;
+}
+
+.ps2-matrix-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ps2-matrix-card__metric {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ps2-matrix-card__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ps2-slate-800);
+}
+
+.ps2-matrix-card__unit {
+  font-size: 12px;
+  color: var(--ps2-slate-500);
+}
+
+.ps2-matrix-card__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ps2-mini-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ps2-mini-bar__label {
+  width: 60px;
+  font-size: 11px;
+  color: var(--ps2-slate-500);
+  flex-shrink: 0;
+}
+
+.ps2-mini-bar__track {
+  flex: 1;
+  height: 6px;
+  background: var(--ps2-slate-100);
+  border-radius: var(--ps2-radius-full);
+  overflow: hidden;
+}
+
+.ps2-mini-bar__fill {
+  height: 100%;
+  border-radius: var(--ps2-radius-full);
+}
+
+.ps2-mini-bar__value {
+  width: 40px;
+  font-size: 11px;
+  color: var(--ps2-slate-600);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------
+   15. 资金来源与跨城分布 Tab
+   ---------------------------------------- */
+.ps2-dept-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .ps2-dept-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ps2-dept-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ps2-dept-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--ps2-slate-50);
+  border-radius: var(--ps2-radius-lg);
+}
+
+.ps2-dept-item__rank {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ps2-blue-600);
+  flex-shrink: 0;
+}
+
+.ps2-dept-item__rank--amber {
+  background: var(--ps2-amber-500);
+}
+
+.ps2-dept-item__info {
+  flex: 1;
+}
+
+.ps2-dept-item__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ps2-slate-800);
+  margin-bottom: 2px;
+}
+
+.ps2-dept-item__count {
+  font-size: 11px;
+  color: var(--ps2-slate-500);
+}
+
+.ps2-dept-item__amount {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  white-space: nowrap;
+}
+
+/* ----------------------------------------
+   16. 右侧抽屉（企业履历穿透）
+   ---------------------------------------- */
+.ps2-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ps2-drawer-overlay.is-hidden {
+  display: none;
+}
+
+.ps2-drawer {
+  width: 100%;
+  max-width: 520px;
+  height: 100%;
+  background: #fff;
+  box-shadow: var(--ps2-shadow-2xl);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .ps2-drawer {
+    width: 520px;
+  }
+}
+
+.ps2-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ps2-slate-200);
+}
+
+.ps2-drawer__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  margin: 0;
+}
+
+.ps2-drawer__close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ps2-radius-lg);
+  border: none;
+  background: var(--ps2-slate-100);
+  color: var(--ps2-slate-500);
+  cursor: pointer;
+  transition: var(--ps2-transition);
+}
+
+.ps2-drawer__close:hover {
+  background: var(--ps2-slate-200);
+  color: var(--ps2-slate-700);
+}
+
+.ps2-drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.ps2-drawer__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--ps2-slate-200);
+}
+
+.ps2-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 480px) {
+  .ps2-profile-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ps2-profile-item {
+  background: var(--ps2-slate-50);
+  border-radius: var(--ps2-radius-lg);
+  padding: 12px;
+}
+
+.ps2-profile-item__label {
+  font-size: 11px;
+  color: var(--ps2-slate-500);
+  margin-bottom: 4px;
+}
+
+.ps2-profile-item__value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+}
+
+.ps2-chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  margin: 0 0 12px;
+}
+
+.ps2-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  height: 160px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--ps2-slate-200);
+  margin-bottom: 8px;
+}
+
+.ps2-bar-chart__group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ps2-bar-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  height: 120px;
+}
+
+.ps2-bar-chart__bar {
+  width: 12px;
+  border-radius: var(--ps2-radius-sm) var(--ps2-radius-sm) 0 0;
+  min-height: 4px;
+  transition: height 0.3s ease;
+}
+
+.ps2-bar-chart__bar--subsidy {
+  background: var(--ps2-blue-600);
+}
+
+.ps2-bar-chart__bar--revenue {
+  background: var(--ps2-emerald-500);
+}
+
+.ps2-bar-chart__year {
+  font-size: 11px;
+  color: var(--ps2-slate-500);
+}
+
+.ps2-timeline {
+  position: relative;
+  padding-left: 20px;
+}
+
+.ps2-timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ps2-slate-200);
+}
+
+.ps2-timeline__item {
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.ps2-timeline__dot {
+  position: absolute;
+  left: -18px;
+  top: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ps2-blue-600);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--ps2-slate-200);
+}
+
+.ps2-timeline__dot--external {
+  background: var(--ps2-amber-500);
+}
+
+.ps2-timeline__content {
+  background: var(--ps2-slate-50);
+  border-radius: var(--ps2-radius-lg);
+  padding: 12px;
+}
+
+.ps2-timeline__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.ps2-timeline__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+}
+
+.ps2-timeline__amount {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ps2-emerald-600);
+}
+
+.ps2-timeline__meta {
+  font-size: 11px;
+  color: var(--ps2-slate-500);
+  line-height: 1.5;
+}
+
+/* ----------------------------------------
+   17. Modal 弹窗
+   ---------------------------------------- */
+.ps2-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.ps2-modal-overlay.is-hidden {
+  display: none;
+}
+
+.ps2-modal {
+  background: #fff;
+  border-radius: var(--ps2-radius-xl);
+  box-shadow: var(--ps2-shadow-2xl);
+  border: 1px solid var(--ps2-slate-200);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ps2-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ps2-slate-100);
+}
+
+.ps2-modal__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  margin: 0;
+}
+
+.ps2-modal__close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ps2-radius-lg);
+  border: none;
+  background: var(--ps2-slate-100);
+  color: var(--ps2-slate-500);
+  cursor: pointer;
+  transition: var(--ps2-transition);
+}
+
+.ps2-modal__close:hover {
+  background: var(--ps2-slate-200);
+  color: var(--ps2-slate-700);
+}
+
+.ps2-modal__body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.ps2-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--ps2-slate-100);
+}
+
+.ps2-form-group {
+  margin-bottom: 16px;
+}
+
+.ps2-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.ps2-form-group__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ps2-slate-700);
+  margin-bottom: 6px;
+}
+
+.ps2-form-group__hint {
+  font-size: 11px;
+  color: var(--ps2-slate-400);
+  margin-top: 4px;
+}
+
+.ps2-textarea {
+  width: 100%;
+  font-size: 13px;
+  color: var(--ps2-slate-800);
+  background: #fff;
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-lg);
+  padding: 10px 12px;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.ps2-textarea:focus {
+  border-color: var(--ps2-blue-600);
+  box-shadow: 0 0 0 3px var(--ps2-blue-100);
+}
+
+.ps2-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ps2-radio-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--ps2-slate-200);
+  border-radius: var(--ps2-radius-lg);
+  cursor: pointer;
+  transition: var(--ps2-transition);
+}
+
+.ps2-radio-card:hover {
+  border-color: var(--ps2-blue-200);
+}
+
+.ps2-radio-card.is-active {
+  border-color: var(--ps2-blue-600);
+  background: var(--ps2-blue-50);
+}
+
+.ps2-radio-card__input {
+  margin-top: 2px;
+  accent-color: var(--ps2-blue-600);
+}
+
+.ps2-radio-card__content {
+  flex: 1;
+}
+
+.ps2-radio-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps2-slate-800);
+  margin-bottom: 2px;
+}
+
+.ps2-radio-card__desc {
+  font-size: 11px;
+  color: var(--ps2-slate-500);
+  line-height: 1.4;
+}
+
+.ps2-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ps2-checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ps2-slate-700);
+  cursor: pointer;
+}
+
+.ps2-checkbox-item__input {
+  margin-top: 2px;
+  accent-color: var(--ps2-blue-600);
+}
+
+.ps2-dropzone {
+  border: 2px dashed var(--ps2-slate-300);
+  border-radius: var(--ps2-radius-lg);
+  padding: 32px;
+  text-align: center;
+  color: var(--ps2-slate-500);
+  transition: var(--ps2-transition);
+  cursor: pointer;
+}
+
+.ps2-dropzone:hover {
+  border-color: var(--ps2-blue-400);
+  background: var(--ps2-blue-50);
+}
+
+.ps2-dropzone__icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: var(--ps2-slate-400);
+}
+
+.ps2-dropzone__text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ps2-slate-700);
+  margin-bottom: 4px;
+}
+
+.ps2-dropzone__hint {
+  font-size: 11px;
+  color: var(--ps2-slate-400);
+}
+
+/* ----------------------------------------
+   18. 工具类
+   ---------------------------------------- */
+.ps2-hidden {
+  display: none !important;
+}
+
+.ps2-flex {
+  display: flex;
+}
+
+.ps2-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.ps2-items-center {
+  align-items: center;
+}
+
+.ps2-justify-between {
+  justify-content: space-between;
+}
+
+.ps2-gap-1 {
+  gap: 4px;
+}
+
+.ps2-gap-2 {
+  gap: 8px;
+}
+
+.ps2-gap-3 {
+  gap: 12px;
+}
+
+.ps2-mb-1 {
+  margin-bottom: 4px;
+}
+
+.ps2-mb-2 {
+  margin-bottom: 8px;
+}
+
+.ps2-mb-3 {
+  margin-bottom: 12px;
+}
+
+.ps2-mt-1 {
+  margin-top: 4px;
+}
+
+.ps2-mt-2 {
+  margin-top: 8px;
+}
+
+.ps2-text-xs {
+  font-size: 11px;
+}
+
+.ps2-text-sm {
+  font-size: 12px;
+}
+
+.ps2-text-muted {
+  color: var(--ps2-slate-400);
+}
+
+.ps2-font-semibold {
+  font-weight: 600;
+}
+
+.ps2-font-bold {
+  font-weight: 700;
+}
+
+/* 自定义滚动条 */
+.ps2-custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ps2-custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--ps2-slate-100);
+}
+
+.ps2-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--ps2-slate-300);
+  border-radius: var(--ps2-radius-md);
+}
+
+.ps2-custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--ps2-slate-400);
+}

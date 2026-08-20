@@ -301,6 +301,213 @@ var ChartRenderer = (function () {
     chart.setOption(option);
   }
 
+  /* ===== 图表5：企业主营产品 TOP5 收入占比（横向条形图） ===== */
+  function renderEnterpriseProductChart(domId, data) {
+    var chart = initChart(domId);
+    if (!chart) return;
+
+    var names = data.map(function (item) { return item.name; });
+    var values = data.map(function (item) { return item.value; });
+
+    var option = {
+      grid: {
+        left: 10,
+        right: 70,
+        top: 10,
+        bottom: 10,
+        containLabel: true
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        textStyle: { fontSize: 13 },
+        formatter: function (params) {
+          var p = params[0];
+          return p.name + '<br/>收入占比: <strong>' + p.value + '%</strong>';
+        }
+      },
+      xAxis: {
+        type: 'value',
+        max: 100,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: Object.assign({}, SECONDARY_TEXT_STYLE, { formatter: '{value}%' }),
+        splitLine: { lineStyle: { color: '#F2F3F5', type: 'dashed' } }
+      },
+      yAxis: {
+        type: 'category',
+        data: names,
+        axisLine: { lineStyle: { color: '#E5E6EB' } },
+        axisTick: { show: false },
+        axisLabel: Object.assign({}, BASE_TEXT_STYLE, { fontSize: 12 })
+      },
+      series: [{
+        type: 'bar',
+        data: values,
+        barWidth: 16,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+            { offset: 0, color: '#165DFF' },
+            { offset: 1, color: '#4080FF' }
+          ]),
+          borderRadius: [0, 4, 4, 0]
+        },
+        label: {
+          show: true,
+          position: 'right',
+          formatter: '{c}%',
+          color: '#1D2129',
+          fontSize: 12,
+          fontWeight: 600
+        }
+      }]
+    };
+
+    chart.setOption(option);
+  }
+
+  /* ===== 图表6：企业24个月营收规模趋势线（折线图） ===== */
+  function renderEnterpriseRevenueTrend(domId, data) {
+    var chart = initChart(domId);
+    if (!chart) return;
+
+    var option = {
+      title: {
+        text: '24个月开票/营收规模趋势',
+        left: 0,
+        top: 0,
+        textStyle: {
+          fontSize: 14,
+          fontWeight: 'bold',
+          color: '#1D2129'
+        }
+      },
+      grid: {
+        left: 60,
+        right: 20,
+        top: 40,
+        bottom: 30
+      },
+      tooltip: {
+        trigger: 'axis',
+        textStyle: { fontSize: 13 },
+        formatter: function (params) {
+          var p = params[0];
+          return p.name + '<br/>营收规模: <strong>' + CommonUtil.formatNumber(p.value) + '</strong> 万元';
+        }
+      },
+      xAxis: {
+        type: 'category',
+        data: data.labels,
+        axisLine: { lineStyle: { color: '#E5E6EB' } },
+        axisTick: { show: false },
+        axisLabel: Object.assign({}, SECONDARY_TEXT_STYLE, { fontSize: 12 })
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: Object.assign({}, SECONDARY_TEXT_STYLE, { formatter: '{value}' }),
+        splitLine: { lineStyle: { color: '#F2F3F5', type: 'dashed' } }
+      },
+      series: [{
+        type: 'line',
+        data: data.values,
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        lineStyle: {
+          width: 3,
+          color: '#165DFF'
+        },
+        itemStyle: {
+          color: '#165DFF',
+          borderColor: '#FFFFFF',
+          borderWidth: 2
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(22, 93, 255, 0.15)' },
+            { offset: 1, color: 'rgba(22, 93, 255, 0.01)' }
+          ])
+        }
+      }]
+    };
+
+    chart.setOption(option);
+  }
+
+  /* ===== 图表7：企业24个月就业人数趋势线（折线图） ===== */
+  function renderEnterpriseEmploymentTrend(domId, data) {
+    var chart = initChart(domId);
+    if (!chart) return;
+
+    var option = {
+      title: {
+        text: '24个月就业人数增长趋势',
+        left: 0,
+        top: 0,
+        textStyle: {
+          fontSize: 14,
+          fontWeight: 'bold',
+          color: '#1D2129'
+        }
+      },
+      grid: {
+        left: 52,
+        right: 20,
+        top: 40,
+        bottom: 30
+      },
+      tooltip: {
+        trigger: 'axis',
+        textStyle: { fontSize: 13 },
+        formatter: function (params) {
+          var p = params[0];
+          return p.name + '<br/>就业人数: <strong>' + CommonUtil.formatNumber(p.value) + '</strong> 人';
+        }
+      },
+      xAxis: {
+        type: 'category',
+        data: data.labels,
+        axisLine: { lineStyle: { color: '#E5E6EB' } },
+        axisTick: { show: false },
+        axisLabel: Object.assign({}, SECONDARY_TEXT_STYLE, { fontSize: 12 })
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: Object.assign({}, SECONDARY_TEXT_STYLE, { formatter: '{value}' }),
+        splitLine: { lineStyle: { color: '#F2F3F5', type: 'dashed' } }
+      },
+      series: [{
+        type: 'line',
+        data: data.values,
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        lineStyle: {
+          width: 3,
+          color: '#00B42A'
+        },
+        itemStyle: {
+          color: '#00B42A',
+          borderColor: '#FFFFFF',
+          borderWidth: 2
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(0, 180, 42, 0.15)' },
+            { offset: 1, color: 'rgba(0, 180, 42, 0.01)' }
+          ])
+        }
+      }]
+    };
+
+    chart.setOption(option);
+  }
+
   /* ===== 渲染所有图表 ===== */
   function renderAll(data) {
     // 等待 DOM 就绪
@@ -334,6 +541,9 @@ var ChartRenderer = (function () {
     renderDownstream: renderDownstreamChart,
     renderCollaboration: renderCollaborationChart,
     renderProduct: renderProductChart,
+    renderEnterpriseProductChart: renderEnterpriseProductChart,
+    renderEnterpriseRevenueTrend: renderEnterpriseRevenueTrend,
+    renderEnterpriseEmploymentTrend: renderEnterpriseEmploymentTrend,
     resize: handleResize
   };
 

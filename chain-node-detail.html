@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>产业链环节详情 - 产业链/供应链图谱系统</title>
-  <link rel="stylesheet" href="css/common.css?v=3">
-  <link rel="stylesheet" href="css/chain-node-detail.css?v=9">
+  <link rel="stylesheet" href="css/common.css?v=16">
+  <link rel="stylesheet" href="css/chain-node-detail.css?v=13">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script src="js/data.js"></script>
-  <script src="js/common.js"></script>
+  <script src="js/common.js?v=4"></script>
   <!-- 加载顺序必须先配置、后组件，顺序不能颠倒 -->
-  <script src="js/config/menu-config.js?v=3"></script>
+  <script src="js/config/menu-config.js?v=6"></script>
   <script src="js/components/GovHeader.js"></script>
-  <script src="js/components/SideNav.js"></script>
+  <script src="js/components/SideNav.js?v=6"></script>
 </head>
 <body>
   <gov-header></gov-header>
@@ -22,29 +22,151 @@
 
     <main class="page-content node-detail-page">
       <section class="top-bar">
-        <div class="breadcrumb" id="breadcrumbContainer"></div>
-        <div class="top-actions">
-          <button class="btn btn-default" id="backBtn">← 返回产业链图谱</button>
-        </div>
+        <div class="global-breadcrumb" id="breadcrumbContainer"></div>
       </section>
 
       <section class="card node-detail-header">
         <div id="nodeDetailHead"></div>
       </section>
 
-      <section class="card node-detail-modules" id="nodeDetailModules"></section>
-
-      <section class="card node-detail-enterprises" id="nodeDetailEnterprises"></section>
-
-      <section class="card node-detail-actions" id="nodeDetailActions">
-        <button class="btn btn-default" id="bottomBackBtn">← 返回产业链图谱</button>
-      </section>
+      <div class="node-detail-main">
+        <section class="card node-detail-modules" id="nodeDetailModules"></section>
+        <section class="card node-detail-enterprises" id="nodeDetailEnterprises"></section>
+      </div>
     </main>
   </div>
 
   <div class="page-transition-overlay" id="pageTransitionOverlay"></div>
 
-  <script src="js/chain-node-common.js?v=5"></script>
-  <script src="js/chain-node-detail.js?v=10"></script>
+  <!-- 本地企业明细清单弹窗 -->
+  <div class="enterprise-modal-overlay" id="enterpriseModalOverlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="enterpriseModalTitle">
+    <div class="enterprise-modal" id="enterpriseModal">
+      <div class="enterprise-modal-header">
+        <div>
+          <h2 class="enterprise-modal-title" id="enterpriseModalTitle">本地企业明细清单</h2>
+          <p class="enterprise-modal-subtitle">支持对公开数据源与实际调研存在偏差的数据进行人工调整</p>
+        </div>
+        <button class="enterprise-modal-close" id="enterpriseModalClose" type="button" aria-label="关闭弹窗">×</button>
+      </div>
+      <div class="enterprise-modal-toolbar">
+        <div class="enterprise-modal-search">
+          <input type="text" id="enterpriseModalSearch" class="enterprise-modal-input" placeholder="搜索企业名称、统一社会信用代码、所属行业…" aria-label="搜索企业">
+        </div>
+        <div class="enterprise-modal-filters">
+          <select id="enterpriseModalScaleFilter" class="enterprise-modal-select" aria-label="按企业规模筛选">
+            <option value="">全部规模</option>
+            <option value="large">大型企业</option>
+            <option value="medium">中型企业</option>
+            <option value="small">小型企业</option>
+            <option value="micro">微型企业</option>
+          </select>
+          <select id="enterpriseModalYearFilter" class="enterprise-modal-select" aria-label="按成立时间筛选">
+            <option value="">全部年份</option>
+            <option value="before2000">2000年以前</option>
+            <option value="2000-2010">2000-2010年</option>
+            <option value="2010-2020">2010-2020年</option>
+            <option value="after2020">2020年以后</option>
+          </select>
+        </div>
+        <button class="btn btn-primary enterprise-modal-add" id="enterpriseModalAddBtn" type="button">+ 添加企业</button>
+      </div>
+      <div class="enterprise-modal-stats" id="enterpriseModalStats"></div>
+      <div class="enterprise-modal-body">
+        <div class="enterprise-modal-table-wrap" role="region" aria-label="企业明细清单，可横向滚动" tabindex="0">
+          <table class="enterprise-modal-table">
+            <thead>
+              <tr>
+                <th scope="col" class="em-cell-name">企业名称</th>
+                <th scope="col" class="em-cell-code">统一社会信用代码</th>
+                <th scope="col" class="em-cell-industry">所属行业</th>
+                <th scope="col" class="em-cell-scale">企业规模</th>
+                <th scope="col" class="em-cell-date">成立日期</th>
+                <th scope="col" class="em-cell-employees">从业人数</th>
+                <th scope="col" class="em-cell-revenue">年产值（亿元）</th>
+                <th scope="col" class="em-cell-actions">操作</th>
+              </tr>
+            </thead>
+            <tbody id="enterpriseModalTableBody"></tbody>
+          </table>
+        </div>
+        <div class="enterprise-modal-pagination" id="enterpriseModalPagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 企业信息维护表单弹窗 -->
+  <div class="enterprise-modal-overlay" id="enterpriseFormOverlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="enterpriseFormTitle">
+    <div class="enterprise-modal enterprise-modal--form" id="enterpriseFormModal">
+      <div class="enterprise-modal-header">
+        <h2 class="enterprise-modal-title" id="enterpriseFormTitle">维护企业信息</h2>
+        <button class="enterprise-modal-close" id="enterpriseFormClose" type="button" aria-label="关闭弹窗">×</button>
+      </div>
+      <form class="enterprise-form" id="enterpriseForm" novalidate>
+        <input type="hidden" id="enterpriseFormId">
+        <div class="enterprise-form-grid">
+          <div class="enterprise-form-field">
+            <label for="enterpriseFormName">企业名称 <span class="enterprise-form-required">*</span></label>
+            <input type="text" id="enterpriseFormName" class="enterprise-modal-input" required maxlength="100">
+          </div>
+          <div class="enterprise-form-field">
+            <label for="enterpriseFormCode">统一社会信用代码 <span class="enterprise-form-required">*</span></label>
+            <input type="text" id="enterpriseFormCode" class="enterprise-modal-input" required maxlength="18" pattern="[A-Z0-9]{18}">
+          </div>
+          <div class="enterprise-form-field">
+            <label for="enterpriseFormIndustry">所属行业 <span class="enterprise-form-required">*</span></label>
+            <input type="text" id="enterpriseFormIndustry" class="enterprise-modal-input" required maxlength="50">
+          </div>
+          <div class="enterprise-form-field">
+            <label for="enterpriseFormScale">企业规模 <span class="enterprise-form-required">*</span></label>
+            <select id="enterpriseFormScale" class="enterprise-modal-select" required>
+              <option value="">请选择</option>
+              <option value="large">大型企业</option>
+              <option value="medium">中型企业</option>
+              <option value="small">小型企业</option>
+              <option value="micro">微型企业</option>
+            </select>
+          </div>
+          <div class="enterprise-form-field">
+            <label for="enterpriseFormDate">成立日期 <span class="enterprise-form-required">*</span></label>
+            <input type="date" id="enterpriseFormDate" class="enterprise-modal-input" required>
+          </div>
+          <div class="enterprise-form-field">
+            <label for="enterpriseFormEmployees">从业人数 <span class="enterprise-form-required">*</span></label>
+            <input type="number" id="enterpriseFormEmployees" class="enterprise-modal-input" required min="1" max="1000000" step="1">
+          </div>
+          <div class="enterprise-form-field">
+            <label for="enterpriseFormRevenue">年产值（亿元） <span class="enterprise-form-required">*</span></label>
+            <input type="number" id="enterpriseFormRevenue" class="enterprise-modal-input" required min="0" max="100000" step="0.01">
+          </div>
+          <div class="enterprise-form-field enterprise-form-field--full">
+            <label for="enterpriseFormAddress">注册地址</label>
+            <input type="text" id="enterpriseFormAddress" class="enterprise-modal-input" maxlength="200">
+          </div>
+        </div>
+        <div class="enterprise-form-error" id="enterpriseFormError" role="alert" aria-live="assertive"></div>
+        <div class="enterprise-form-actions">
+          <button type="button" class="btn btn-default" id="enterpriseFormCancel">取消</button>
+          <button type="submit" class="btn btn-primary" id="enterpriseFormSubmit">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 操作确认弹窗 -->
+  <div class="enterprise-modal-overlay enterprise-confirm-overlay" id="enterpriseConfirmOverlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="enterpriseConfirmTitle">
+    <div class="enterprise-modal enterprise-modal--confirm" id="enterpriseConfirmModal">
+      <div class="enterprise-modal-header">
+        <h2 class="enterprise-modal-title" id="enterpriseConfirmTitle">确认操作</h2>
+      </div>
+      <div class="enterprise-confirm-body" id="enterpriseConfirmBody"></div>
+      <div class="enterprise-form-actions">
+        <button type="button" class="btn btn-default" id="enterpriseConfirmCancel">取消</button>
+        <button type="button" class="btn btn-danger" id="enterpriseConfirmOk">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/chain-node-common.js?v=6"></script>
+  <script src="js/chain-node-detail.js?v=16"></script>
 </body>
 </html>
